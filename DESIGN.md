@@ -1,115 +1,153 @@
 # CS50 Nuggets
 ## Design Spec
-### Team name, term, year
-
-> This **template** includes some gray text meant to explain how to use the template; delete all of them in your document!
+### Palmer's Posse, Fall21
 
 According to the [Requirements Spec](REQUIREMENTS.md), the Nuggets game requires two standalone programs: a client and a server.
 Our design also includes x, y, z modules.
 We describe each program and module separately.
 We do not describe the `support` library nor the modules that enable features that go beyond the spec.
 We avoid repeating information that is provided in the requirements spec.
-
-## Player
-
-> Teams of 3 students should delete this section.
-
-The *client* acts in one of two modes:
-
- 1. *spectator*, the passive spectator mode described in the requirements spec.
- 2. *player*, the interactive game-playing mode described in the requirements spec.
-
-### User interface
-
-See the requirements spec for both the command-line and interactive UI.
-
-> You may not need much more.
-
-### Inputs and outputs
-
-> Briefly describe the inputs (keystrokes) and outputs (display).
-> If you write to log files, or log to stderr, describe that here.
-> Command-line arguments are not 'input'.
-
-### Functional decomposition into modules
-
-> List and briefly describe any modules that comprise your client, other than the main module.
- 
-### Pseudo code for logic/algorithmic flow
-
-> For each function write pseudocode indented by a tab, which in Markdown will cause it to be rendered in literal form (like a code block).
-> Much easier than writing as a bulleted list!
-> See the Server section for an example.
-
-> Then briefly describe each of the major functions, perhaps with level-4 #### headers.
-
-### Major data structures
-
-> A language-independent description of the major data structure(s) in this program.
-> Mention, but do not describe, any libcs50 data structures you plan to use.
-
----
-
 ## Server
 ### User interface
 
-See the requirements spec for the command-line interface.
-There is no interaction with the user.
-
-> You may not need much more.
+See the requirements spec for the command-line interface. There is no interaction with the user.
+> Because we are a three person group, we do not need to worry about this.
 
 ### Inputs and outputs
+Command-line arguments are not 'input'.
+INPUTS: there are three types of messages that the client can send the server
+ --> PLAY (initiate play)
+ --> SPECTATE (initiate spectating)
+ --> KEY (movement on the grid by the user/quitting)
 
-> Briefly describe the inputs (map file) and outputs (to terminal).
-> If you write to log files, or log to stderr, describe that here.
-> Command-line arguments are not 'input'.
+OUTPUTS:
+ --> GRID nrows ncols (build the grid with the size)
+ --> GOLD n p r (number of nuggets, what is in the players purse and the remaining gold)
+ --> DISPLAY \nstring (a printable string version of the map)
 
 ### Functional decomposition into modules
+Parameters are not yet set, see Implementation Spec for that.
 
-> List and briefly describe any modules that comprise your server, other than the main module.
+main() --> sets up modules listed below and runs the game
 
+parseArgs() --> parse the command line and validate arguments, perhaps in a helper function
+
+parseMessage() --> parsing the messages from the client
+
+initiateNetword() --> direct communication with the client, sets up game, calls handleMessage()
+
+handleMessage() --> will be composed of many helper functions, that will handle the command the client has asked for
+
+loadMap() --> load the map
+
+disperseGold() --> initialize the gold and place it around the map
+
+updateGame() --> after any keystroke is made, update the game
+
+printResults() --> print the leaderboard after the game ends
+
+ 
 ### Pseudo code for logic/algorithmic flow
 
-> For each function write pseudocode indented by a tab, which in Markdown will cause it to be rendered in literal form (like a code block).
-> Much easier than writing as a bulleted list!
-> For example:
+parseArgs()
+	validate arg count
+	validate arg type
+	initializes variables
+	
+parseMessage() 
+	validate Message type 
+	validate Message
+	calls handleMessage
 
-The server will run as follows:
+initiateNetwork()
+	initialize the server ports/communication channels
+	wait for client to connect
+		receives messages from the client
+		call parseMessage()
 
-	execute from a command line per the requirement spec
-	parse the command line, validate parameters
-	call initializeGame() to set up data structures
-	initialize the 'message' module
-	print the port number on which we wait
-	call message_loop(), to await clients
-	call gameOver() to inform all clients the game has ended
-	clean up
+handleMessage()
+	receive a message from parseMessage
+	call the correct helper function to deal with the message
 
+loadMap()
+	open text file and read it
+	encode information in the text file to the client
 
-> Then briefly describe each of the major functions, perhaps with level-4 #### headers.
+disperseGold()
+	use the minGold/maxGold constants
+	determine how the gold will be split up with a random number generator 
+	populate on the grid
+
+updateGame()
+	check the gold
+	check where user is on grid
+	refresh display
+	send message across to clients
+
+printResults()
+	print the results from the game
+	see Requirements Spec for detail
 
 ### Major data structures
+ game struct; see detail in Implementation Spec
 
-> Describe each major data structure in this program: what information does it represent, how does it represent the data, and what are its members.
-> This description should be independent of the programming language.
-> Mention, but do not describe, data structures implemented by other modules (such as the new modules you detail below, or any libcs50 data structures you plan to use).
-
+ maps (or grids); most provided must create one more
 ---
 
 ## XYZ module
 
-> Repeat this section for each module that is included in either the client or server.
+This module represents the type of message XYZ
 
 ### Functional decomposition
+ handlePlay() --> receive a message that a client wants to play and sets them up accordingly
 
-> List each of the main functions implemented by this module, with a phrase or sentence description of each.
+ handleSpectator() --> receive a message that a client wants to spectate and sets them up accordingly
+
+ handleKey() --> receive a message that the client input a key and handle that keystoke
+
+
+ sendGrid() --> send nrows and ncols (the grid size) to the client participating
+
+ sendGold() --> send the number of nuggets, the amount in the player's purse and the amount of gold remaining
+
+ sendDisplay() --> will send a string interpretation of the map
 
 ### Pseudo code for logic/algorithmic flow
+ handlePlay()
+	takes in a message
+	ensure max number of players has not been reached
+	tells us there is a client we have to give the correct letter assigned name to
+	initialize modules to begin game play
 
-> For any non-trivial function, add a level-4 #### header and provide tab-indented pseudocode.
-> This pseudocode should be independent of the programming language.
+ handleSpectator() 
+	takes in a message
+	tells us there is a spectator
+	ensure there isn't already a spectator
+	if there is, kick them out and let this person spectate
+	initialize modules to begin game spectating
+
+ handleKey()
+	takes in a message
+	tells us there is a spectator
+	ensure the key was one of the ones we watch for
+	handle that keys by calling a helper function
+
+	*for all possible keys, see the requirments specs	
+
+ sendGrid() 
+ 	put together a message that includes nrows and ncols
+	make sure that the section of the grid being sent considers where the client is
+	send the grid the client
+
+ sendGold()
+	put together a message that includes # nuggets, purse count, remaining gold
+	check if has been updated, if so send to clients
+
+ sendDisplay()
+	retrieve the text version of the map
+	put it into a \nstring
+	sent to client(s)
 
 ### Major data structures
+	use the provided client/server communicators
 
-> Describe each major data structure in this module: what information does it represent, how does it represent the data, and what are its members.
-> This description should be independent of the programming language.
