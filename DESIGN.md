@@ -50,42 +50,42 @@ Parameters are not yet set, see Implementation Spec for that.
  
 ### Pseudo code for logic/algorithmic flow
 
-`parseArgs`
+parseArgs
 	validate arg count
 	validate arg type
 	initializes variables
 	
-`parseMessage` 
+parseMessage 
 	validate Message type 
 	validate Message
 	calls handleMessage
 
-`initiateNetwork`
+initiateNetwork
 	initialize the server ports/communication channels
 	wait for client to connect
 		receives messages from the client
 		call parseMessage
 
-`handleMessage`
+handleMessage
 	receive a message from parseMessage
 	call the correct helper function to deal with the message
 
-`loadMap`
+loadMap
 	open text file and read it
 	encode information in the text file to the client
 
-`disperseGold`
+disperseGold
 	use the minGold/maxGold constants
 	determine how the gold will be split up with a random number generator 
 	populate on the grid
 
-`updateGame`
+updateGame
 	check the gold
 	check where user is on grid
 	refresh display
 	send message across to clients
 
-`printResults`
+printResults
 	print the results from the game
 	see Requirements Spec for detail
 
@@ -95,6 +95,7 @@ Parameters are not yet set, see Implementation Spec for that.
  `map`: essentially a text file; most provided; must create one more
 
  `grid`: hold information about the game board (functions; including one that turns the map into a string)
+
 ---
 
 ## XYZ module
@@ -117,20 +118,20 @@ This module represents the type of message XYZ
 
 ### Pseudo code for logic/algorithmic flow
 
-`handlePlay`
+handlePlay
 	takes in a message
 	ensure max number of players has not been reached
 	tells us there is a client we have to give the correct letter assigned name to
 	initialize modules to begin game play
 
-`handleSpectator` 
+handleSpectator 
 	takes in a message
 	tells us there is a spectator
 	ensure there isn't already a spectator
 	if there is, kick them out and let this person spectate
 	initialize modules to begin game spectating
 
-`handleKey`
+handleKey
 	takes in a message
 	tells us there is a spectator
 	ensure the key was one of the ones we watch for
@@ -138,16 +139,16 @@ This module represents the type of message XYZ
 
 	*for all possible keys, see the requirments specs	
 
-`sendGrid` 
+sendGrid 
  	put together a message that includes nrows and ncols
 	make sure that the section of the grid being sent considers where the client is
 	send the grid the client
 
-`sendGold`
+sendGold
 	put together a message that includes # nuggets, purse count, remaining gold
 	check if has been updated, if so send to clients
 
-`sendDisplay`
+sendDisplay
 	retrieve the text version of the map
 	put it into a \nstring
 	sent to client(s)
