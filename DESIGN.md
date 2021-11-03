@@ -91,7 +91,9 @@ printResults()
 ### Major data structures
  game struct; see detail in Implementation Spec
 
- maps (or grids); most provided must create one more
+ map: most provided must create one more
+
+ grid: hold information about the game board (functions; including one that turns the map into a string)
 ---
 
 ## XYZ module
@@ -150,4 +152,3 @@ This module represents the type of message XYZ
 
 ### Major data structures
 	use the provided client/server communicators
-
