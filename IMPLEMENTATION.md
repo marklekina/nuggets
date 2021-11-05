@@ -1,8 +1,8 @@
 # CS50 Nuggets
 ## Implementation Spec
-### Team name, term, year
+### Palmer's Posse, Fall, 2021
 
-> This **template** includes some gray text meant to explain how to use the template; delete all of them in your document!
+
 
 According to the [Requirements Spec](REQUIREMENTS.md), the Nuggets game requires two standalone programs: a client and a server.
 Our design also includes x, y, z modules.
@@ -12,66 +12,68 @@ We avoid repeating information that is provided in the requirements spec.
 
 ## Plan for division of labor
 
-> Update your plan for distributing the project work among your 3(4) team members.
-> Who writes the client program, the server program, each module?
-> Who is responsible for various aspects of testing, for documentation, etc?
+For our project, we decided to collaborate on the initial aspects of the project, and initialize all modules together. Once we have a common understanding of each data structure and module we will divide between the three of us. 
 
-## Player
-
-> Teams of 3 students should delete this section.
-
-### Data structures
-
-> For each new data structure, describe it briefly and provide a code block listing the `struct` definition(s).
-> No need to provide `struct` for existing CS50 data structures like `hashtable`.
-
-### Definition of function prototypes
-
-> For function, provide a brief description and then a code block with its function prototype.
-> For example:
-
-A function to parse the command-line arguments, initialize the game struct, initialize the message module, and (BEYOND SPEC) initialize analytics module.
-
-```c
-static int parseArgs(const int argc, char* argv[]);
-```
-### Detailed pseudo code
-
-> For each function write pseudocode indented by a tab, which in Markdown will cause it to be rendered in literal form (like a code block).
-> Much easier than writing as a bulleted list!
-> For example:
-
-#### `parseArgs`:
-
-	validate commandline
-	initialize message module
-	print assigned port number
-	decide whether spectator or player
-
----
+For testing we are all going to work together and be sure to test code that other people in the group wrote. 
 
 ## Server
 
 ### Data structures
+`struct game`: holds the game information including the map described in design as well as player positions, gold distribution, and player structs for each player. 
 
-> For each new data structure, describe it briefly and provide a code block listing the `struct` definition(s).
-> No need to provide `struct` for existing CS50 data structures like `hashtable`.
+ `struct grid`: holds information about the game board (functions; including one that turns the map into a string)
+
+ `struct player`: holds information for each individual player. Some of it includes player visibility, name, type of player (spectator or player) and purse information. 
+
 
 ### Definition of function prototypes
-
-> For function, provide a brief description and then a code block with its function prototype.
-> For example:
 
 A function to parse the command-line arguments, initialize the game struct, initialize the message module, and (BEYOND SPEC) initialize analytics module.
 
 ```c
 static int parseArgs(const int argc, char* argv[]);
 ```
-### Detailed pseudo code
 
-> For each function write pseudocode indented by a tab, which in Markdown will cause it to be rendered in literal form (like a code block).
-> Much easier than writing as a bulleted list!
-> For example:
+Takes in a string of a message from client and extracts information 
+
+```c
+static char* parseMessage(char* message);
+```
+
+A continuous loop that checks and reacts to client input. 
+
+```c
+static bool initiateNetwork(void* arg);
+```
+
+Takes in a message [and it's origin] and calls parseMessage as well as other helper functions. 
+
+```c
+static bool handleMessage(void* arg, const addr_t from, const char* message);
+```
+Takes in a filename and opens a file for the map. It then reads the map from the file and converts it to a string and then returns it. 
+```c
+static char* loadMap(char* filename);
+```
+
+Will use the global constants minGold and maxGold to randomly disperse the gold. 
+
+```c
+static void disperseGold();
+```
+Takes in a keystroke, performs the associated  function, and then updates the game. 
+
+```c
+static void updateGame(char stroke);
+```
+Takes in the game and loops through all the players to print the player information including name and purse. Essentially prints a leaderboard. 
+```c
+static void printResults(game_t* game);
+```
+
+
+
+### Detailed pseudo code
 
 #### `parseArgs`:
 
@@ -82,6 +84,46 @@ static int parseArgs(const int argc, char* argv[]);
 		seed the random-number generator with that seed
 	else
 		seed the random-number generator with getpid()
+
+#### `parseMessage`
+
+	if valid Message type 
+		if valid Message
+			if parameters are valid
+				extract parameters 
+			concatenate a string from the message
+			returns validated string
+	else return NULL
+	
+
+initiateNetwork
+	initialize the server ports/communication channels
+	wait for client to connect
+	receives messages from the client
+	call parseMessage
+
+handleMessage
+	receive a message from parseMessage
+	call the correct helper function to deal with the message
+
+loadMap
+	open text file and read it
+	encode information in the text file to the client
+
+disperseGold
+	use the minGold/maxGold constants
+	determine how the gold will be split up with a random number generator 
+	populate on the grid
+
+updateGame
+	check the gold
+	check where user is on grid
+	refresh display
+	send message across to clients
+
+printResults
+	print the results from the game
+	see Requirements Spec for detail
 
 ---
 
