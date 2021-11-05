@@ -35,7 +35,7 @@ Parameters are not yet set, see Implementation Spec for that.
 
 `parseMessage` - parsing the messages from the client
 
-`initiateNetword` - direct communication with the client, sets up game, calls handleMessage()
+`initiateNetwork` - direct communication with the client, sets up game, calls handleMessage()
 
 `handleMessage` - will be composed of many helper functions, that will handle the command the client has asked for
 
@@ -58,7 +58,7 @@ Parameters are not yet set, see Implementation Spec for that.
         parseMessage 
 	        validate Message type 
             validate Message
-			calls handleMessage
+	
 
         initiateNetwork
 			initialize the server ports/communication channels
@@ -90,12 +90,13 @@ Parameters are not yet set, see Implementation Spec for that.
 	        see Requirements Spec for detail
 
 ### Major data structures
- `struct game`; see detail in Implementation Spec
+ `struct game`: see detail in Implementation Spec
 
- `map`: essentially a text file; most provided; must create one more
+ `textfile map`: essentially a text file; most provided; must create one more
 
- `grid`: hold information about the game board (functions; including one that turns the map into a string)
+ `struct grid`: see detail in Implementation Spec
 
+ `struct player`: see detail in Implementation Spec
 ---
 
 ## XYZ module
