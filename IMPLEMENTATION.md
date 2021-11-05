@@ -61,7 +61,7 @@ Will use the global constants minGold and maxGold to randomly disperse the gold.
 ```c
 static void disperseGold();
 ```
-Takes in a keystroke, performs the associated  function, and then updates the game. 
+Takes in a keystroke, performs the associated function, and then updates the game. 
 
 ```c
 static void updateGame(char stroke);
@@ -96,34 +96,48 @@ static void printResults(game_t* game);
 	else return NULL
 	
 
-initiateNetwork
+#### `initiateNetwork`
 	initialize the server ports/communication channels
-	wait for client to connect
-	receives messages from the client
-	call parseMessage
+	while there is no client
+		return false
+	otherwise recieve message and send to handle message
+		return true
+	
 
-handleMessage
-	receive a message from parseMessage
-	call the correct helper function to deal with the message
+#### `handleMessage`
+	calls parseMessage on inputted string
+	if message is "PLAY"
+		call helper function
+	if message is "SPECTATE"
+		call helper function
+	if message is "KEY" 
+		call hhelper function
 
-loadMap
-	open text file and read it
-	encode information in the text file to the client
+#### `loadMap`
+	create a file and try to open it
+	if you're unable to
+		return NULL
+	read file
+	output information to a textfile
+	close the original file
+	close textfile
+	return textfile name 
+	
+#### `disperseGold`
+	pick random number between minGold and maxGold
+	populate grid with the random amount of gold
 
-disperseGold
-	use the minGold/maxGold constants
-	determine how the gold will be split up with a random number generator 
-	populate on the grid
+#### `updateGame`
+	checks if keystroke is valid
+		if so, performs function associated with that key
+		sends updated game to all players
+	else does nothing
 
-updateGame
-	check the gold
-	check where user is on grid
-	refresh display
-	send message across to clients
 
-printResults
-	print the results from the game
-	see Requirements Spec for detail
+#### `printResults`
+	for players in the game
+		print name
+		print amount of gold
 
 ---
 
