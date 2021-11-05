@@ -99,9 +99,9 @@ static void printResults(game_t* game);
 #### `initiateNetwork`
 	initialize the server ports/communication channels
 	while there is no client
-	return false
+		return false
 	otherwise recieve message and send to handle message
-	return true
+		return true
 	
 
 #### `handleMessage`
