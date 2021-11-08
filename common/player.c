@@ -59,19 +59,31 @@ player_delete(player_t* player){
 /* *********************************************************************** */
 /* getter methods - see player.h for documentation */
 char* get_visibility(player_t* player){
-  return player ? player->visibility : 0;
+  if(player!= NULL && player->visibility != NULL){
+    return player->visibility;
+  }
+  return 0;
 }
 
 char* get_type(player_t* player){
-  return player ? player->type : 0;
+   if(player != NULL && player->type != NULL){
+    return player->type;
+  }
+  return 0;
 }
 
 int get_xPos(player_t* player){
-  return player ? player->xPos : 0;
+   if(player!= NULL && player->xPos != NULL){
+    return player->xPos;
+  }
+  return 0;
 }
 
 int get_yPos(player_t* player){
-  return player ? player->yPos : 0; 
+   if(player!= NULL && player->yPos != NULL){
+    return player->yPos;
+  }
+  return 0;
 }
 /**************** set_visibility ****************/
 /*
@@ -82,12 +94,8 @@ set_visibility(player_t* player, char* visibility){
   if (player == NULL || visibility == NULL){
     return false;
   }
-  // have to make 
-  else{
-    if(()){
-      new->
-    }
-  }
+  player->visibility = visibility;
+
 
 }
 
@@ -96,7 +104,7 @@ set_visibility(player_t* player, char* visibility){
 /*
  * see player.h for more information
  */
-player_t*
+bool
 set_type(player_t* player, char* type){}
 
 
@@ -105,7 +113,7 @@ set_type(player_t* player, char* type){}
 /*
  * see player.h for more information
  */
-player_t*
+bool
 set_xPos(player_t* player, int xPos){}
 
 
@@ -113,5 +121,5 @@ set_xPos(player_t* player, int xPos){}
 /*
  * see player.h for more information
  */
-player_t*
+bool
 set_yPos(player_t* player, int yPos){}
