@@ -33,54 +33,61 @@ player_delete(player_t* player);
 /*
  * see player.h for more information
  */
-player_t*
+char*
 get_visibility(player_t* player);
-
-/**************** set_visibility ****************/
-/*
- * see player.h for more information
- */
-player_t*
-set_visibility(player_t* player, char* visibility);
 
 /**************** get_type ****************/
 /*
  * see player.h for more information
  */
-player_t*
+char*
 get_type(player_t* player);
-
-/**************** set_type ****************/
-/*
- * see player.h for more information
- */
-player_t*
-set_type(player_t* player, char* type);
 
 /**************** get_xPos ****************/
 /*
  * see player.h for more information
  */
-player_t*
+int
 get_xPos(player_t* player);
-
-/**************** set_xPos ****************/
-/*
- * see player.h for more information
- */
-player_t*
-set_xPos(player_t* player, int xPos);
 
 /**************** get_yPos ****************/
 /*
  * see player.h for more information
  */
-player_t*
+int
 get_yPos(player_t* player);
+
+/**************** set_visibility ****************/
+/*
+ * see player.h for more information
+ */
+
+bool
+set_visibility(player_t* player, char* visibility);
+
+
+
+/**************** set_type ****************/
+/*
+ * see player.h for more information
+ */
+bool
+set_type(player_t* player, char* type);
+
+
+
+/**************** set_xPos ****************/
+/*
+ * see player.h for more information
+ */
+bool
+set_xPos(player_t* player, int xPos);
+
+
 
 /**************** set_yPos ****************/
 /*
  * see player.h for more information
  */
-player_t*
+bool
 set_yPos(player_t* player, int yPos);
