@@ -20,11 +20,11 @@
 /**************** global types ****************/
 typedef struct player {
   char* name;
-  char* visibility
-  int number;
+  char* visibility;
   char* type;
   int xPos;
   int yPos;
+  int purse;
   
 } player_t;
 
@@ -33,8 +33,8 @@ typedef struct player {
  * see player.h for more information
  */
 player_t*
-player_new(char* name){
-  if (name == NULL){
+player_new(char* name, char* type){
+  if (name == NULL || type == NULL){
     return NULL;
   }
   player_t* player = mem_malloc(sizeof(player_t));
@@ -43,6 +43,13 @@ player_new(char* name){
   }
   else{
     player->name = name;
+    //should be all 0s
+    player->visibility = NULL;
+    player->type = type;
+    // random number
+    player->purse = 0;
+    player->xPos = NULL;
+    player->yPos = NULL;
   }
 
 }
@@ -56,30 +63,33 @@ player_delete(player_t* player){
   //if(NULL !=) free the things in the player
   mem_free(player);
 }
+
+
+
 /* *********************************************************************** */
 /* getter methods - see player.h for documentation */
-char* get_visibility(player_t* player){
+char* player_getVisibility(player_t* player){
   if(player!= NULL && player->visibility != NULL){
     return player->visibility;
   }
-  return 0;
+  return NULL;
 }
 
-char* get_type(player_t* player){
+char* player_getType(player_t* player){
    if(player != NULL && player->type != NULL){
     return player->type;
   }
-  return 0;
+  return NULL;
 }
 
-int get_xPos(player_t* player){
+int player_getxPos(player_t* player){
    if(player!= NULL && player->xPos != NULL){
     return player->xPos;
   }
   return 0;
 }
 
-int get_yPos(player_t* player){
+int player_getyPos(player_t* player){
    if(player!= NULL && player->yPos != NULL){
     return player->yPos;
   }
@@ -95,6 +105,13 @@ set_visibility(player_t* player, char* visibility){
     return false;
   }
   player->visibility = visibility;
+  if(player->visibility == NULL){
+    return false;
+  }
+  else{
+    return true;
+  }
+  return false;
 
 
 }

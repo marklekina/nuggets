@@ -13,6 +13,9 @@
 #include "grid.h"
 #include "mem.h"
 #include "file.h"
+#include "player.h"
+
+
 
 /**************** file-local global variables ****************/
 /* none */
@@ -113,6 +116,18 @@ display_map(grid_t* grid)
   }
 }
 
+/**************** intialize_visibility ****************/
+/*
+ * see player.h for more information
+ */
+void intialize_visibility(grid_t* grid, player_t* player){
+  int size = strlen(grid->map);
+  char* playerVis;
+   for(int i=0; i<strlen(map); i++){
+        playerVis[i] = 0;
+    }
+    player_setVisibility(player, playerVis);
+}
 /**************** grid_visibility ****************/
 /*
  * see grid.h for more information
@@ -130,10 +145,12 @@ grid_visibility(grid_t* grid, player_t* player, int x, int y){
 
 }
 
+
 /**************** combineVisibility ****************/
 /*
  * see grid.h for more information
  */
+
 
 char* 
 combineVisibility(char* vis1, char* vis2){
