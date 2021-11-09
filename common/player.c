@@ -2,7 +2,7 @@
  * player module
  *
  * see player.h for more information.
- *git puwsh
+ *
  * Palmer's Posse, November 2021
  */
 
