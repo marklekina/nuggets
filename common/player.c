@@ -21,10 +21,10 @@
 typedef struct player {
   char* name;
   char* visibility;
-  int number;
   char* type;
   int xPos;
   int yPos;
+  int purse;
   
 } player_t;
 
@@ -33,9 +33,17 @@ typedef struct player {
  * see player.h for more information
  */
 player_t*
-player_new(char* name){
-  if (name == NULL){
+player_new(char* name, char* type){
+  if (name == NULL || type == NULL){
     return NULL;
+  }
+  if(strcmp(type, "player")==0 || strcmp(type, "spectator")==0){
+    return NULL;
+  }
+
+  if(strlen(name)>= MaxNameLength){
+    return NULL;
+
   }
   player_t* player = mem_malloc(sizeof(player_t));
   if(player == NULL){
@@ -43,6 +51,13 @@ player_new(char* name){
   }
   else{
     player->name = name;
+    player->visibility = NULL;
+    player->type = type;
+    // are we still doing a global variable for the size of the map? need to give it a limit
+    strand();
+    player->purse = 0;
+    player->xPos = rand();
+    player->yPos = rand();
   }
 
 }
@@ -53,33 +68,45 @@ player_new(char* name){
  */
 player_t*
 player_delete(player_t* player){
-  //if(NULL !=) free the things in the player
+   if (NULL != player->name) {
+    mem_free(player->name);
+  }
+  if (NULL != player->visibility) {
+    mem_free(player->visibility);
+  }
+  if (NULL != player->type) {
+    mem_free(player->type);
+  }
+  
   mem_free(player);
 }
+
+
+
 /* *********************************************************************** */
 /* getter methods - see player.h for documentation */
-char* get_visibility(player_t* player){
+char* player_getVisibility(player_t* player){
   if(player!= NULL && player->visibility != NULL){
     return player->visibility;
   }
-  return 0;
+  return NULL;
 }
 
-char* get_type(player_t* player){
+char* player_getType(player_t* player){
    if(player != NULL && player->type != NULL){
     return player->type;
   }
-  return 0;
+  return NULL;
 }
 
-int get_xPos(player_t* player){
+int player_getxPos(player_t* player){
    if(player!= NULL && player->xPos != NULL){
     return player->xPos;
   }
   return 0;
 }
 
-int get_yPos(player_t* player){
+int player_getyPos(player_t* player){
    if(player!= NULL && player->yPos != NULL){
     return player->yPos;
   }
@@ -90,11 +117,18 @@ int get_yPos(player_t* player){
  * see player.h for more information
  */
 bool
-set_visibility(player_t* player, char* visibility){
+player_setVisibility(player_t* player, char* visibility){
   if (player == NULL || visibility == NULL){
     return false;
   }
   player->visibility = visibility;
+  if(player->visibility == NULL){
+    return false;
+  }
+  else{
+    return true;
+  }
+  return false;
 
 
 }
@@ -105,7 +139,19 @@ set_visibility(player_t* player, char* visibility){
  * see player.h for more information
  */
 bool
-set_type(player_t* player, char* type){}
+player_setType(player_t* player, char* type){
+  if (player == NULL || type == NULL){
+    return false;
+  }
+  player->type = type;
+  if(player->type == NULL){
+    return false;
+  }
+  else{
+    return true;
+  }
+  return false;
+}
 
 
 
@@ -114,7 +160,19 @@ set_type(player_t* player, char* type){}
  * see player.h for more information
  */
 bool
-set_xPos(player_t* player, int xPos){}
+player_setxPos(player_t* player, int xPos){
+  if (player == NULL || xPos == NULL){
+    return false;
+  }
+  player->xPos = xPos;
+  if(player->xPos == NULL){
+    return false;
+  }
+  else{
+    return true;
+  }
+  return false;
+}
 
 
 /**************** set_yPos ****************/
@@ -122,4 +180,16 @@ set_xPos(player_t* player, int xPos){}
  * see player.h for more information
  */
 bool
-set_yPos(player_t* player, int yPos){}
+player_setyPos(player_t* player, int yPos){
+  if (player == NULL || yPos == NULL){
+    return false;
+  }
+  player->yPos = yPos;
+  if(player->yPos == NULL){
+    return false;
+  }
+  else{
+    return true;
+  }
+  return false;
+}

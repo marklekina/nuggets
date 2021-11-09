@@ -29,7 +29,6 @@ static const int GoldMinNumPiles = 10; // minimum number of gold piles
 static const intGoldMaxNumPiles = 30; // maximum number of gold piles
 
 // parameters given by handleMessage
-// maybe change to using a set for playerNames
 bool handlePlay(game_t* game, char** playerNames, char* playerName, int currentNumPlayers, addr_t to){
     // takes in a string message starting with "PLAY"
 	// ensure max number of players has not been reached
@@ -41,6 +40,7 @@ bool handlePlay(game_t* game, char** playerNames, char* playerName, int currentN
 		message_send(to, "QUIT Sorry - you must provide player's name.");
 		return false;
 	}
+
 	int count = 0;
 	for(int i = 0; i<MaxNameLength; i++){
 		count ++;
