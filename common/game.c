@@ -15,10 +15,15 @@
 #include "file.h"
 
 /**************** file-local global variables ****************/
-/* none */
+//copy in variables
 
 /**************** global types ****************/
 typedef struct game {
+  grid; (turns map into grid)
+  int spectatorNUM;
+  player_t* spectator;
+  map; (file)
+  player_t [maxnumber] players; 
   
   
 } game_t;
@@ -27,15 +32,22 @@ typedef struct game {
 /*
  * see game.h for more information
  */
+
 game_t*
-game_new(){
+game_new(map){
   if (name == NULL || type == NULL){
     return NULL;
   }
   game_t* game = mem_malloc(sizeof(game_t));
+
+  if(loadMap){
+    edit load map
+    game->grid = map; 
+  }
   if(player == NULL){
     return NULL;
   }
+  spect = 0;
   else{
     
   }
@@ -52,3 +64,12 @@ game_delete(game_t* game){
   mem_free(game);
 }
 
+removeSpectator()
+
+spectarAdd(game, player){
+  if spect != 1
+  set to 1 
+  if not 
+  call remove spectator 
+
+}
