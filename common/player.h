@@ -34,28 +34,28 @@ player_delete(player_t* player);
  * see player.h for more information
  */
 char*
-get_visibility(player_t* player);
+player_getVisibility(player_t* player);
 
 /**************** get_type ****************/
 /*
  * see player.h for more information
  */
 char*
-get_type(player_t* player);
+player_getType(player_t* player);
 
 /**************** get_xPos ****************/
 /*
  * see player.h for more information
  */
 int
-get_xPos(player_t* player);
+player_getxPos(player_t* player);
 
 /**************** get_yPos ****************/
 /*
  * see player.h for more information
  */
 int
-get_yPos(player_t* player);
+player_getyPos(player_t* player);
 
 /**************** set_visibility ****************/
 /*
@@ -63,7 +63,7 @@ get_yPos(player_t* player);
  */
 
 bool
-set_visibility(player_t* player, char* visibility);
+player_setVisibility(player_t* player, char* visibility);
 
 
 
@@ -72,7 +72,7 @@ set_visibility(player_t* player, char* visibility);
  * see player.h for more information
  */
 bool
-set_type(player_t* player, char* type);
+player_setType(player_t* player, char* type);
 
 
 
@@ -81,7 +81,7 @@ set_type(player_t* player, char* type);
  * see player.h for more information
  */
 bool
-set_xPos(player_t* player, int xPos);
+player_setxPos(player_t* player, int xPos);
 
 
 
@@ -90,4 +90,4 @@ set_xPos(player_t* player, int xPos);
  * see player.h for more information
  */
 bool
-set_yPos(player_t* player, int yPos);
+player_setyPos(player_t* player, int yPos);
