@@ -43,13 +43,13 @@ player_new(char* name, char* type){
   }
   else{
     player->name = name;
-    //should be all 0s
     player->visibility = NULL;
     player->type = type;
-    // random number
+    // are we still doing a global variable for the size of the map? need to give it a limit
+    strand();
     player->purse = 0;
-    player->xPos = NULL;
-    player->yPos = NULL;
+    player->xPos = rand();
+    player->yPos = rand();
   }
 
 }
@@ -100,7 +100,7 @@ int player_getyPos(player_t* player){
  * see player.h for more information
  */
 bool
-set_visibility(player_t* player, char* visibility){
+player_setVisibility(player_t* player, char* visibility){
   if (player == NULL || visibility == NULL){
     return false;
   }
@@ -122,7 +122,19 @@ set_visibility(player_t* player, char* visibility){
  * see player.h for more information
  */
 bool
-set_type(player_t* player, char* type){}
+player_setType(player_t* player, char* type){
+  if (player == NULL || type == NULL){
+    return false;
+  }
+  player->type = type;
+  if(player->type == NULL){
+    return false;
+  }
+  else{
+    return true;
+  }
+  return false;
+}
 
 
 
@@ -131,7 +143,19 @@ set_type(player_t* player, char* type){}
  * see player.h for more information
  */
 bool
-set_xPos(player_t* player, int xPos){}
+player_setxPos(player_t* player, int xPos){
+  if (player == NULL || xPos == NULL){
+    return false;
+  }
+  player->xPos = xPos;
+  if(player->xPos == NULL){
+    return false;
+  }
+  else{
+    return true;
+  }
+  return false;
+}
 
 
 /**************** set_yPos ****************/
@@ -139,4 +163,16 @@ set_xPos(player_t* player, int xPos){}
  * see player.h for more information
  */
 bool
-set_yPos(player_t* player, int yPos){}
+player_setyPos(player_t* player, int yPos){
+  if (player == NULL || yPos == NULL){
+    return false;
+  }
+  player->yPos = yPos;
+  if(player->yPos == NULL){
+    return false;
+  }
+  else{
+    return true;
+  }
+  return false;
+}
