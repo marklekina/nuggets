@@ -27,7 +27,7 @@ static const int GoldMinNumPiles = 10; // minimum number of gold piles
 static const intGoldMaxNumPiles = 30; // maximum number of gold piles
 
 // parameters given by handleMessage
-bool handlePlay(game_t game, char** playerNames, char* playerName, int currentNumPlayers, addr_t to){
+bool handlePlay(game_t* game, char** playerNames, char* playerName, int currentNumPlayers, addr_t to){
     // takes in a string message starting with "PLAY"
 	// ensure max number of players has not been reached
 	if(currentNumPlayers >= MaxPlayers){
