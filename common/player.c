@@ -37,6 +37,14 @@ player_new(char* name, char* type){
   if (name == NULL || type == NULL){
     return NULL;
   }
+  if(strcmp(type, "player")==0 || strcmp(type, "spectator")==0){
+    return NULL;
+  }
+
+  if(strlen(name)>= MaxNameLength){
+    return NULL;
+
+  }
   player_t* player = mem_malloc(sizeof(player_t));
   if(player == NULL){
     return NULL;
@@ -60,7 +68,16 @@ player_new(char* name, char* type){
  */
 player_t*
 player_delete(player_t* player){
-  //if(NULL !=) free the things in the player
+   if (NULL != player->name) {
+    mem_free(player->name);
+  }
+  if (NULL != player->visibility) {
+    mem_free(player->visibility);
+  }
+  if (NULL != player->type) {
+    mem_free(player->type);
+  }
+  
   mem_free(player);
 }
 

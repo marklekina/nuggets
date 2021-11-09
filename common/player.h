@@ -1,5 +1,5 @@
 /* 
- * player.h - header file for grid module
+ * player.h - header file for player module
  *
  */
 
