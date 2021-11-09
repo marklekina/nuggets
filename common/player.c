@@ -2,7 +2,7 @@
  * player module
  *
  * see player.h for more information.
- *
+ *git puwsh
  * Palmer's Posse, November 2021
  */
 
@@ -20,7 +20,7 @@
 /**************** global types ****************/
 typedef struct player {
   char* name;
-  char* visibility
+  char* visibility;
   int number;
   char* type;
   int xPos;

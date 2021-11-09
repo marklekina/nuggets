@@ -13,12 +13,14 @@
 #include "grid.h"
 #include "mem.h"
 
-int handlePlay(char* playMessage);
-int handleSpectator(char* spectateMessage);
-int handleKey(char* keyMessage);
-int sendGrid(char* gridMessage, int nrows, int ncols);
-int sendDisplay(char* displayMessage, char* map);
-int sendGold(char* goldMessage, int numNuggets, int purse, int remaining);
+bool handlePlay(game_t game, char** playerNames, char* playerName, int currentNumPlayers, addr_t to);
+bool handleSpectator(game_t* game, addr_t to);
+bool handleKey(char key, addr_t to, player_t* player, game_t* game);
+
+bool sendGrid(grid_t* grid);
+bool sendGold(player_t* player);
+bool sendDisplay(char* map);
+
 
 static const int MaxNameLength = 50;   // max number of chars in playerName
 static const int MaxPlayers = 26;      // maximum number of players
@@ -27,7 +29,8 @@ static const int GoldMinNumPiles = 10; // minimum number of gold piles
 static const intGoldMaxNumPiles = 30; // maximum number of gold piles
 
 // parameters given by handleMessage
-bool handlePlay(game_t game, char** playerNames, char* playerName, int currentNumPlayers, addr_t to){
+// maybe change to using a set for playerNames
+bool handleP){
     // takes in a string message starting with "PLAY"
 	// ensure max number of players has not been reached
 	if(currentNumPlayers >= MaxPlayers){
@@ -66,18 +69,18 @@ bool handleSpectator(game_t* game, addr_t to){
 	// takes in a string message starting with "SPECTATE"
 	// ensure there isn't already a spectator
 	// clean out the old spectator
-	if(game->spectator != NULL){
+	if(game->spectator == 1){
 		message_send(to, "QUIT sorry spectator, your spot was taken.");
-		game->spectator == NULL;
+		game->spectator = 0;
 	}
-	// store a current spectator
-	game->spectator == 1;
 
 	// set up the new spectator
 	// initialize modules to begin game spectating
 	if(sendGrid(game->grid)){
 		if(sendGold(player)){
 			if(sendDisplay(game->map)){
+				// store a current spectator
+				game->spectator = 1;
 				return true;
 			}
 		}
@@ -185,6 +188,6 @@ bool sendGold(player_t* player){
 bool sendDisplay(char* map){
 	// retrieve the text version of the map and send it to client in a message
 	if(map!= NULL){
-		message_send(to, "DISPLAT\n %s", map);	
+		message_send(to, "DISPLAY\n %s", map);	
 	}
 }
