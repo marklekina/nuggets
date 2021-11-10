@@ -19,13 +19,11 @@
 
 /**************** global types ****************/
 typedef struct game {
-  grid; (turns map into grid)
-  int spectatorNUM;
-  player_t* spectator;
-  map; (file)
-  player_t [maxnumber] players; 
-  
-  
+  grid_t* grid; // (turns map into string)
+  int spectatorNUM;
+  player_t* spectator;
+  char* map; // (txt file)
+  player_t* [maxnumber] players; 
 } game_t;
 
 /**************** game_new ****************/
@@ -64,12 +62,25 @@ game_delete(game_t* game){
   mem_free(game);
 }
 
-removeSpectator()
+void removeSpectator(){
+  delete_player(spectator);
+}
 
-spectarAdd(game, player){
-  if spect != 1
-  set to 1 
-  if not 
-  call remove spectator 
+bool
+spectatorAdd(game_t* game, player_t* player){
+  if(strcmp(player, "spectator")==1){
+    return false
+  }
+  if(game->spectatorNum){}
+  if (spectatorNUM!= 1){
+    spectator = player;
+    spectatorNUM = 1;
+    return true
+  }
+  else{
+    removeSpectator;
+    spectator = player;
+    return true;
+  }
 
 }
