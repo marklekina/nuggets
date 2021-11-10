@@ -31,11 +31,26 @@ void grid_delete(grid_t* grid);
  */
 bool load_map(grid_t* grid, FILE* fp);
 
+
+/**************** grid_setMap ****************/
+/*
+ * see grid.h for more information
+ */
+bool grid_setMap(char* map);
+
 /**************** display_map ****************/
 /*
  * see grid.h for more information
  */
+
 void display_map(grid_t* grid);
+
+
+/**************** intialize_visibility ****************/
+/*
+ * see player.h for more information
+ */
+void intialize_visibility(grid_t* grid, player_t* player);
 
 /**************** grid_visibility ****************/
 /*
@@ -55,3 +70,14 @@ char* combineVisibility(char* vis1, char* vis2);
 * see grid.h for more information
 */
 char* updateVisibility(grid_t* grid, int row, int col);
+
+/**************** rid_getnRows ****************/
+/*
+* see grid.h for more information
+*/
+int rid_getnRows(grid_t* grid);
+/**************** rid_getnCols ****************/
+/*
+* see grid.h for more information
+*/
+int rid_getnCols(grid_t* grid);

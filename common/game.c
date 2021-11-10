@@ -23,6 +23,8 @@ typedef struct game {
   player_t* spectator;
   FILE* map; // (txt file)
   player_t* [maxnumber] players; 
+  int location;
+  int seed;
 } game_t;
 
 /**************** game_new ****************/
@@ -38,13 +40,15 @@ game_new(FILE* map){
   game_t* game = mem_malloc(sizeof(game_t));
 //POTENTIALLY FIX THIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   game->map = map;
-  if(!load_map(map)){
+  grid_t* grid = grid_new(nrows, ncols);
+  if(!load_map(grid, map)){
     return NULL;
   }
   else{
-    game->grid = map; 
+    game->grid = grid; 
     game->spectator = NULL;
     game->players = NULL;
+    game->location = 0;
 
   }
   return game;
@@ -60,19 +64,26 @@ game_delete(game_t* game){
     player_delete(game->spectator);
   }
   if (NULL != game->players) {
-    for(int i = 0; i<MaxPlayers; i++){
+    for(int i = 0; i<location; i++){
       player_delete(game->players[i]);
     }
   }
   mem_free(game);
 }
-
+/**************** removeSpectator ****************/
+/* 
+ * comments
+ */
 void removeSpectator(game_t* game){
   //send message???
   delete_player(game->spectator);
 
 }
 
+/**************** spectatorAdd ****************/
+/* 
+ * comments
+ */
 bool
 spectatorAdd(game_t* game, player_t* player){
   if(strcmp(player, "spectator")==1){
@@ -90,33 +101,32 @@ spectatorAdd(game_t* game, player_t* player){
 
 }
 
-bool
-addPlayer(game_t* game, char* name, char* type){
-  
+/**************** game_addPlayer ****************/
+/* 
+ * comments
+ */
+player_t*
+game_addPlayer(game_t* game, char* name, char* type){
+  if (name == NULL || type == NULL){
+    return NULL;
+  }
+  player_t* player = player_new(name, type);
+  game->players[location] = player; 
+  game->location += 1;
+  return player;
 }
 	
-
-///getters and setters
-// add player(game and player) 
-// gold distribution
-//variables for gold gold-player just picked up 
-//total gold left 
-//update game, variables 
-
-updategame(){}
 player_t* get__Player(game_t* game, player_t* player){
 
   if (game == NULL || player == NULL) {
     return NULL;             
   } else {
     int i = 0;
-    while(i<=MaxPlayers && i != NULL){
+    for(int i = 0; i<location; i++){
         if(strcmp(player_getName(game->players[i]), player_getName(player)==0){
-          return game ->players[i];
+          return game->players[i];
         }
-        i+=1;
-
-      }
+    }
     }
   return NULL;
 }

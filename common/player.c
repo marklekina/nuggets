@@ -24,6 +24,7 @@ typedef struct player {
   char* type;
   int xPos;
   int yPos;
+  addr_t to;
   int purse;
   
 } player_t;
@@ -34,8 +35,11 @@ typedef struct player {
  */
 player_t*
 player_new(char* name, char* type, game_t* game){
-  if (name == NULL || type == NULL){
+  if (type == NULL){
     return NULL;
+  }
+  if(name == NULL){
+    name = " ";
   }
   if(strcmp(type, "player")==1 || strcmp(type, "spectator")==1){
     return NULL;
@@ -59,12 +63,11 @@ player_new(char* name, char* type, game_t* game){
     // are we still doing a global variable for the size of the map? need to give it a limit
     grid_t* grid = game_getGrid(game);
     char* map = grid->map;
-    int length = strlen(map);
-    strand(map);
+    // if people pass in seed and then use random number from docID
     grid_delete(grid);
     player->purse = 0;
-    player->xPos = rand();
-    player->yPos = rand();
+    player->xPos = rand() % grid_getnRows(grid);
+    player->yPos = rand() % grid_getnCols(grid);
   }
 
 }
@@ -124,6 +127,13 @@ int player_getyPos(player_t* player){
     return player->yPos;
   }
   return 0;
+}
+addr_t player_getTo(player_t* player){
+  if(player!= NULL && player->to != NULL){
+    return player->to;
+  }
+  return NULL;
+
 }
 /**************** set_visibility ****************/
 /*
