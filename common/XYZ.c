@@ -24,7 +24,7 @@ static const int MaxNameLength = 50;   // max number of chars in playerName
 static const int MaxPlayers = 26;      // maximum number of players
 static const int GoldTotal = 250;      // amount of gold in the game
 static const int GoldMinNumPiles = 10; // minimum number of gold piles
-static const intGoldMaxNumPiles = 30; // maximum number of gold piles
+static const int GoldMaxNumPiles = 30; // maximum number of gold piles
 
 // parameters given by handleMessage
 bool handlePlay(game_t* game, char** playerNames, char* playerName, int currentNumPlayers, addr_t to){
@@ -47,9 +47,9 @@ bool handlePlay(game_t* game, char** playerNames, char* playerName, int currentN
 	}
 
 	playerNames[currentNumPlayers] = playerName;
-	char playerLetter = 'a' + currentNumPlayers;
+	char playerLetter = 'a' + currentNumPlayers; // account for maximum number of players ('a' + 26)
 	message_send(to, "OK %c", playerLetter);
-	currentNumPlayers ++;
+	currentNumPlayers ++; // maybe this variable should be referenced by pointer, considering we're modifying it externally?
 
 	// initialize modules to begin game play
 	if(sendGrid(game->grid)){
@@ -63,7 +63,7 @@ bool handlePlay(game_t* game, char** playerNames, char* playerName, int currentN
 }
 
 bool handleSpectator(game_t* game, addr_t to){
-	// takes in a string message starting with "SPECTATE"
+	// takes in a string message starting with "SPECTATE" 
 	// ensure there isn't already a spectator
 	// clean out the old spectator
 	if(game->spectator != NULL){
@@ -185,6 +185,6 @@ bool sendGold(player_t* player){
 bool sendDisplay(char* map){
 	// retrieve the text version of the map and send it to client in a message
 	if(map!= NULL){
-		message_send(to, "DISPLAT\n %s", map);	
+		message_send(to, "DISPLAY\n %s", map);	
 	}
 }

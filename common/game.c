@@ -15,7 +15,9 @@
 #include "file.h"
 
 /**************** file-local global variables ****************/
-//copy in variables
+static const int GoldTotal = 250;      // amount of gold in the game
+static const int GoldMinNumPiles = 10; // minimum number of gold piles
+static const int GoldMaxNumPiles = 30; // maximum number of gold piles
 
 /**************** global types ****************/
 typedef struct game {
