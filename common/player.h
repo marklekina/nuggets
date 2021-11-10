@@ -16,11 +16,15 @@ typedef struct player player_t;
 /**************** functions ****************/
 
 /**************** player_new ****************/
-/*
- * see player.h for more information
+
+/* Creates a new player with the parameters
+ * We return:
+ *  creates a new player, or NULL if error.
+ * We guarentee:
+ *    
  */
 player_t*
-player_new(char* name);
+player_new(char* name, char* type, game_t* game);
 
 /**************** player_delete ****************/
 /*
@@ -29,33 +33,45 @@ player_new(char* name);
 player_t*
 player_delete(player_t* player);
 
-/**************** get_visibility ****************/
+/**************** player_getVisibility ****************/
 /*
  * see player.h for more information
  */
 char*
 player_getVisibility(player_t* player);
 
-/**************** get_type ****************/
+/**************** player_getName ****************/
+/*
+ * see player.h for more information
+ */
+char* player_getName(player_t* player);
+
+/**************** player_getType ****************/
 /*
  * see player.h for more information
  */
 char*
 player_getType(player_t* player);
 
-/**************** get_xPos ****************/
+/**************** player_getxPos ****************/
 /*
  * see player.h for more information
  */
 int
 player_getxPos(player_t* player);
 
-/**************** get_yPos ****************/
+/**************** player_getyPos ****************/
 /*
  * see player.h for more information
  */
 int
 player_getyPos(player_t* player);
+
+/**************** player_getTo ****************/
+/*
+ * see player.h for more information
+ */
+addr_t player_getTo(player_t* player);
 
 /**************** set_visibility ****************/
 /*
@@ -91,3 +107,9 @@ player_setxPos(player_t* player, int xPos);
  */
 bool
 player_setyPos(player_t* player, int yPos);
+
+/**************** addToPurse ****************/
+/*
+ * see player.h for more information
+ */
+void addToPurse(int numGold);
