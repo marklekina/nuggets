@@ -77,22 +77,21 @@ grid_delete(grid_t* grid)
 /*
  * see grid.h for more information
  */
-bool
-load_map(grid_t* grid, FILE* fp)
+char* load_map(grid_t* grid, FILE* fp)
 {
   if (grid != NULL && fp != NULL) {
     // read map from map file into a string
     char* map = file_readFile(fp);
 
     // assign map to the grid
-    // return true if successful
+    // return map if successful
     if (map != NULL) {
       grid->map = map;
-      return true;
+      return map;
     }
   }
-  // otherwise return false
-  return false;
+  // otherwise return null
+  return NULL;
 }
 
 /**************** display_map ****************/

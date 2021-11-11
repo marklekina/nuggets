@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
+#include <stdbool.h>e
 #include "player.h"
 #include "mem.h"
 #include "file.h"
@@ -25,7 +25,6 @@ typedef struct player {
   int xPos;
   int yPos;
   int purse;
-  
 } player_t;
 
 /**************** player_new ****************/

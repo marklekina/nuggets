@@ -23,9 +23,7 @@ typedef struct game {
   int spectatorNUM;
   player_t* spectator;
   map; (file)
-  player_t [maxnumber] players; 
-  
-  
+  player_t [maxnumber] players;
 } game_t;
 
 /**************** game_new ****************/

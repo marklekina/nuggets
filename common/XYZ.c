@@ -29,7 +29,7 @@ static const int GoldMinNumPiles = 10; // minimum number of gold piles
 static const intGoldMaxNumPiles = 30; // maximum number of gold piles
 
 // parameters given by handleMessage
-bool handlePlay(game_t* game, char** playerNames, char* playerName, int currentNumPlayers, addr_t to){
+bool handlePlay(game_t* game, addr_t to, char* playerName){
     // takes in a string message starting with "PLAY"
 	// ensure max number of players has not been reached
 	if(currentNumPlayers >= MaxPlayers){
@@ -48,11 +48,14 @@ bool handlePlay(game_t* game, char** playerNames, char* playerName, int currentN
 			playerName[i] = '_';
 		}
 	}
+	//use getters instead
+	player_t* newPlayer = game_addPlayer(game, playerName, "player");
 
-	playerNames[currentNumPlayers] = playerName;
-	char playerLetter = 'a' + currentNumPlayers;
+	game->players[game->location] = newPlayer;
+
+	char playerLetter = 'a' + game->location;
 	message_send(to, "OK %c", playerLetter);
-	currentNumPlayers ++;
+	(game->location)++;
 
 	// initialize modules to begin game play
 	if(sendGrid(game->grid)){
@@ -65,7 +68,9 @@ bool handlePlay(game_t* game, char** playerNames, char* playerName, int currentN
 	return true;
 }
 
-bool handleSpectator(game_t* game, addr_t to){
+bool handleSpectator(game_t* game, addr_t to, player_t* player){
+	// need to the game functions a player to delete or add
+	
 	// takes in a string message starting with "SPECTATE"
 	// ensure there isn't already a spectator
 	// clean out the old spectator
