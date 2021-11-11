@@ -92,6 +92,7 @@ bool handleSpectator(game_t* game, addr_t to, player_t* player){
 	}
 }
 
+
 bool handleKey(char key, addr_t to, player_t* player, game_t* game){
 	// takes in a char message starting with "KEY"
 	// ensure the key was one of the ones we watch for

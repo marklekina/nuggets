@@ -12,6 +12,7 @@
 #include <stdbool.h>
 #include "game.h"
 #include "player.h"
+#include "message.h"
 #include "grid.h"
 #include "visibility.c"
 #include "XYZ.c"
@@ -104,9 +105,9 @@ static void parseArgs(const int argc, char* argv[], game_t* game){
  *  message- a string message sent by the client
  * 
  */
-static char* parseMessage(addr_t to, game_t* game, char* message){
+bool parseMessage(game_t* game, const addr_t to, const char* message){
     if(message == NULL){
-        return NULL;
+        return false;
     }
 
     char* firstWord;
@@ -125,11 +126,13 @@ static char* parseMessage(addr_t to, game_t* game, char* message){
             nameCount++;
         }
         handlePlay(game, to, name);
+        return true;
     }
 
     if(strcmp(firstWord, "SPECTATE") == 0){
         player_t* spectator = game_addPlayer(game, NULL, "spectator");
         handleSpectator(gmae, to, spectator);
+        return true;
     }
 
     if(strcmp(firstWord, "KEY") == 0){
@@ -143,7 +146,8 @@ static char* parseMessage(addr_t to, game_t* game, char* message){
                 }
             }
             handleKey(key, to, player, game);
-        }        
+        }
+        return true;
     }
 
     else{
@@ -151,7 +155,7 @@ static char* parseMessage(addr_t to, game_t* game, char* message){
         player_t* random = game_addPlayer(game, NULL, "spectator");
         handleKey(4, to, player, game); // sends error message to client
         player_delete(random);
-        exit(4);
+        return false;
     }
 }
 
@@ -201,13 +205,13 @@ static void disperseGold(){
 	// populate grid with the random amount of gold
 }
 
-static void updateGame(char stroke){
-	checks if keystroke is valid
-		if so, performs function associated with that key
-		sends updated game to all players
-	else does nothing
+// static void updateGame(char stroke){
+// 	checks if keystroke is valid
+// 		if so, performs function associated with that key
+// 		sends updated game to all players
+// 	else does nothing
 
-}
+// }
 
 static void printResults(game_t* game){
     for players in the game
@@ -215,17 +219,29 @@ static void printResults(game_t* game){
     print amount of gold
 }
 
-/**************** initiateNetwork ****************/
+/**************** messageLoop ****************/
 /* Open the communication port with the client and start a message loop.
  * 
  * Given:
  *  arg- argument to start the loop
  * 
  */
-static bool initiateNetwork(void* arg){
-    initialize the server ports/communication channels
-	while there is no client
-		return false
-	otherwise recieve message and send to handle message
-		return true
+static bool initiateNetwork(){
+    int ourPort = message_init(LOG_MESSAGE); // check what LOG_MESSAGE is?
+    fprintf(stderr, "usage: %s hostname port\n", program);
+    
+    // bool ok = message_loop(to, 0, NULL, handleInput, handleMessage);
+    bool ok = message_loop(ourPort, 0, NULL, NULL, parseMessage)
+    
+    message_done();
+    return ok? 0 : 1; // status code depends on result of message_loop
+}
+
+int main(const int argc, char* argv[]){
+    if(initiateNetwork()){
+        return 0;
+    }
+    else{
+        return 2;
+    }
 }
