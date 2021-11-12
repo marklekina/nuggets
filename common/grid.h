@@ -32,7 +32,7 @@ void grid_delete(grid_t* grid);
 /* 
  * comments
  */
-bool load_map(grid_t* grid, FILE* fp);
+char* load_map(grid_t* grid, FILE* fp);
 
 
 /**************** grid_setMap ****************/
