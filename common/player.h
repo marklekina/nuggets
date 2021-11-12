@@ -9,8 +9,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "../support/message.h"
-#include "game.h"
-#include "grid.h"
+
 
 /**************** global types ****************/
 typedef struct player player_t;
@@ -26,7 +25,7 @@ typedef struct player player_t;
  *    
  */
 player_t*
-player_new(char* name, char* type, game_t* game);
+player_new(char* name, char* type);
 
 /**************** player_delete ****************/
 /*

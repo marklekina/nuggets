@@ -13,8 +13,8 @@
 #include "player.h"
 #include "mem.h"
 #include "file.h"
-#include "grid.h"
-#include "game.c"
+
+
 
 /**************** file-local global variables ****************/
 /* none */
@@ -36,7 +36,7 @@ typedef struct player {
  * see player.h for more information
  */
 player_t*
-player_new(char* name, char* type, game_t* game){
+player_new(char* name, char* type){
   if (type == NULL){
     return NULL;
   }
@@ -63,13 +63,13 @@ player_new(char* name, char* type, game_t* game){
     player->visibility = NULL;
     player->type = type;
     // are we still doing a global variable for the size of the map? need to give it a limit
-    grid_t* grid = game_getGrid(game);
-    char* map = grid->map;
-    // if people pass in seed and then use random number from docID
-    grid_delete(grid);
-    player->purse = 0;
-    player->xPos = rand() % grid_getnRows(grid);
-    player->yPos = rand() % grid_getnCols(grid);
+    // grid_t* grid = game_getGrid(game);
+    // char* map = grid->map;
+    // // if people pass in seed and then use random number from docID
+    // grid_delete(grid);
+    // player->purse = 0;
+    // player->xPos = rand() % grid_getnRows(grid);
+    // player->yPos = rand() % grid_getnCols(grid);
   }
 
 }

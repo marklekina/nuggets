@@ -14,7 +14,6 @@
 #include "mem.h"
 #include "file.h"
 #include "player.h"
-#include "game.h"
 
 
 
@@ -139,102 +138,102 @@ display_map(grid_t* grid)
 /*
  * see player.h for more information
  */
-void intialize_visibility(grid_t* grid, player_t* player){
- // int size = strlen(grid->map);
-  char* playerVis;
-   for(int i=0; i<strlen(grid->map); i++){
-        playerVis[i] = 0;
-    }
-    player_setVisibility(player, playerVis);
-}
-/**************** grid_visibility ****************/
-/*
- * see grid.h for more information
- */
+// void intialize_visibility(grid_t* grid, player_t* player){
+//  // int size = strlen(grid->map);
+//   char* playerVis;
+//    for(int i=0; i<strlen(grid->map); i++){
+//         playerVis[i] = 0;
+//     }
+//     player_setVisibility(player, playerVis);
+// }
+// /**************** grid_visibility ****************/
+// /*
+//  * see grid.h for more information
+//  */
 
-void 
-grid_visibility(grid_t* grid, player_t* player, int x, int y){
-    char* playerVisiblity = player_getVisibility(player);
-    char* newVisibility = updateVisibility(grid, x, y);
+// void 
+// grid_visibility(grid_t* grid, player_t* player, int x, int y){
+//     char* playerVisiblity = player_getVisibility(player);
+//     char* newVisibility = updateVisibility(grid, x, y);
 
-    // combine finalVis = visibility and newVisbility (use helper function)
-    playerVisiblity = combineVisibility(playerVisiblity, newVisibility);
+//     // combine finalVis = visibility and newVisbility (use helper function)
+//     playerVisiblity = combineVisibility(playerVisiblity, newVisibility);
     
-    player_setVisibility(player,  playerVisiblity);
+//     player_setVisibility(player,  playerVisiblity);
 
-}
-
-
-/**************** combineVisibility ****************/
-/*
- * see grid.h for more information
- */
+// }
 
 
-char* 
-combineVisibility(char* vis1, char* vis2){
-    if(vis1 == NULL || vis2 == NULL){
-        return NULL;
-    }
+// /**************** combineVisibility ****************/
+// /*
+//  * see grid.h for more information
+//  */
+
+
+// char* 
+// combineVisibility(char* vis1, char* vis2){
+//     if(vis1 == NULL || vis2 == NULL){
+//         return NULL;
+//     }
     
-    for(int i=0; i<strlen(vis1); i++){
-        if(vis1[i] == 0){
-            if(vis2[i] == 2){
-                vis1[i] = 2;
-            }
-        }
-        if(vis1[i] == 1){
-            if(vis2[i] == 2){
-                vis1[i] = 2;
-            }
-        }
-        if(vis1[i] == 2){
-            if(vis2[i] == 0){
-                vis1[i] = 1;
-            }
-        }
-    }
+//     for(int i=0; i<strlen(vis1); i++){
+//         if(vis1[i] == 0){
+//             if(vis2[i] == 2){
+//                 vis1[i] = 2;
+//             }
+//         }
+//         if(vis1[i] == 1){
+//             if(vis2[i] == 2){
+//                 vis1[i] = 2;
+//             }
+//         }
+//         if(vis1[i] == 2){
+//             if(vis2[i] == 0){
+//                 vis1[i] = 1;
+//             }
+//         }
+//     }
 
-    return vis1;  
-}
-/**************** updateVisibility ****************/
-/*
- * see grid.h for more information
- */
+//     return vis1;  
+// }
+// /**************** updateVisibility ****************/
+// /*
+//  * see grid.h for more information
+//  */
 
-char* 
-updateVisibility(grid_t* grid, int row, int col){
-    // make a visibility string that shows what they can see
-    char* newVisibility;
+// char* 
+// updateVisibility(grid_t* grid, int row, int col){
+//     // make a visibility string that shows what they can see
+//     char* newVisibility;
 
-    int width = grid->nrows;
-    int height = grid->ncols;
+//     int width = grid->nrows;
+//     int height = grid->ncols;
     
-    char* map = grid->map;
+//     char* map = grid->map;
 
-    for(int i=0; i<strlen(map); i++){
-        newVisibility[i] = 0;
-    }
+//     for(int i=0; i<strlen(map); i++){
+//         newVisibility[i] = 0;
+//     }
 
-    int index = 0;
+//     int index = 0;
 
-    if(row<width && row >= 0){
-        if(col< height && col>=0){
-            index = (col*height)+row;
-        }
-    }
+//     if(row<width && row >= 0){
+//         if(col< height && col>=0){
+//             index = (col*height)+row;
+//         }
+//     }
 
-    // geometry
-     newVisibility[index] = 2;
+//     // geometry
+//      newVisibility[index] = 2;
 
-    // we will change!!!!
-    for(int i=0; i<strlen(map); i++){
-        newVisibility[i] = 2;
-    }
+//     // we will change!!!!
+//     for(int i=0; i<strlen(map); i++){
+//         newVisibility[i] = 2;
+//     }
     
-    // return that string
-    return newVisibility;
-}
+//     // return that string
+//     return newVisibility;
+// }
 
 int grid_getnRows(grid_t* grid){
   if(grid!= NULL && &grid->nrows != NULL){
