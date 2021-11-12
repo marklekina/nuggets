@@ -14,6 +14,8 @@
 #include "mem.h"
 #include "file.h"
 #include "player.h"
+#include "game.h"
+
 
 
 
@@ -95,6 +97,23 @@ load_map(grid_t* grid, FILE* fp)
   return false;
 }
 
+/**************** grid_setMap ****************/
+/*
+ * see grid.h for more information
+ */
+bool grid_setMap(grid_t* grid, char* map){
+  if (map == NULL ){
+    return false;
+  }
+  grid->map = map;
+  if(grid->map == NULL){
+    return false;
+  }
+  else{
+    return true;
+  }
+  return false;
+}
 /**************** display_map ****************/
 /*
  * see grid.h for more information
@@ -106,7 +125,7 @@ display_map(grid_t* grid)
     // loop through all rows
     for(int i = 0; i < grid->nrows; i++) {
       // loop through all columns
-      for (int j = 0; j < grid->ncolumns; j++) {
+      for (int j = 0; j < grid->ncols; j++) {
         // compute character's position
         int charPos = (i+1) * (j+1) - 1;
         // print character
@@ -121,7 +140,7 @@ display_map(grid_t* grid)
  * see player.h for more information
  */
 void intialize_visibility(grid_t* grid, player_t* player){
-  int size = strlen(grid->map);
+ // int size = strlen(grid->map);
   char* playerVis;
    for(int i=0; i<strlen(map); i++){
         playerVis[i] = 0;
@@ -135,13 +154,13 @@ void intialize_visibility(grid_t* grid, player_t* player){
 
 void 
 grid_visibility(grid_t* grid, player_t* player, int x, int y){
-    char* playerVisiblity = get_visibility(player);
+    char* playerVisiblity = player_getVisibility(player);
     char* newVisibility = updateVisibility(grid, x, y);
 
     // combine finalVis = visibility and newVisbility (use helper function)
     playerVisiblity = combineVisibility(playerVisiblity, newVisibility);
     
-    set_visiblity(player, playerVisibility); 
+    set_visiblity(player,  playerVisiblity); 
 
 }
 
@@ -215,5 +234,19 @@ updateVisibility(grid_t* grid, int row, int col){
     
     // return that string
     return newVisibility;
+}
+
+int rid_getnRows(grid_t* grid){
+  if(grid!= NULL && grid->nrows != NULL){
+      return grid->nrows;
+    }
+    return NULL;
+}
+int rid_getnCols(grid_t* grid){
+  if(grid!= NULL && grid->ncols != NULL){
+      return grid->ncols;
+    }
+    return NULL;
+  
 }
 
