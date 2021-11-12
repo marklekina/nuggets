@@ -220,9 +220,14 @@ static bool load_grid(game_t* game, nrows, ncols){
 // }
 
 static void printResults(game_t* game){
-    for players in the game
-    print name
-    print amount of gold
+    for(int i =0; i<=game->location; i++){
+        player_t* player = game_getPlayer(game, game->players[i]);
+        char* name = player_getName(player);
+        printf("%s", name);
+        int purse = player->purse;
+        printf("%d", purse);
+    }
+    
 }
 
 /**************** messageLoop ****************/
