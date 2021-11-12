@@ -13,6 +13,8 @@
 #include "player.h"
 #include "mem.h"
 #include "file.h"
+#include "grid.h"
+#include "game.c"
 
 /**************** file-local global variables ****************/
 /* none */

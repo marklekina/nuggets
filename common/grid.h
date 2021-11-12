@@ -3,11 +3,14 @@
  *
  */
 
-#ifndef _GRID_H
+
+#ifndef __GRID_H
 #define __GRID_H
 
 #include <stdio.h>
 #include <stdbool.h>
+#include "player.h"
+
 /**************** global types ****************/
 typedef struct grid grid_t;  // opaque to users of the module
 
@@ -36,7 +39,7 @@ bool load_map(grid_t* grid, FILE* fp);
 /*
  * see grid.h for more information
  */
-bool grid_setMap(char* map);
+bool grid_setMap(grid_t* grid, char* map);
 
 /**************** display_map ****************/
 /*
@@ -81,3 +84,5 @@ int rid_getnRows(grid_t* grid);
 * see grid.h for more information
 */
 int rid_getnCols(grid_t* grid);
+
+#endif

@@ -3,11 +3,16 @@
  *
  */
 
-#ifndef _GAME_H
+#ifndef __GAME_H
 #define __GAME_H
 
 #include <stdio.h>
 #include <stdbool.h>
+#include "player.h"
+#include "player.c"
+#include "grid.h"
+
+
 /**************** global types ****************/
 typedef struct game game_t;  // opaque to users of the module
 
@@ -48,3 +53,5 @@ spectatorAdd(game_t* game, player_t* player);
  */
 player_t*
 game_addPlayer(game_t* game, char* name, char* type);
+
+#endif

@@ -10,7 +10,7 @@ CFLAGS = -Wall -pedantic -std=c11 -ggdb -I$L -I$C
 OBJS = grid.o player.o game.o XYZ.o
 LIB = common.a
 
-grid.o: grid.h $L/file.h $L/mem.h
+grid.o: grid.h $L/file.h $L/mem.h 
 player.o: player.h $L/file.h $L/mem.h
 game.o: game.h
 

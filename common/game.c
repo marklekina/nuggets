@@ -12,7 +12,9 @@
 #include <stdbool.h>
 #include "game.h"
 #include "mem.h"
+#include "player.h"
 #include "file.h"
+#include "grid.h"
 
 /**************** file-local global variables ****************/
 static const int GoldTotal = 250;      // amount of gold in the game
@@ -118,7 +120,7 @@ game_addPlayer(game_t* game, char* name, char* type){
   return player;
 }
 	
-player_t* get__Player(game_t* game, player_t* player){
+player_t* get_Player(game_t* game, player_t* player){
 
   if (game == NULL || player == NULL) {
     return NULL;             

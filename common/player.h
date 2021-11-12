@@ -3,12 +3,14 @@
  *
  */
 
-#ifndef _PLAYER_H
+#ifndef __PLAYER_H
 #define __PLAYER_H
 
 #include <stdio.h>
 #include <stdbool.h>
-
+#include "../support/message.h"
+#include "game.h"
+#include "grid.h"
 
 /**************** global types ****************/
 typedef struct player player_t;
@@ -113,3 +115,5 @@ player_setyPos(player_t* player, int yPos);
  * see player.h for more information
  */
 void addToPurse(int numGold);
+
+#endif

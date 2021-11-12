@@ -142,7 +142,7 @@ display_map(grid_t* grid)
 void intialize_visibility(grid_t* grid, player_t* player){
  // int size = strlen(grid->map);
   char* playerVis;
-   for(int i=0; i<strlen(map); i++){
+   for(int i=0; i<strlen(grid->map); i++){
         playerVis[i] = 0;
     }
     player_setVisibility(player, playerVis);
@@ -160,7 +160,7 @@ grid_visibility(grid_t* grid, player_t* player, int x, int y){
     // combine finalVis = visibility and newVisbility (use helper function)
     playerVisiblity = combineVisibility(playerVisiblity, newVisibility);
     
-    set_visiblity(player,  playerVisiblity); 
+    player_setVisibility(player,  playerVisiblity);
 
 }
 
@@ -216,7 +216,7 @@ updateVisibility(grid_t* grid, int row, int col){
         newVisibility[i] = 0;
     }
 
-    int index;
+    int index = 0;
 
     if(row<width && row >= 0){
         if(col< height && col>=0){
@@ -225,7 +225,7 @@ updateVisibility(grid_t* grid, int row, int col){
     }
 
     // geometry
-    // newVisibility[index] = 2;
+     newVisibility[index] = 2;
 
     // we will change!!!!
     for(int i=0; i<strlen(map); i++){
@@ -236,17 +236,17 @@ updateVisibility(grid_t* grid, int row, int col){
     return newVisibility;
 }
 
-int rid_getnRows(grid_t* grid){
-  if(grid!= NULL && grid->nrows != NULL){
+int grid_getnRows(grid_t* grid){
+  if(grid!= NULL && &grid->nrows != NULL){
       return grid->nrows;
     }
-    return NULL;
+    return 0;
 }
-int rid_getnCols(grid_t* grid){
-  if(grid!= NULL && grid->ncols != NULL){
+int grid_getnCols(grid_t* grid){
+  if(grid!= NULL && &grid->ncols != NULL){
       return grid->ncols;
     }
-    return NULL;
+    return 0;
   
 }
 
