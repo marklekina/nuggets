@@ -1,7 +1,7 @@
 /* 
- * server module
+ * Server module
  *
- * A module
+ * A module to set up the Nuggets game. Mainly a wrapper for XYZ.c, grid.c, player.c, visibility.c
  *
  * Palmer's Posse, November 2021
  */
@@ -19,10 +19,13 @@
 #include "mem.h"
 #include "file.h"
 
-static void parseArgs(const int argc, char* argv[]);
-static char* parseMessage(char* message);
-static bool initiateNetwork(void* arg);
-static bool handleMessage(void* arg, const addr_t from, const char* message);
+static void parseArgs(const int argc, char* argv[], game_t* game);
+bool parseMessage(game_t* game, const addr_t to, const char* message);
+static player_t* findPlayer(game_t* game, addr_t to);
+static bool load_grid(game_t* game, nrows, ncols);
+static void disperseGold();
+
+static bool initiateNetwork();
 static char* loadMap(char* filename);
 static void disperseGold();
 static void updateGame(char stroke);
@@ -57,7 +60,10 @@ static void parseArgs(const int argc, char* argv[], game_t* game){
             exit(1);
         }
         fclose(fp);
-        
+
+        // check that this works and flows!
+        game = game_new(map);
+
         FILE* map = argv[1];
         game->map = map;
 
@@ -195,15 +201,15 @@ static bool load_grid(game_t* game, nrows, ncols){
     return false;
 }
 
-/**************** loadMap ****************/
-/* MARK?!?!?
- * 
- * 
- */
-static void disperseGold(){
-	// pick random number between minGold and maxGold
-	// populate grid with the random amount of gold
-}
+// /**************** loadMap ****************/
+// /* LEKINA?!?!?
+//  * 
+//  * 
+//  */
+// static void disperseGold(){
+// 	// pick random number between minGold and maxGold
+// 	// populate grid with the random amount of gold
+// }
 
 // static void updateGame(char stroke){
 // 	checks if keystroke is valid
@@ -228,7 +234,7 @@ static void printResults(game_t* game){
  */
 static bool initiateNetwork(){
     int ourPort = message_init(LOG_MESSAGE); // check what LOG_MESSAGE is?
-    fprintf(stderr, "usage: %s hostname port\n", program);
+    fprintf(stderr, "port: %s\n", ourPort);
     
     // bool ok = message_loop(to, 0, NULL, handleInput, handleMessage);
     bool ok = message_loop(ourPort, 0, NULL, NULL, parseMessage)
@@ -238,6 +244,9 @@ static bool initiateNetwork(){
 }
 
 int main(const int argc, char* argv[]){
+    game_t* game;
+    parseArgs(argc, argv, game);
+    // might need to pass the LOG_MESSAGE into initiate network
     if(initiateNetwork()){
         return 0;
     }
