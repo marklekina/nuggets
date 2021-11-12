@@ -31,7 +31,7 @@ player_new(char* name, char* type);
 /*
  * see player.h for more information
  */
-player_t*
+void
 player_delete(player_t* player);
 
 /**************** player_getVisibility ****************/
@@ -68,11 +68,7 @@ player_getxPos(player_t* player);
 int
 player_getyPos(player_t* player);
 
-/**************** player_getTo ****************/
-/*
- * see player.h for more information
- */
-addr_t player_getTo(player_t* player);
+
 
 /**************** set_visibility ****************/
 /*
@@ -113,6 +109,6 @@ player_setyPos(player_t* player, int yPos);
 /*
  * see player.h for more information
  */
-void addToPurse(int numGold);
+void addToPurse(player_t* player, int numGold, int GoldTotal);
 
 #endif

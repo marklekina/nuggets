@@ -16,17 +16,13 @@
 #include "file.h"
 #include "grid.h"
 
-/**************** file-local global variables ****************/
-static const int GoldTotal = 250;      // amount of gold in the game
-static const int GoldMinNumPiles = 10; // minimum number of gold piles
-static const int GoldMaxNumPiles = 30; // maximum number of gold piles
 
 /**************** global types ****************/
 typedef struct game {
-  grid_t* grid; // (turns map into string)
-  player_t* spectator;
+  grid_t* grid; // (turns map into string)
+  player_t* spectator;
   FILE* map; // (txt file)
-  player_t* [maxnumber] players; 
+  player_t* players[26]; 
   int location;
   int seed;
 } game_t;
@@ -37,7 +33,7 @@ typedef struct game {
  */
 
 game_t*
-game_new(FILE* map){
+game_new(FILE* map, int nrows, int ncols){
   if (map == NULL ){
     return NULL;
   }
@@ -51,7 +47,7 @@ game_new(FILE* map){
   else{
     game->grid = grid; 
     game->spectator = NULL;
-    game->players = NULL;
+    // game->players = NULL;
     game->location = 0;
 
   }
@@ -62,25 +58,25 @@ game_new(FILE* map){
 /*
  * see game.h for more information
  */
-game_t*
-game_delete(game_t* game){
+void game_delete(game_t* game){
    if (NULL != game->spectator) {
     player_delete(game->spectator);
   }
   if (NULL != game->players) {
-    for(int i = 0; i<location; i++){
+    for(int i = 0; i<game->location; i++){
       player_delete(game->players[i]);
     }
   }
   mem_free(game);
 }
+
 /**************** removeSpectator ****************/
 /* 
  * comments
  */
 void removeSpectator(game_t* game){
   //send message???
-  delete_player(game->spectator);
+  player_delete(game->spectator);
 
 }
 
@@ -90,12 +86,12 @@ void removeSpectator(game_t* game){
  */
 bool
 spectatorAdd(game_t* game, player_t* player){
-  if(strcmp(player, "spectator")==1){
-    return false
+  if(strcmp(player->type, "spectator")==1){
+    return false;
   }
   if (game->spectator == NULL){
     game->spectator = player;
-    return true
+    return true;
   }
   else{
     removeSpectator(game);
@@ -109,45 +105,54 @@ spectatorAdd(game_t* game, player_t* player){
 /* 
  * comments
  */
-player_t*
+bool
 game_addPlayer(game_t* game, char* name, char* type){
   if (name == NULL || type == NULL){
-    return NULL;
+    return false;
   }
   player_t* player = player_new(name, type);
-  game->players[location] = player; 
+  game->players[game->location] = player; 
   game->location += 1;
-  return player;
+  return true;
+}
+
+int get_location(game_t* game){
+   if(game!= NULL){
+    return game->location;
+  }
+  return 0;
 }
 	
 player_t* get_Player(game_t* game, player_t* player){
 
   if (game == NULL || player == NULL) {
     return NULL;             
-  } else {
-    int i = 0;
-    for(int i = 0; i<location; i++){
-        if(strcmp(player_getName(game->players[i]), player_getName(player)==0){
+  } 
+  else {
+    for(int i = 0; i<game->location; i++){
+        if(strcmp(player_getName(game->players[i]), player_getName(player))==0){
           return game->players[i];
         }
     }
     }
   return NULL;
 }
-char* game_getMap(game_t* game){
+
+FILE* game_getMap(game_t* game){
   if(game!= NULL && game->map != NULL){
     return game->map;
   }
   return NULL;
 }
-char* game_getGrid(game_t* game){
+
+grid_t* game_getGrid(game_t* game){
   if(game!= NULL && game->grid != NULL){
     return game->grid;
   }
   return NULL;
 }
 
-char* game_getSpectator(game_t* game){
+player_t* game_getSpectator(game_t* game){
   if(game!= NULL && game->spectator != NULL){
     return game->spectator;
   }

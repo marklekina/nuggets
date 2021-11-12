@@ -13,6 +13,7 @@
 #include "game.h"
 #include "player.h"
 #include "grid.h"
+#include "message.h"
 #include "visibility.c"
 #include "XYZ.c"
 #include "mem.h"

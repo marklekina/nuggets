@@ -10,9 +10,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <ctype.h>
 #include "player.h"
 #include "mem.h"
-#include "message.h"
+#include "../support/message.h"
 #include "file.h"
 
 
@@ -37,6 +38,7 @@ typedef struct player {
  */
 player_t*
 player_new(char* name, char* type){
+  int MaxNameLength = 50;
   if (type == NULL){
     return NULL;
   }
@@ -46,6 +48,7 @@ player_new(char* name, char* type){
   if(strcmp(type, "player")==1 || strcmp(type, "spectator")==1){
     return NULL;
   }
+  player_t* player = mem_malloc(sizeof(player_t));
 
 	int count = 0;
 	for(int i = 0; i<MaxNameLength; i++){
@@ -54,7 +57,7 @@ player_new(char* name, char* type){
 			player->name[i] = '_';
 		}
 
-  player_t* player = mem_malloc(sizeof(player_t));
+  
   if(player == NULL){
     return NULL;
   }
@@ -72,14 +75,15 @@ player_new(char* name, char* type){
     // player->yPos = rand() % grid_getnCols(grid);
   }
 
+  }
+  return player;
 }
 
 /**************** player_delete ****************/
 /*
  * see player.h for more information
  */
-player_t*
-player_delete(player_t* player){
+void player_delete(player_t* player){
    if (NULL != player->name) {
     mem_free(player->name);
   }
@@ -103,7 +107,9 @@ char* player_getVisibility(player_t* player){
   }
   return NULL;
 
-}char* player_getName(player_t* player){
+}
+
+char* player_getName(player_t* player){
   if(player!= NULL && player->name != NULL){
     return player->name;
   }
@@ -118,25 +124,20 @@ char* player_getType(player_t* player){
 }
 
 int player_getxPos(player_t* player){
-   if(player!= NULL && player->xPos != NULL){
+   if(player!= NULL && &player->xPos != NULL){
     return player->xPos;
   }
   return 0;
 }
 
 int player_getyPos(player_t* player){
-   if(player!= NULL && player->yPos != NULL){
+   if(player!= NULL && &player->yPos != NULL){
     return player->yPos;
   }
   return 0;
 }
-addr_t player_getTo(player_t* player){
-  if(player!= NULL && player->to != NULL){
-    return player->to;
-  }
-  return NULL;
 
-}
+
 /**************** set_visibility ****************/
 /*
  * see player.h for more information
@@ -186,11 +187,11 @@ player_setType(player_t* player, char* type){
  */
 bool
 player_setxPos(player_t* player, int xPos){
-  if (player == NULL || xPos == NULL){
+  if (player == NULL){
     return false;
   }
   player->xPos = xPos;
-  if(player->xPos == NULL){
+  if(&player->xPos == NULL){
     return false;
   }
   else{
@@ -206,11 +207,11 @@ player_setxPos(player_t* player, int xPos){
  */
 bool
 player_setyPos(player_t* player, int yPos){
-  if (player == NULL || yPos == NULL){
+  if (player == NULL){
     return false;
   }
   player->yPos = yPos;
-  if(player->yPos == NULL){
+  if(&player->yPos == NULL){
     return false;
   }
   else{
@@ -219,7 +220,7 @@ player_setyPos(player_t* player, int yPos){
   return false;
 }
 
-void addToPurse(int numGold){
+void addToPurse(player_t* player, int numGold, int GoldTotal){
   if(player->purse <= GoldTotal){
     player->purse += numGold;
   }

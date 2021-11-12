@@ -9,30 +9,30 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "message.h"
+#include "../support/message.h"
 #include "grid.h"
 #include "mem.h"
+#include "game.h"
 
-bool handlePlay(game_t game, char** playerNames, char* playerName, int currentNumPlayers, addr_t to);
-bool handleSpectator(game_t* game, addr_t to);
-bool handleKey(char key, addr_t to, player_t* player, game_t* game);
+// bool handlePlay(game_t game, char** playerNames, char* playerName, int currentNumPlayers, addr_t to);
+// bool handleSpectator(game_t* game, addr_t to);
+// bool handleKey(char key, addr_t to, player_t* player, game_t* game);
 
-bool sendGrid(grid_t* grid);
-bool sendGold(player_t* player);
-bool sendDisplay(char* map);
+bool sendGrid(grid_t* grid, addr_t to);
+bool sendGold(game_t* game, addr_t to);
+bool sendDisplay(char* map, addr_t to);
 
 
 static const int MaxNameLength = 50;   // max number of chars in playerName
 static const int MaxPlayers = 26;      // maximum number of players
-static const int GoldTotal = 250;      // amount of gold in the game
-static const int GoldMinNumPiles = 10; // minimum number of gold piles
-static const int GoldMaxNumPiles = 30; // maximum number of gold piles
+
 
 // parameters given by handleMessage
 bool handlePlay(game_t* game, addr_t to, char* playerName){
     // takes in a string message starting with "PLAY"
 	// ensure max number of players has not been reached
-	if(currentNumPlayers >= MaxPlayers){
+	int index = get_location(game);
+	if(index >= MaxPlayers){
 		message_send(to, "QUIT Game is full: no more players can join.");
 		return false;
 	}
@@ -49,18 +49,22 @@ bool handlePlay(game_t* game, addr_t to, char* playerName){
 		}
 	}
 	//use getters instead
-	player_t* newPlayer = game_addPlayer(game, playerName, "player");
+	if(!game_addPlayer(game, playerName, "player")){
+		return false;
+	}
 
-	game->players[game->location] = newPlayer;
 
-	char playerLetter = 'a' + game->location;
-	message_send(to, "OK %c", playerLetter);
-	(game->location)++;
+	char* playerLetter = "a" + index;
+	char* message = strcat("OK", playerLetter);
+	message_send(to, message);
+
+	grid_t* grid = game_getGrid(game);
+	char* map = grid_getMap(grid);
 
 	// initialize modules to begin game play
-	if(sendGrid(game->grid)){
-		if(sendGold(player)){
-			if(sendDisplay(game->map)){
+	if(sendGrid(grid, to)){
+		if(sendGold(game, to)){
+			if(sendDisplay(map, to)){
 				return true;
 			}
 		}
@@ -74,28 +78,36 @@ bool handleSpectator(game_t* game, addr_t to, player_t* player){
 	// takes in a string message starting with "SPECTATE"
 	// ensure there isn't already a spectator
 	// clean out the old spectator
-	if(game->spectator == 1){
+	player_t* spectator = game_getSpectator(game);
+	if(spectator != NULL){
 		message_send(to, "QUIT sorry spectator, your spot was taken.");
-		game->spectator = 0;
+		removeSpectator(game);
 	}
 
+	grid_t* grid = game_getGrid(game);
+	char* map = grid_getMap(grid);
 	// set up the new spectator
 	// initialize modules to begin game spectating
-	if(sendGrid(game->grid)){
-		if(sendGold(player)){
-			if(sendDisplay(game->map)){
+	if(sendGrid(grid, to)){
+		if(sendGold(game, to)){
+			if(sendDisplay(map, to)){
 				// store a current spectator
-				game->spectator = 1;
-				return true;
+				if(spectatorAdd(game, player)){
+					return true;
+				}
 			}
 		}
 	}
+	return false;
 }
 
 bool handleKey(char key, addr_t to, player_t* player, game_t* game){
 	// takes in a char message starting with "KEY"
 	// ensure the key was one of the ones we watch for
-	if(key == "Q"){
+	grid_t* grid = game_getGrid(game);
+	char* map = grid_getMap(grid);
+	
+	if(key == 'Q'){
 		if(strcmp(player->type, "player")==0){
 			message_send(to, "QUIT Thanks for playing!");
 		}
@@ -104,64 +116,64 @@ bool handleKey(char key, addr_t to, player_t* player, game_t* game){
 		}
 		return true;
 	}
-	if(key == "h"){
+	if(key == 'h'){
 		// what to do an if() here to see if moement is valid
 		player->xPos -= 1;
-		sendDisplay(game->map);
-		sendGold(player);
+		sendDisplay(map, to);
+		sendGold(game, to);
 		return true;
 	}
-	if(key == "l"){
+	if(key == 'l'){
 		// what to do an if() here to see if moement is valid
 		player->xPos += 1;
-		sendDisplay(game->map);
-		sendGold(player);
+		sendDisplay(map, to);
+		sendGold(game, to);
 		return true;
 	}
-	if(key == "j"){
+	if(key == 'j'){
 		// what to do an if() here to see if moement is valid
 		player->yPos -= 1;
-		sendDisplay(game->map);
-		sendGold(player);
+		sendDisplay(map, to);
+		sendGold(game, to);
 		return true;
 	}
-	if(key == "k"){
+	if(key == 'k'){
 		// what to do an if() here to see if moement is valid
 		player->yPos += 1;
-		sendDisplay(game->map);
-		sendGold(player);
+		sendDisplay(map, to);
+		sendGold(game, to);
 		return true;
 	}
-	if(key == "y"){
+	if(key == 'y'){
 		// what to do an if() here to see if moement is valid
 		player->yPos += 1;
 		player->xPos -= 1;
-		sendDisplay(game->map);
-		sendGold(player);
+		sendDisplay(map, to);
+		sendGold(game, to);
 		return true;
 	}
-	if(key == "u"){
+	if(key == 'u'){
 		// what to do an if() here to see if moement is valid
 		player->yPos += 1;
 		player->xPos += 1;
-		sendDisplay(game->map);
-		sendGold(player);
+		sendDisplay(map, to);
+		sendGold(game, to);
 		return true;
 	}
-	if(key == "b"){
+	if(key == 'b'){
 		// what to do an if() here to see if moement is valid
 		player->yPos -= 1;
 		player->xPos -= 1;
-		sendDisplay(game->map);
-		sendGold(player);
+		sendDisplay(map, to);
+		sendGold(game, to);
 		return true;
 	}
-	if(key == "n"){
+	if(key == 'n'){
 		// what to do an if() here to see if moement is valid
 		player->yPos -= 1;
 		player->xPos += 1;
-		sendDisplay(game->map);
-		sendGold(player);
+		sendDisplay(map, to);
+		sendGold(game, to);
 		return true;
 	}
 	else{
@@ -170,29 +182,47 @@ bool handleKey(char key, addr_t to, player_t* player, game_t* game){
 	}
 }
 
-bool sendGrid(grid_t* grid){
+char* convertInt(int num){
+	char* string = "";
+	sprintf(string, "%d", num);
+	return string;
+}
+
+bool sendGrid(grid_t* grid, addr_t to){
 	// put together a string message that includes GRID nrows ncols
 	if(grid != NULL){
-		int nrows = grid->nrows;
-		int ncols = grid->ncols;
+		int nrows = grid_getnRows(grid);
+		int ncols = grid_getnCols(grid);
+
+		char* charRows = convertInt(nrows);
+		char* charCols = convertInt(ncols);
+
 		// send the grid the client
-		message_send(to, "GRID %d %d", nrows, ncols);	
+		char* message = strcat("GRID ", charRows);
+		message = strcat(message, " ");
+		message = strcat(message, charCols);
+
+		message_send(to, message);	
 		return true;
 	}
 	return false;	
 }
 
 // !!
-bool sendGold(player_t* player){
+bool sendGold(game_t* game, addr_t to){
 	// put together a string message that includes GOLD # nuggets, purse count, remaining gold
 
 	// check if has been updated, if so send to clients
-	message_send(to, "GOLD %d %d %d", collected, purse, remaining);	
+	// message_send(to, "GOLD %d %d %d", collected, purse, remaining);	
+	return false;
 }
 
-bool sendDisplay(char* map){
+bool sendDisplay(char* map, addr_t to){
 	// retrieve the text version of the map and send it to client in a message
 	if(map!= NULL){
-		message_send(to, "DISPLAY\n %s", map);	
+		char* message = strcat("DISPLAY\n ", map);
+		message_send(to, message);	
+		return true;
 	}
+	return false;
 }

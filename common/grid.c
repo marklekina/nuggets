@@ -247,4 +247,10 @@ int grid_getnCols(grid_t* grid){
     return 0;
   
 }
-
+char* grid_getMap(grid_t* grid){
+  if(grid!= NULL){
+      return grid->map;
+    }
+    return NULL;
+  
+}

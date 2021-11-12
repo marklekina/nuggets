@@ -74,15 +74,20 @@ char* combineVisibility(char* vis1, char* vis2);
 */
 char* updateVisibility(grid_t* grid, int row, int col);
 
-/**************** rid_getnRows ****************/
+/**************** grid_getnRows ****************/
 /*
 * see grid.h for more information
 */
-int rid_getnRows(grid_t* grid);
-/**************** rid_getnCols ****************/
+int grid_getnRows(grid_t* grid);
+/**************** grid_getnCols ****************/
 /*
 * see grid.h for more information
 */
-int rid_getnCols(grid_t* grid);
+int grid_getnCols(grid_t* grid);
 
+/**************** grid_getMap ****************/
+/*
+* see grid.h for more information
+*/
+char* grid_getMap(grid_t* grid);
 #endif
