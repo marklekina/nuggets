@@ -9,9 +9,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>e
+#include <stdbool.h>
 #include "player.h"
 #include "mem.h"
+#include "message.h"
 #include "file.h"
 
 /**************** file-local global variables ****************/
