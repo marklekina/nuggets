@@ -7,6 +7,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
+#include <math.h>
+#include "player.h"
+
+static const int GoldTotal = 250;      // amount of gold in the game
+static const int GoldMinNumPiles = 10; // minimum number of gold piles
+static const int GoldMaxNumPiles = 30; // maximum number of gold piles
 
 /**************** global types ****************/
 typedef struct grid {
@@ -24,7 +31,7 @@ typedef struct point {
 /*************** function prototypes ***********/
 char* compute_visibility(point_t* player, grid_t* grid);
 void distribute_gold(grid_t* grid);
-void distribute_gold_helper(grid_t* grid, point_t* locations[], int goldAmounts[]);
+void distribute_gold_helper(grid_t* grid, point_t* locations[], int goldAmounts[], int num_piles);
 
 /*************** compute_visibility ***********/
 /*
@@ -83,7 +90,7 @@ compute_visibility(point_t* player, grid_t* grid)
         else {
           int step = dx / abs(dx);
           bool isVisible = true;
-          for (int k = player->x + step, k != i, k += step) {
+          for (int k = player->x + step; k != i; k += step) {
             
             // if any of the points is not a room spot, mark target as invisible to player;
             // and break the loop
@@ -116,7 +123,7 @@ compute_visibility(point_t* player, grid_t* grid)
         else {
           int step = dy / abs(dy);
           bool isVisible = true;
-          for (int k = player->y + step, k != j, k += step) {
+          for (int k = player->y + step; k != j; k += step) {
 
             // if any of the points is not a room spot, mark target as invisible to player and break the loop
             if (map[i][k] != '.') {
@@ -144,7 +151,7 @@ compute_visibility(point_t* player, grid_t* grid)
         // loop through all columns(x) between player and target
         isVisible = true;
         int step_x = dx / abs(dx);
-        for (int k = player->x + step_x, k != i, k += step_x) {
+        for (int k = player->x + step_x; k != i; k += step_x) {
 
           // examine intersects
           float y_intersect = gradient * (k - player->x) + player->y;
@@ -183,7 +190,7 @@ compute_visibility(point_t* player, grid_t* grid)
         // loop through all rows(y) between player and target
         isVisible = true;
         int step_y = dy / abs(dy);
-        for (int k = player->y + step_y, k != j, k += step_y) {
+        for (int k = player->y + step_y; k != j; k += step_y) {
 
           // examine intersects
           float x_intersect = ((k - player->y) / gradient) + player->x;
@@ -210,7 +217,7 @@ compute_visibility(point_t* player, grid_t* grid)
         }
 
         // assign appropriate value to target
-        if (isVisible) {
+        if(isVisible) {
           arr[i][j] = 1;
         }
         else {
@@ -221,7 +228,7 @@ compute_visibility(point_t* player, grid_t* grid)
   }
 
   // initialize visibility string
-  char visString[x * y + 1];
+  char* visString;
   int k = 0;
 
   // loop through array and write output into string
@@ -257,7 +264,7 @@ distribute_gold(grid_t* grid)
   int goldAmounts[num_piles];
 
   // distribute the gold
-  distribute_gold_helper(grid, locations, goldAmounts);
+  distribute_gold_helper(grid, locations, goldAmounts, num_piles);
 }
 
 
@@ -266,15 +273,19 @@ distribute_gold(grid_t* grid)
  * see header file for details
  */
 void
-distribute_gold_helper(grid_t* grid, point_t* locations[], int goldAmounts[])
+distribute_gold_helper(grid_t* grid, point_t* locations[], int goldAmounts[], int num_piles)
 {  
+  int x_pos;
+  int y_pos;
   // identify random locations (x,y) to drop the gold piles
   for (int i = 0; i < num_piles; i++) {
     // loop until selected location is in a room spot
-    do {
-      int x_pos = rand() % grid->nrows;
-      int y_pos = rand() % grid->ncolumns;
-    } while (grid[x_pos][y_pos] != '.');
+    x_pos = rand() % grid->nrows;
+    y_pos = rand() % grid->ncols;
+    // do {
+    //   x_pos = rand() % grid->nrows;
+    //   y_pos = rand() % grid->ncols;
+    // } while(grid[x_pos][y_pos] != '.');
 
     // assign point to array
     locations[i] = point_new(x_pos, y_pos);
@@ -282,7 +293,7 @@ distribute_gold_helper(grid_t* grid, point_t* locations[], int goldAmounts[])
   
   // determine average gold to put in a pile
   int goldInPurse = GoldTotal;
-  int avgGold = goldInPurse / num_piles;
+  int avgGold = goldInPurse/num_piles;
   
   // loop through each spot (except one) and drop a random amount of gold in it
   for (int i = 0; i < num_piles - 1; i++) {
@@ -303,8 +314,8 @@ void
 collect_gold(player_t* player, int* goldRemaining, point_t* locations[], int goldAmounts[], int numPiles)
 {
   // extract player's location
-  int x = player->xPos;
-  int y = player->yPos;
+  int x = player_getxPos(player);
+  int y = player_getyPos(player);
   
   // loop through all gold piles and find the one that matches the player's location
   for (int i = 0; i < numPiles; i++) {
@@ -312,7 +323,8 @@ collect_gold(player_t* player, int* goldRemaining, point_t* locations[], int gol
 
       // transfer the gold in the pile to the player's purse
       // subtract it from goldRemaining
-      player->purse += goldAmounts[i];
+      int GoldTotal = getPurse(player);
+      addToPurse(player, goldAmounts[i], GoldTotal);
       *goldRemaining -= goldAmounts[i];
 
       // terminate loop

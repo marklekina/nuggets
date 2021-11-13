@@ -111,4 +111,10 @@ player_setyPos(player_t* player, int yPos);
  */
 void addToPurse(player_t* player, int numGold, int GoldTotal);
 
+/**************** getPurse ****************/
+/*
+ * see player.h for more information
+ */
+int getPurse(player_t* player);
+
 #endif

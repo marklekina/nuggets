@@ -224,5 +224,8 @@ void addToPurse(player_t* player, int numGold, int GoldTotal){
   if(player->purse <= GoldTotal){
     player->purse += numGold;
   }
+}
 
+int getPurse(player_t* player){
+  return player->purse;
 }

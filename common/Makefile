@@ -10,17 +10,16 @@ CFLAGS = -Wall -pedantic -std=c11 -ggdb -I$L -I$C
 OBJS = grid.o player.o game.o XYZ.o common.o
 LIB = common.a
 
-# grid.o: grid.h $L/file.h $L/mem.h 
-# player.o: player.h $L/file.h $L/mem.h
-# game.o: game.h
-XYZ.o: $L/mem.h
-
 .PHONY: all clean 
 
 all: $(LIB)
 $(LIB): $(OBJS)
 		ar cr $(LIB) $(OBJS)
 
+grid.o: grid.h $L/file.h $L/mem.h 
+player.o: player.h $L/file.h $L/mem.h
+game.o: game.h
+XYZ.o: $L/mem.h
 
 clean: 
 	rm -f grid
