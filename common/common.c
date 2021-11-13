@@ -297,3 +297,26 @@ distribute_gold_helper(grid_t* grid, point_t* locations[], int goldAmounts[])
   // put whatever is left in goldInPurse in the last spot
   goldAmounts[num_piles - 1] = goldInPurse;
 }
+
+
+void
+collect_gold(player_t* player, int* goldRemaining, point_t* locations[], int goldAmounts[], int numPiles)
+{
+  // extract player's location
+  int x = player->xPos;
+  int y = player->yPos;
+  
+  // loop through all gold piles and find the one that matches the player's location
+  for (int i = 0; i < numPiles; i++) {
+    if (x == locations[i]->x && y == locations[i]->y) {
+
+      // transfer the gold in the pile to the player's purse
+      // subtract it from goldRemaining
+      player->purse += goldAmounts[i];
+      *goldRemaining -= goldAmounts[i];
+
+      // terminate loop
+      break;
+    }
+  }
+}

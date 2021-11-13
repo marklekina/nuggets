@@ -14,6 +14,7 @@
 #include "player.h"
 #include "message.h"
 #include "grid.h"
+#include "message.h"
 #include "visibility.c"
 #include "XYZ.c"
 #include "mem.h"
