@@ -87,24 +87,22 @@ game_delete(game_t* game){
 }
 
 
-/*
- * TODO: continue making edits from here
- */
-
-/**************** removeSpectator ****************/
+/**************** remove_spectator ****************/
 /* 
- * comments
+ * see game.h for detailed description
  */
-void removeSpectator(game_t* game){
-  //send message???
-  // TODO: edit this function
-  player_delete(game->spectator);
+void
+remove_spectator(game_t* game){
+  // TODO: send quit message to current spectator
 
+  // delete player object
+  player_delete(game->spectator);
 }
 
-/**************** spectatorAdd ****************/
+
+/**************** add_spectator ****************/
 /* 
- * comments
+ * see game.h for detailed description
  */
 bool
 add_spectator(game_t* game, char* name){
@@ -154,44 +152,40 @@ add_player(game_t* game, char* name){
   return false;
 }
 
-int get_location(game_t* game){
-   if(game!= NULL){
-    return game->location;
+
+/**************** getters ****************/
+/*
+ * see game.h for description
+ */
+int
+get_num_players(game_t* game){
+  if (game != NULL) {
+    return game->num_players;
   }
   return 0;
 }
-	
-player_t* get_Player(game_t* game, player_t* player){
 
-  if (game == NULL || player == NULL) {
-    return NULL;             
-  } 
-  else {
-    for(int i = 0; i<game->location; i++){
-        if(strcmp(player_getName(game->players[i]), player_getName(player))==0){
-          return game->players[i];
-        }
+player_t*
+get_player(game_t* game, int idx){
+  if (game != NULL) {
+    if (game->players != NULL) {
+      return game->players[idx];
     }
-    }
-  return NULL;
-}
-
-FILE* game_getMap(game_t* game){
-  if(game!= NULL && game->map != NULL){
-    return game->map;
   }
   return NULL;
 }
 
-grid_t* game_getGrid(game_t* game){
-  if(game!= NULL && game->grid != NULL){
+grid_t*
+get_grid(game_t* game){
+  if (game != NULL){
     return game->grid;
   }
   return NULL;
 }
 
-player_t* game_getSpectator(game_t* game){
-  if(game!= NULL && game->spectator != NULL){
+player_t*
+get_spectator(game_t* game) {
+  if (game!= NULL) {
     return game->spectator;
   }
   return NULL;
