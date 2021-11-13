@@ -97,6 +97,7 @@ game_delete(game_t* game){
  */
 void removeSpectator(game_t* game){
   //send message???
+  // TODO: edit this function
   player_delete(game->spectator);
 
 }
@@ -106,35 +107,51 @@ void removeSpectator(game_t* game){
  * comments
  */
 bool
-spectatorAdd(game_t* game, player_t* player){
-  if(strcmp(player->type, "spectator")==1){
-    return false;
-  }
-  if (game->spectator == NULL){
-    game->spectator = player;
-    return true;
-  }
-  else{
-    removeSpectator(game);
-    game->spectator = player;
-    return true;
-  }
+add_spectator(game_t* game, char* name){
+  // validate parameters
+  if (game != NULL && name != NULL) {
+    // if a spectator is already present, kick them out
+    if (game->spectator != NULL){
+      removeSpectator(game);
+    }
 
+    // create player_t object of spectator type
+    // assign them to game and return true
+    player_t* player = player_new(name, "spectator");
+    if (player != NULL) {
+      game->spectator = player;
+      return true;
+    }
+  }
+  
+  // otherwise return false
+  return false;
 }
 
-/**************** game_addPlayer ****************/
+/**************** add_player ****************/
 /* 
- * comments
+ * see game.h for description
  */
 bool
-game_addPlayer(game_t* game, char* name, char* type){
-  if (name == NULL || type == NULL){
-    return false;
+add_player(game_t* game, char* name){
+  // validate parameters
+  if (game != NULL && name != NULL){
+    // create player_t object of player type
+    player_t* player = player_new(name, "player");
+
+    if (player != NULL) {
+      // add player to array of players
+      // increment number of players in game
+      game->players[game->num_players] = player;
+      game->num_players += 1;
+
+      // return true if successful
+      return true;
+    }
   }
-  player_t* player = player_new(name, type);
-  game->players[game->location] = player; 
-  game->location += 1;
-  return true;
+  
+  // otherwise return false
+  return false;
 }
 
 int get_location(game_t* game){
