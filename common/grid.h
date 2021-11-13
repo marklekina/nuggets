@@ -1,8 +1,8 @@
 /*
- * grid.h - header file for index module
+ * grid.h - header file for grid module
  *
  * this module contains:
- *     grid_t* struct - holds a map string, number of rows and number of columns
+ *     grid_t struct - holds a map string, number of rows and number of columns
  *     functions to:
  *        i) load map string into the grid
  *       ii) display the map
@@ -13,10 +13,6 @@
 
 #ifndef __GRID_H
 #define __GRID_H
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
 
 grid_t* grid_new(int nrows, int ncols);
 void grid_delete(grid_t* grid);

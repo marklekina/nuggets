@@ -10,11 +10,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include "game.h"
 #include "mem.h"
-#include "player.h"
 #include "file.h"
+#include "game.h"
 #include "grid.h"
+#include "player.h"
 
 
 /**************** global types ****************/
@@ -31,7 +31,7 @@ typedef struct game {
  */
 
 game_t*
-game_new(FILE* fp, int nrows, int ncols){
+game_new(FILE* fp, int nrows, int ncols) {
   // if fp != null, nrows and ncols != 0
   if (fp != NULL && nrows > 0 && ncols > 0) {
     // allocate memory for game object
@@ -65,7 +65,7 @@ game_new(FILE* fp, int nrows, int ncols){
  * see game.h for more information
  */
 void
-game_delete(game_t* game){
+game_delete(game_t* game) {
   // free the spectator
   if (NULL != game->spectator) {
     player_delete(game->spectator);
@@ -92,7 +92,7 @@ game_delete(game_t* game){
  * see game.h for detailed description
  */
 void
-remove_spectator(game_t* game){
+remove_spectator(game_t* game) {
   // TODO: send quit message to current spectator
 
   // delete player object
@@ -105,7 +105,7 @@ remove_spectator(game_t* game){
  * see game.h for detailed description
  */
 bool
-add_spectator(game_t* game, char* name){
+add_spectator(game_t* game, char* name) {
   // validate parameters
   if (game != NULL && name != NULL) {
     // if a spectator is already present, kick them out
@@ -131,9 +131,9 @@ add_spectator(game_t* game, char* name){
  * see game.h for description
  */
 bool
-add_player(game_t* game, char* name){
+add_player(game_t* game, char* name) {
   // validate parameters
-  if (game != NULL && name != NULL){
+  if (game != NULL && name != NULL) {
     // create player_t object of player type
     player_t* player = player_new(name, "player");
 
@@ -158,7 +158,7 @@ add_player(game_t* game, char* name){
  * see game.h for description
  */
 int
-get_num_players(game_t* game){
+get_num_players(game_t* game) {
   if (game != NULL) {
     return game->num_players;
   }

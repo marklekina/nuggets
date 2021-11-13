@@ -11,23 +11,26 @@
 #include <string.h>
 #include <stdbool.h>
 #include <ctype.h>
-#include "player.h"
 #include "mem.h"
-#include "../support/message.h"
 #include "file.h"
-
+#include "message.h"
+#include "player.h"
 
 
 /**************** file-local global variables ****************/
 /* none */
 
 /**************** global types ****************/
+typedef struct point {
+  int x;
+  int y;
+} point_t;
+
 typedef struct player {
   char* name;
-  char* visibility;
   char* type;
-  int xPos;
-  int yPos;
+  point_t* location;
+  char* visible_map;
   addr_t to;
   int purse;
 } player_t;
