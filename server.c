@@ -197,10 +197,10 @@ static bool load_grid(game_t* game, nrows, ncols){
  * 
  * 
  */
-static void disperseGold(){
-	// pick random number between minGold and maxGold
-	// populate grid with the random amount of gold
-}
+// static void disperseGold(){
+// 	// pick random number between minGold and maxGold
+// 	// populate grid with the random amount of gold
+// }
 
 static void updateGame(char stroke){
 	checks if keystroke is valid
