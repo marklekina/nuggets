@@ -1,7 +1,5 @@
 /* 
- * server module
- *
- * A module
+ * server.c - code for the server in the CS50 nuggets project
  *
  * Palmer's Posse, November 2021
  */
@@ -10,15 +8,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include "game.h"
-#include "player.h"
-#include "message.h"
-#include "grid.h"
-#include "message.h"
-#include "visibility.c"
-#include "XYZ.c"
 #include "mem.h"
 #include "file.h"
+#include "message.h"
+#include "game.h"
+#include "player.h"
+#include "grid.h"
+#include "XYZ.h"
 
 static void parseArgs(const int argc, char* argv[]);
 static char* parseMessage(char* message);
@@ -33,7 +29,8 @@ static const int MaxNameLength = 50;   // max number of chars in playerName
 static const int MaxPlayers = 26;      // maximum number of players
 static const int GoldTotal = 250;      // amount of gold in the game
 static const int GoldMinNumPiles = 10; // minimum number of gold piles
-static const intGoldMaxNumPiles = 30; // maximum number of gold piles
+static const int GoldMaxNumPiles = 30; // maximum number of gold piles
+static game_t* game;                   // game_t object to hold all game information
 
 /**************** parseArgs ****************/
 /* Parse the command line arguments and initialize a game module.
@@ -41,7 +38,7 @@ static const intGoldMaxNumPiles = 30; // maximum number of gold piles
  * Given:
  *  argc- number of command line arguments
  *  argv- array of command line arguments
- *  game- an empty game module
+ *  game- pointer to an "empty" game_t object 
  * 
  */
 static void parseArgs(const int argc, char* argv[], game_t* game){

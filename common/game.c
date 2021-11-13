@@ -1,5 +1,5 @@
-/* 
- * game module
+/*
+ * game.c - game module for the CS50 nuggets project
  *
  * see game.h for more information.
  *
@@ -19,12 +19,10 @@
 
 /**************** global types ****************/
 typedef struct game {
-  grid_t* grid; // (turns map into string)
-  player_t* spectator;
-  FILE* map; // (txt file)
-  player_t* players[26]; 
-  int location;
-  int seed;
+  grid_t* grid;          // holds grid information
+  player_t* spectator;   // one game spectator
+  player_t* players[26]; // array of game players
+  int num_players;       // number of players currently in the game
 } game_t;
 
 /**************** game_new ****************/
@@ -33,42 +31,65 @@ typedef struct game {
  */
 
 game_t*
-game_new(FILE* map, int nrows, int ncols){
-  if (map == NULL ){
-    return NULL;
-  }
-  game_t* game = mem_malloc(sizeof(game_t));
-//POTENTIALLY FIX THIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  game->map = map;
-  grid_t* grid = grid_new(nrows, ncols);
-  if(!load_map(grid, map)){
-    return NULL;
-  }
-  else{
-    game->grid = grid; 
-    game->spectator = NULL;
-    // game->players = NULL;
-    game->location = 0;
+game_new(FILE* fp, int nrows, int ncols){
+  // if fp != null, nrows and ncols != 0
+  if (fp != NULL && nrows > 0 && ncols > 0) {
+    // allocate memory for game object
+    game_t* game = mem_malloc(sizeof(game_t));
 
+    // initialize a grid object inside game to hold grid info
+    // load map into grid
+    if (game != NULL) {
+      grid_t* grid = grid_new(nrows, ncols);
+      load_map(grid, fp);
+      
+      // assign grid to game
+      game->grid = grid;
+
+      // initialize the rest of the variables as null (or zero)
+      game->spectator = NULL;
+      game->players = NULL;
+      game->num_players = 0;
+    }
+
+    // return game object
+    return game;
   }
-  return game;
+  
+  // otherwise return null
+  return NULL;
 }
 
 /**************** game_delete ****************/
 /*
  * see game.h for more information
  */
-void game_delete(game_t* game){
-   if (NULL != game->spectator) {
+void
+game_delete(game_t* game){
+  // free the spectator
+  if (NULL != game->spectator) {
     player_delete(game->spectator);
   }
+
+  // loop through the players array and free each of them
   if (NULL != game->players) {
-    for(int i = 0; i<game->location; i++){
-      player_delete(game->players[i]);
+    for(int i = 0; i < game->num_players; i++){
+
+      // free the player
+      if (NULL != game->players[i]) {
+        player_delete(game->players[i]);
+      }
     }
   }
+  
+  // free game object
   mem_free(game);
 }
+
+
+/*
+ * TODO: continue making edits from here
+ */
 
 /**************** removeSpectator ****************/
 /* 
