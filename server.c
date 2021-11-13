@@ -230,7 +230,7 @@ static void printResults(game_t* game){
     
 }
 
-/**************** messageLoop ****************/
+/**************** initiateNetwork ****************/
 /* Open the communication port with the client and start a message loop.
  * 
  * Given:
