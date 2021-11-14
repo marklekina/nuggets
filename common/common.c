@@ -247,55 +247,46 @@ compute_visibility(point_t* player, grid_t* grid)
  * see header file for details
  */
 void
-distribute_gold(grid_t* grid)
+distribute_gold(game_t* game)
 {
   // initialize number of piles to be created (should be between GoldMinNumPiles and GoldMaxNumPiles)
+  // initialize variable to hold total gold distributed
   int num_piles = rand() % (GoldMaxNumPiles - GoldMinNumPiles + 1) + GoldMinNumPiles;
-
-  // initiate arrays to hold pile locations and gold amounts
-  point_t* locations[num_piles];
-  int goldAmounts[num_piles];
-
-  // distribute the gold
-  distribute_gold_helper(grid, locations, goldAmounts);
-}
-
-
-/**************** distribute_gold_helper ****************/
-/*
- * see header file for details
- */
-void
-distribute_gold_helper(grid_t* grid, point_t* locations[], int goldAmounts[])
-{  
-  // identify random locations (x,y) to drop the gold piles
+  int goldInPurse = 0;
+  
+  // initiate an array of gold piles to hold pile locations and gold amounts
   for (int i = 0; i < num_piles; i++) {
-    // loop until selected location is in a room spot
+    // find random location to set up a gold pile
+
     do {
-      int x_pos = rand() % grid->nrows;
-      int y_pos = rand() % grid->ncolumns;
-    } while (grid[x_pos][y_pos] != '.');
+      int x_pos = rand() % game->grid->nrows;
+      int y_pos = rand() % game->grid->ncols;
+    } while (!spot_is_open(game->grid, x_pos, y_pos));
+    
+    point_t* location = point_new(x_pos, y_pos);
+    // TODO: implement a check to make sure a location isn't picked twice
+    
+    // compute random amount of gold to drop
 
-    // assign point to array
-    locations[i] = point_new(x_pos, y_pos);
-  }
-  
-  // determine average gold to put in a pile
-  int goldInPurse = GoldTotal;
-  int avgGold = goldInPurse / num_piles;
-  
-  // loop through each spot (except one) and drop a random amount of gold in it
-  for (int i = 0; i < num_piles - 1; i++) {
+    // determine average gold to put in a pile
+    int avgGold = GoldTotal / num_piles;
+
     // determine random amount of gold to put in pile (between 1/2 and 3/2 of avgGold)
-    int goldInPile = rand() % (avgGold + 1) + (avgGold/2);
+    // subtract amount from remaining gold
+    int amount = rand() % (avgGold + 1) + (avgGold/2);
+    goldInPurse += amount;
 
-    // put the gold in the piles and subtract it from goldInPurse
-    goldAmounts[i] = goldInPile;
-    goldInPurse -= goldInPile;
+    // add location and amount to pile
+    pile_t* pile = pile_new(location, amount);
+
+    // add pile to game array
+    if (pile != NULL) {
+      game->piles[i] = pile;
+    }
   }
 
-  // put whatever is left in goldInPurse in the last spot
-  goldAmounts[num_piles - 1] = goldInPurse;
+  // assign total amount of gold distributed to game
+  game->gold_distributed = goldInPurse;
 }
 
 

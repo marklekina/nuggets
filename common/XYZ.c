@@ -302,7 +302,7 @@ spot_is_open(grid_t* grid, int x, int y) {
   
   // find spot in map
   int idx = y * (grid->ncols + 1) + x;
-  char spot = grid->map[idx];
+  char spot = grid->original_map[idx];
 
   // check whether spot can be occupied by player
   for (int i = 0; i < 4; i++) {

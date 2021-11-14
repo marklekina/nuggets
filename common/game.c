@@ -18,12 +18,65 @@
 
 
 /**************** global types ****************/
+typedef struct pile {
+  point_t* location;
+  int amount;
+} pile_t;
+  
 typedef struct game {
   grid_t* grid;          // holds grid information
   player_t* spectator;   // one game spectator
   player_t* players[26]; // array of game players
+  point_t* piles[];
   int num_players;       // number of players currently in the game
+
 } game_t;
+
+
+/**************** pile_new ****************/
+/*
+ * see game.h for more information
+ */
+pile_t*
+pile_new(point_t* location, int amount) {
+  // validate parameters
+  if (location != NULL && amount >= 0) {
+    
+    // allocate memory for pile object
+    // assign location and amount to pile
+    pile_t* pile = mem_malloc(sizeof(pile_t));
+
+    if (pile != NULL) {
+      pile->location = location;
+      pile->amount = amount;
+
+      // return pile
+      return pile;
+    }
+  }
+  
+  // otherwise return null
+  return NULL;
+}
+
+
+/**************** pile_delete ****************/
+/*
+ * see game.h for detailed description
+ */
+void
+pile_delete(pile_t* pile) {
+  if (pile != NULL) {
+    // free location
+    if (pile->location != NULL) {
+      mem_free(pile->location);
+    }
+
+    // free pile
+    mem_free(pile);
+  }
+}
+
 
 /**************** game_new ****************/
 /*
