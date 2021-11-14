@@ -18,32 +18,36 @@ typedef struct grid grid_t;  // opaque to users of the module
 
 /**************** grid_new ****************/
 /* 
- * comments
+ * Creates a new grid or returns NULL if error
+ * Creates a new grid with the provided nrows and ncols as its dimmensions
+ * it initializes the map to NULL
+ * returns initialized map
  */
 grid_t* grid_new(int nrows, int ncols);
 
 /**************** grid_delete****************/
 /* 
- * comments
+ * deletes the map in the grid as well as the grid itself
  */
 void grid_delete(grid_t* grid);
 
 /**************** load_map ****************/
 /* 
- * comments
+ *takes in a grid and file and sets the grid's map to the first line of the file 
+ * returns the map 
  */
 char* load_map(grid_t* grid, FILE* fp);
 
 
 /**************** grid_setMap ****************/
 /*
- * see grid.h for more information
+ * Takes in a string map and replaces the grid's map with that screen
  */
 bool grid_setMap(grid_t* grid, char* map);
 
 /**************** display_map ****************/
 /*
- * see grid.h for more information
+ * 
  */
 
 void display_map(grid_t* grid);
@@ -53,41 +57,41 @@ void display_map(grid_t* grid);
 /*
  * see player.h for more information
  */
-void intialize_visibility(grid_t* grid, player_t* player);
+//void intialize_visibility(grid_t* grid, player_t* player);
 
 /**************** grid_visibility ****************/
 /*
 * see grid.h for more information
 */
-void grid_visibility(grid_t* grid, player_t* player, int x, int y);
+//void grid_visibility(grid_t* grid, player_t* player, int x, int y);
 
 /**************** combineVisibility ****************/
 /*
 * see grid.h for more information
 */
 
-char* combineVisibility(char* vis1, char* vis2);
+//char* combineVisibility(char* vis1, char* vis2);
 
 /**************** updateVisibility ****************/
 /*
 * see grid.h for more information
 */
-char* updateVisibility(grid_t* grid, int row, int col);
+//char* updateVisibility(grid_t* grid, int row, int col);
 
 /**************** grid_getnRows ****************/
 /*
-* see grid.h for more information
+* returns the nRows value for the grid
 */
 int grid_getnRows(grid_t* grid);
 /**************** grid_getnCols ****************/
 /*
-* see grid.h for more information
+* returns the nCols value for the grid
 */
 int grid_getnCols(grid_t* grid);
 
 /**************** grid_getMap ****************/
 /*
-* see grid.h for more information
+* returns the map for the grid
 */
 char* grid_getMap(grid_t* grid);
 #endif
