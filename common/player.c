@@ -1,7 +1,5 @@
 /* 
- * player module
- *
- * see player.h for more information.
+ * player.c - player module for the CS50 nuggets project
  *
  * Palmer's Posse, November 2021
  */
@@ -12,8 +10,6 @@
 #include <stdbool.h>
 #include <ctype.h>
 #include "mem.h"
-#include "file.h"
-#include "message.h"
 #include "player.h"
 
 
@@ -31,201 +27,271 @@ typedef struct player {
   char* type;
   point_t* location;
   char* visible_map;
-  addr_t to;
+  addr_t* to;
   int purse;
 } player_t;
+
+
+/**************** point_new ****************/
+/*
+ * see player.h for detailed description
+ */
+point_t*
+point_new(int x, int y) {
+  // allocate memory for point
+  point_t* pt = mem_malloc(sizeof(point_t));
+
+  // assign x and y coordinates
+  pt->x = x;
+  pt->y = y;
+
+  // return object
+  return pt;
+}
+
 
 /**************** player_new ****************/
 /*
  * see player.h for more information
  */
 player_t*
-player_new(char* name, char* type){
-  int MaxNameLength = 50;
-  if (type == NULL){
-    return NULL;
-  }
-  if(name == NULL){
-    name = " ";
-  }
-  if(strcmp(type, "player")==1 || strcmp(type, "spectator")==1){
-    return NULL;
-  }
-  player_t* player = mem_malloc(sizeof(player_t));
+player_new(char* name, char* type) {
+  // validate parameters
+  if (name != NULL && type != NULL) {
 
-	int count = 0;
-	for(int i = 0; i<MaxNameLength; i++){
-		count ++;
-		if(isgraph(player->name[i]) == 0 && isblank(player->name[i]) ==0){
-			player->name[i] = '_';
-		}
+    // truncate name length to MaxNameLength
+    int len;
+    int MaxNameLength = 50;
 
-  
-  if(player == NULL){
-    return NULL;
-  }
-  else{
-    player->name = name;
-    player->visibility = NULL;
-    player->type = type;
-    // are we still doing a global variable for the size of the map? need to give it a limit
-    // grid_t* grid = game_getGrid(game);
-    // char* map = grid->map;
-    // // if people pass in seed and then use random number from docID
-    // grid_delete(grid);
-    // player->purse = 0;
-    // player->xPos = rand() % grid_getnRows(grid);
-    // player->yPos = rand() % grid_getnCols(grid);
+    if (strlen(name) < MaxNameLength) {
+      len = strlen(name);
+    }
+
+    else {
+      len = MaxNameLength;
+    }
+
+    // initialize player's name copy
+    char player_name[len+1];
+    
+    // format player's name
+    for (int i = 0; i < len; i++) {
+      if (!isGraph(name[i]) && !isBlank(name[i])) {
+        player_name[i] = '_';
+      }
+      else {
+        player_name[i] = name[i];
+      }
+    }
+    player_name[len] = '\0';
+
+    // replace original with formatted copy
+    strcpy(name, player_name);
+
+    // check that valid type has been provided
+    if (strcmp(type, "player") == 0 || strcmp(type, "spectator") == 0) {
+      // create player object
+      player_t* player = mem_malloc(sizeof(player_t));
+
+      // assign name, type and player
+      // asssign null (or zero) for the rest of player variables
+      if (player != NULL) {
+        player->name = name;
+        player->type = type;
+        player->location = NULL;
+        player->visible_map = NULL;
+        player->to = NULL;
+        player->purse = 0;
+      }
+
+      // return player_t object
+      return player;
+    }
   }
 
-  }
-  return player;
+  // otherwise return null
+  return NULL;
 }
+
 
 /**************** player_delete ****************/
 /*
  * see player.h for more information
  */
-void player_delete(player_t* player){
-   if (NULL != player->name) {
-    mem_free(player->name);
+void
+player_delete(player_t* player) {
+  if (player != NULL) {
+    // free name
+    if (NULL != player->name) {
+      mem_free(player->name);
+    }
+
+    // free type
+    if (NULL != player->type) {
+      mem_free(player->type);
+    }
+
+    // free location
+    if (NULL != player->location) {
+      mem_free(player->location);
+    }
+
+    // free visible_map
+    if (NULL != player->visible_map) {
+      mem_free(player->visible_map);
+    }
+
+    // free address
+    if (NULL != player->to) {
+      mem_free(player->to);
+    }
+
+    // finally free player
+    mem_free(player);
   }
-  if (NULL != player->visibility) {
-    mem_free(player->visibility);
-  }
-  if (NULL != player->type) {
-    mem_free(player->type);
-  }
-  
-  mem_free(player);
 }
 
 
 
-/* *********************************************************************** */
-/* getter methods - see player.h for documentation */
-char* player_getVisibility(player_t* player){
-  if(player!= NULL && player->visibility != NULL){
-    return player->visibility;
-  }
-  return NULL;
 
-}
+/**************** getters ****************/
+/*
+ * see player.h for detailed description
+ */
+char*
+get_name(player_t* player) {
 
-char* player_getName(player_t* player){
-  if(player!= NULL && player->name != NULL){
+  // if player exists
+  if (player != NULL) {
     return player->name;
   }
+
+  // otherwise return null
   return NULL;
 }
 
-char* player_getType(player_t* player){
-   if(player != NULL && player->type != NULL){
+
+char*
+get_type(player_t* player) {
+
+  // if player exists
+  if (player != NULL) {
     return player->type;
   }
+
+  // otherwise return null
   return NULL;
 }
 
-int player_getxPos(player_t* player){
-   if(player!= NULL && &player->xPos != NULL){
-    return player->xPos;
+
+point*
+get_location(player_t* player) {
+
+  // if player exists
+  if (player != NULL) {
+    return player->location;
   }
+
+  // otherwise return null
+  return NULL;
+}
+
+
+char*
+get_visible_map(player_t* player) {
+
+  // if player exists
+  if (player != NULL) {
+    return player->visible_map;
+  }
+
+  // otherwise return null
+  return NULL;
+}
+
+
+addr_t*
+get_address(player_t* player) {
+
+  // if player exists
+  if (player != NULL) {
+    return player->to;
+  }
+
+  // otherwise return null
+  return NULL;
+}
+
+int
+get_purse(player_t* player) {
+  // if player exists
+  if (player != NULL) {
+    return player->purse;
+  }
+
+  // otherwise return zero
   return 0;
 }
 
-int player_getyPos(player_t* player){
-   if(player!= NULL && &player->yPos != NULL){
-    return player->yPos;
+
+
+
+/**************** setters ****************/
+/*
+ * see player.h for detailed description
+ */
+bool
+set_location(player_t* player, int x, int y) {
+  if (player != NULL) {
+    // create point object
+    point_t* location = point_new(x, y);
+
+    // assign point to player
+    if (point != NULL) {
+      player->location = location;
+      return true;
+    }
   }
+  return false;
+}
+
+
+bool
+set_visible_map(player_t* player, char* visible_map) {
+  if (player != NULL) {
+    // assign map to player
+    player->visible_map = visible_map;
+    return true;
+  }
+  return false;
+}
+
+
+bool
+set_address(player_t* player, addr_t* to) {
+  if (player != NULL) {
+    // assign address to player
+    player->to = to;
+    return true;
+  }
+  return false;
+}
+
+
+/**************** add_to_purse ****************/
+/*
+ * see player.h for detailed description
+ */
+int
+add_to_purse(player_t* player, int gold_coins) {
+  if (player != NULL) {
+    // add coins to purse
+    player->purse += gold_coins;
+
+    // return new value of purse
+    return player->purse;
+  }
+  
+  // otherwise return 0
   return 0;
-}
-
-
-/**************** set_visibility ****************/
-/*
- * see player.h for more information
- */
-bool
-player_setVisibility(player_t* player, char* visibility){
-  if (player == NULL || visibility == NULL){
-    return false;
-  }
-  player->visibility = visibility;
-  if(player->visibility == NULL){
-    return false;
-  }
-  else{
-    return true;
-  }
-  return false;
-
-
-}
-
-
-/**************** set_type ****************/
-/*
- * see player.h for more information
- */
-bool
-player_setType(player_t* player, char* type){
-  if (player == NULL || type == NULL){
-    return false;
-  }
-  player->type = type;
-  if(player->type == NULL){
-    return false;
-  }
-  else{
-    return true;
-  }
-  return false;
-}
-
-
-
-/**************** set_xPos ****************/
-/*
- * see player.h for more information
- */
-bool
-player_setxPos(player_t* player, int xPos){
-  if (player == NULL){
-    return false;
-  }
-  player->xPos = xPos;
-  if(&player->xPos == NULL){
-    return false;
-  }
-  else{
-    return true;
-  }
-  return false;
-}
-
-
-/**************** set_yPos ****************/
-/*
- * see player.h for more information
- */
-bool
-player_setyPos(player_t* player, int yPos){
-  if (player == NULL){
-    return false;
-  }
-  player->yPos = yPos;
-  if(&player->yPos == NULL){
-    return false;
-  }
-  else{
-    return true;
-  }
-  return false;
-}
-
-void addToPurse(player_t* player, int numGold, int GoldTotal){
-  if(player->purse <= GoldTotal){
-    player->purse += numGold;
-  }
-
 }

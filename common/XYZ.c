@@ -1,15 +1,13 @@
 /* 
- * XYZ.c module
+ * XYZ.c - XYZ module for the CS50 nuggets project
  *
- * see XYZ.h for more information.
- *
- * Palmer's Posse
+ * Palmer's Posse, November 2021
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../support/message.h"
+#include "message.h"
 #include "grid.h"
 #include "mem.h"
 #include "game.h"

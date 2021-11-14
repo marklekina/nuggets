@@ -1,114 +1,33 @@
-/* 
+/*
  * player.h - header file for player module
  *
+ * this module contains:
+ *     player_t struct - holds player information
+ *     point_t struct - holds a single (x,y) coordinate
+ *     functions to:
+ *        i) create (and delete) the aforementioned structs
+ *       ii) getter functions
+ *      iii) setter functions
+ *       iv) update player information 
+ *
+ * Palmer's Posse, November 2021
  */
 
 #ifndef __PLAYER_H
 #define __PLAYER_H
 
-#include <stdio.h>
-#include <stdbool.h>
-#include "../support/message.h"
+point_t* point_new(int x, int y);
+player_t* player_new(char* name, char* type);
+void player_delete(player_t* player);
+char* get_name(player_t* player);
+char* get_type(player_t* player);
+point_t* get_location(player_t* player);
+char* get_visible_map(player_t* player);
+addr_t* get_address(player_t* player);
+int get_purse(player_t* player);
+bool set_location(player_t* player, int x, int y);
+bool set_visible_map(player_t* player, char* visible_map);
+bool set_address(player_t* player, addr_t* to);
+int add_to_purse(player_t* player, int gold_coins);
 
-
-/**************** global types ****************/
-typedef struct player player_t;
-
-/**************** functions ****************/
-
-/**************** player_new ****************/
-
-/* Creates a new player with the parameters
- * We return:
- *  creates a new player, or NULL if error.
- * We guarentee:
- *    
- */
-player_t*
-player_new(char* name, char* type);
-
-/**************** player_delete ****************/
-/*
- * see player.h for more information
- */
-void
-player_delete(player_t* player);
-
-/**************** player_getVisibility ****************/
-/*
- * see player.h for more information
- */
-char*
-player_getVisibility(player_t* player);
-
-/**************** player_getName ****************/
-/*
- * see player.h for more information
- */
-char* player_getName(player_t* player);
-
-/**************** player_getType ****************/
-/*
- * see player.h for more information
- */
-char*
-player_getType(player_t* player);
-
-/**************** player_getxPos ****************/
-/*
- * see player.h for more information
- */
-int
-player_getxPos(player_t* player);
-
-/**************** player_getyPos ****************/
-/*
- * see player.h for more information
- */
-int
-player_getyPos(player_t* player);
-
-
-
-/**************** set_visibility ****************/
-/*
- * see player.h for more information
- */
-
-bool
-player_setVisibility(player_t* player, char* visibility);
-
-
-
-/**************** set_type ****************/
-/*
- * see player.h for more information
- */
-bool
-player_setType(player_t* player, char* type);
-
-
-
-/**************** set_xPos ****************/
-/*
- * see player.h for more information
- */
-bool
-player_setxPos(player_t* player, int xPos);
-
-
-
-/**************** set_yPos ****************/
-/*
- * see player.h for more information
- */
-bool
-player_setyPos(player_t* player, int yPos);
-
-/**************** addToPurse ****************/
-/*
- * see player.h for more information
- */
-void addToPurse(player_t* player, int numGold, int GoldTotal);
-
-#endif
+#endif // __PLAYER_H
