@@ -21,6 +21,7 @@
 /**************** global types ****************/
 typedef struct grid {
   char* map;
+  char* original_map;
   int nrows;
   int ncols;
 } grid_t;
@@ -40,7 +41,9 @@ grid_new(int nrows, int ncols){
 
     // initialize grid variables
     if (grid != NULL) {
-      grid->map = NULL;     // will load map into this variable, for now set to null
+      // will load map into map & original_map, set null for now
+      grid->map = NULL;
+      grid->original_map = NULL;
       grid->nrows = nrows;
       grid->ncols = ncols;
     }
@@ -66,6 +69,12 @@ grid_delete(grid_t* grid)
   if (NULL != grid->map) {
     mem_free(grid->map);
   }
+
+  // free the original map string
+  if (NULL != grid->original_map) {
+    mem_free(grid->original_map);
+  }
+  
   // free grid object
   mem_free(grid);
 }
@@ -80,12 +89,18 @@ load_map(grid_t* grid, FILE* fp)
 {
   // validate arguments
   if (grid != NULL && fp != NULL) {
+    // make copy to file pointer
     // read map from map file into a string
+    FILE* fp_copy = fp;
     char* map = file_readFile(fp);
 
     // assign map to the grid
+    // set nrows and ncols appropriately
     if (map != NULL) {
       grid->map = map;
+      grid->original_map = map;
+      grid->nrows = file_numLines(fp_copy);
+      grid->ncols = strlen(file_readLine(fp_copy););
       return true;
     }
   }
@@ -138,4 +153,21 @@ get_map(grid_t* grid) {
     return grid->map;
   }
   return NULL;
+}
+
+char*
+get_original_map(grid_t* grid) {
+  if (grid != NULL){
+    return grid->original_map;
+  }
+  return NULL;
+}
+
+bool
+update_map(grid_t* grid, char* map) {
+  if (map != NULL) {
+    grid->map = map;
+    return true;
+  }
+  return false;
 }

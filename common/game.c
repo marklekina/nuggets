@@ -93,10 +93,15 @@ game_delete(game_t* game) {
  */
 void
 remove_spectator(game_t* game) {
-  // TODO: send quit message to current spectator
+  // send quit message to current spectator
+  player_t* spectator = get_spectator(game);
 
-  // delete player object
-  player_delete(game->spectator);
+  if (spectator != NULL) {
+    message_send(spectator->to, "QUIT You have been replaced by a new spectator\n");
+
+    // delete player object
+    player_delete(spectator);
+  }
 }
 
 
@@ -105,9 +110,9 @@ remove_spectator(game_t* game) {
  * see game.h for detailed description
  */
 bool
-add_spectator(game_t* game, char* name) {
+add_spectator(game_t* game) {
   // validate parameters
-  if (game != NULL && name != NULL) {
+  if (game != NULL) {
     // if a spectator is already present, kick them out
     if (game->spectator != NULL){
       removeSpectator(game);
@@ -115,8 +120,11 @@ add_spectator(game_t* game, char* name) {
 
     // create player_t object of spectator type
     // assign them to game and return true
-    player_t* player = player_new(name, "spectator");
+    // NB: name parameter doesn't matter for spectator, we never use it
+    // to solve potential double free errors, reassign spectator name to null
+    player_t* player = player_new("spectator", "spectator");
     if (player != NULL) {
+      player->name = NULL;
       game->spectator = player;
       return true;
     }
@@ -130,7 +138,7 @@ add_spectator(game_t* game, char* name) {
 /* 
  * see game.h for description
  */
-bool
+int
 add_player(game_t* game, char* name) {
   // validate parameters
   if (game != NULL && name != NULL) {
@@ -143,13 +151,13 @@ add_player(game_t* game, char* name) {
       game->players[game->num_players] = player;
       game->num_players += 1;
 
-      // return true if successful
-      return true;
+      // return player_id if successful
+      return game->num_players;
     }
   }
   
-  // otherwise return false
-  return false;
+  // otherwise return invalid index
+  return -1;
 }
 
 
