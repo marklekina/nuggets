@@ -3,29 +3,25 @@
 # Palmer's Posse
 
 
-C = ../common
+S = ../support
+
 CC = gcc
+CFLAGS = -Wall -pedantic -std=c11 -ggdb -I$S
+OBJS = grid.o player.o game.o XYZ.o
+LIBS = common.a
 
-FLAGS =
-CFLAGS = -Wall -pedantic -std=c11 -ggdb -I$C
-OBJS = grid.o player.o game.o XYZ.o 
-LIB = common.a
+$(LIBS): $(OBJS)
+	ar cr $(LIBS) $(OBJS)
 
-
-.PHONY: all clean 
-
-all: $(LIB)
-$(LIB): $(OBJS)
-		ar cr $(LIB) $(OBJS)
-
-grid.o: grid.h $C/file.h $C/mem.h 
-player.o: player.h $C/file.h $C/mem.h
-game.o: game.h
-XYZ.o: $C/mem.h
+grid.o: grid.h file.h mem.h 
+player.o: player.h mem.h $S/message.h
+game.o: game.h file.h mem.h grid.h player.h
+XYZ.o: mem.h grid.h player.h $S/message.h
 
 clean: 
 	rm -f grid
 	rm -f game
 	rm -f player
+	rm -f XYZ
 	rm -f *~ *.o
 	rm -rf *.dSYM

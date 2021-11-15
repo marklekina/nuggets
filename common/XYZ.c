@@ -9,7 +9,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include "mem.h"
-#include "../support/message.h"
+#include "message.h"
 #include "game.h"
 #include "player.h"
 #include "grid.h"
