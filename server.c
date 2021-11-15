@@ -21,7 +21,7 @@
 
 
 void parseArgs(const int argc, char* argv[]);
-bool parseMessage(void* item, const addr_t to, const char* message);
+bool parseMessage(void* item, const addr_t to, const char* client_message);
 bool initiateNetwork();
 void updateGame(char stroke);
 void printResults(game_t* game);
@@ -68,15 +68,25 @@ void parseArgs(const int argc, char* argv[]){
  *  message- a string message sent by the client
  * 
  */
-bool parseMessage(void* item, const addr_t address, const char* message){
+bool parseMessage(void* item, const addr_t address, const char* client_message){
 
-  if(message == NULL){
+  if(client_message == NULL){
     return false;
   }
 
   // copy pointer to address
+  // copy client_message to message
   addr_t* to = (addr_t*) &address;
+  char* message = (char*) client_message;
 
+  // convert message to uppercase
+  char* ptr = message;
+  while (*ptr) {
+    *ptr = toupper((unsigned char) *ptr);
+    ptr++;
+  }
+
+  // handle different message types
   if((strncmp(message, "PLAY ", strlen("PLAY "))) == 0){
     // copy the rest of the message into a string
     int len = strlen(message) - strlen("PLAY");
@@ -89,22 +99,30 @@ bool parseMessage(void* item, const addr_t address, const char* message){
     
     // call handle player
     handlePlayer(game, to, name);
+
+    // send player game information
+    sendGrid(game, player);
+    sendGold(game, player, 0);
+    sendDisplay(game, player);
+
+    // return true
     return true;
   }
 
   
-  if((strncmp(message, "SPECTATE ", strlen("SPECTATE "))) == 0){
-    // copy the rest of the message into a string
-    int len = strlen(message) - strlen("SPECTATE");
-    char* name = mem_malloc(sizeof(char) * len);
-    strcpy(name, &message[strlen("SPECTATE ")]);
-
+  if((strncmp(message, "SPECTATE", strlen("SPECTATE"))) == 0){
     // initiate spectator object and set it's address to message source
-    player_t* player = player_new(name, "spectator");
+    player_t* player = player_new("spectator", "spectator");
     set_address(player, to);
     
     // call handle player
     handleSpectator(game, to);
+    // send player game information
+    sendGrid(game, player);
+    sendGold(game, player, 0);
+    sendDisplay(game, player);
+
+    // return true
     return true;
   }
 
@@ -117,6 +135,7 @@ bool parseMessage(void* item, const addr_t address, const char* message){
     
     // call handle key
     handleKey(game, player, key);
+
     return true;
   }
 

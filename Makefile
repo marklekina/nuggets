@@ -12,7 +12,8 @@ SOURCES = $S/message.h $C/file.h $C/mem.h $C/game.h $C/player.h $C/XYZ.c
 LIBS = $C/common.a $C/libcs50.a $S/support.a -lm
 
 all:
-	make -C common/
+	make -C common
+	make -C support
 	make server
 
 server: server.o
@@ -23,7 +24,8 @@ server.o: $(SOURCES)
 .PHONY: clean
 
 clean:
-	make -C common/ clean
+	make -C common clean
+	make -C support clean
 	rm -rf *.dSYM
 	rm -f *~ *.o
 	rm -f server

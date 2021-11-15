@@ -565,11 +565,11 @@ bool sendDisplay(game_t* game, player_t* player) {
 
     // otherwise fetch only the part of the map visible to the player
     else {
-      map = get_visible_map(player);
+      map = get_map(get_grid(game));
     }
     
     // build message string
-    char message[50];
+    char* message = mem_malloc(sizeof(char) * (strlen(map) + strlen("DISPLAY\n ")));
     sprintf(message, "DISPLAY\n%s", map);
     
     // send the client the message
