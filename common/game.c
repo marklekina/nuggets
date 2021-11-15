@@ -30,7 +30,8 @@ typedef struct game {
   player_t* players[26]; // array of game players
   point_t* piles[30];
   int num_players;       // number of players currently in the game
-
+  int num_piles;
+  int gold_distributed;
 } game_t;
 
 
@@ -103,6 +104,8 @@ game_new(FILE* fp, int nrows, int ncols) {
       // initialize the rest of the variables as null (or zero)
       game->spectator = NULL;
       game->num_players = 0;
+      game->gold_distributed = 0;
+      game->num_piles = 0;
     }
 
     // return game object
@@ -214,6 +217,26 @@ add_player(game_t* game, char* name) {
   return -1;
 }
 
+/**************** add_pile ****************/
+/* 
+ * see game.h for description
+ */
+bool
+add_pile(game_t* game, pile_t* pile) {
+  // validate parameters
+  if (game != NULL && pile != NULL) {
+    // add player to array of players
+    // increment number of players in game
+    game->piles[game->num_piles] = pile;
+    game->num_piles += 1;
+
+    // return player_id if successful
+    return true;
+  }
+  
+  // otherwise return invalid index
+  return false;
+}
 
 /**************** getters ****************/
 /*
@@ -225,6 +248,22 @@ get_num_players(game_t* game) {
     return game->num_players;
   }
   return 0;
+}
+
+int
+get_amount(pile_t* pile) {
+  if(pile != NULL) {
+    return pile->amount;
+  }
+  return -1;
+}
+
+point_t* 
+get_pile_location(pile_t* pile){
+  if (pile != NULL) {
+    return pile->location;
+  }
+  return NULL;
 }
 
 player_t*
@@ -249,6 +288,14 @@ player_t*
 get_spectator(game_t* game) {
   if (game!= NULL) {
     return game->spectator;
+  }
+  return NULL;
+}
+
+pile_t* 
+get_piles(game_t* game, int i){
+  if (game!= NULL && i >= 0) {
+    return game->piles[i];
   }
   return NULL;
 }
@@ -297,10 +344,9 @@ compute_visibility(point_t* player, grid_t* grid)
   for (int i = 0; i < x; i++) {
     for (int j = 0; j < y; j++) {
       // compute change in x and change in y
-      point_t* point = get_location(player);
 
-      int dx = i - get_x(point);
-      int dy = j - get_y(point);
+      int dx = i - get_x(player);
+      int dy = j - get_y(player);
 
       // case 1: line between points is horizontal
       if (dy == 0) {
@@ -315,9 +361,8 @@ compute_visibility(point_t* player, grid_t* grid)
         else {
           int step = dx / abs(dx);
           bool isVisible = true;
-          point_t* playerPoint = get_location(player);
 
-          for (int k = get_x(playerPoint) + step; k != i; k += step) {
+          for (int k = get_x(player) + step; k != i; k += step) {
             
             // if any of the points is not a room spot, mark target as invisible to player;
             // and break the loop
@@ -350,9 +395,8 @@ compute_visibility(point_t* player, grid_t* grid)
         else {
           int step = dy / abs(dy);
           bool isVisible = true;
-          point_t* playerPoint = get_location(player);
 
-          for (int k = get_y(playerPoint) + step; k != j; k += step) {
+          for (int k = get_y(player) + step; k != j; k += step) {
 
             // if any of the points is not a room spot, mark target as invisible to player and break the loop
             if (map[i][k] != '.') {
@@ -380,12 +424,11 @@ compute_visibility(point_t* player, grid_t* grid)
         // loop through all columns(x) between player and target
         isVisible = true;
         int step_x = dx / abs(dx);
-        point_t* playerPoint = get_location(player);
 
-        for(int k = get_x(playerPoint) + step_x; k != i; k += step_x) {
+        for(int k = get_x(player) + step_x; k != i; k += step_x) {
 
           // examine intersects
-          float y_intersect = gradient * (k - get_x(playerPoint)) + get_y(playerPoint);
+          float y_intersect = gradient * (k - get_x(player)) + get_y(player);
           float lower_pt = floor(y_intersect);
           float upper_pt = ceil(y_intersect);
 
@@ -421,10 +464,10 @@ compute_visibility(point_t* player, grid_t* grid)
         // loop through all rows(y) between player and target
         isVisible = true;
         int step_y = dy / abs(dy);
-        for (int k = get_y(playerPoint) + step_y; k != j; k += step_y) {
+        for (int k = get_y(player) + step_y; k != j; k += step_y) {
 
           // examine intersects
-          float x_intersect = ((k - get_y(playerPoint)) / gradient) + get_x(playerPoint);
+          float x_intersect = ((k - get_y(player)) / gradient) + get_x(player);
           float lower_pt = floor(x_intersect);
           float upper_pt = ceil(x_intersect);
 
@@ -467,7 +510,7 @@ compute_visibility(point_t* player, grid_t* grid)
     for (int j = 0; j < y; j++) {
       // if spot invisible to player, print nothing
       if (arr[i][j] == 0) {
-        visString[k] = " ";
+        visString[k] = ' ';
       }
       // otherwise, print appropriate character
       else {

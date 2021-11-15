@@ -30,6 +30,7 @@ typedef struct player {
   char* visible_map;
   addr_t* to;
   int purse;
+  char playerLetter;
 } player_t;
 
 
@@ -62,6 +63,18 @@ get_x(point_t* point) {
   return -1;
 }
 
+void set_player_letter(player_t* player, char playerLetter){
+  if(player != NULL && playerLetter!= NULL){
+    player->playerLetter = playerLetter;
+  }
+}
+
+char get_player_letter(player_t* player){
+  if(player != NULL){
+    return player->playerLetter;
+  }
+  return NULL;
+}
 /**************** get_x ****************/
 /*
  * see player.h for detailed description

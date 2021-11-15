@@ -33,6 +33,8 @@ void player_delete(player_t* player);
 char* get_name(player_t* player);
 char* get_type(player_t* player);
 point_t* get_location(player_t* player);
+char get_player_letter(player_t* player);
+void set_player_letter(player_t* player, char playerLetter);
 char* get_visible_map(player_t* player);
 addr_t* get_address(player_t* player);
 int get_purse(player_t* player);

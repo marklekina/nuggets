@@ -36,5 +36,8 @@ int get_num_players(game_t* game);
 player_t* get_player(game_t* game, int idx);
 grid_t* get_grid(game_t* game);
 player_t* get_spectator(game_t* game);
+point_t* get_pile_location(pile_t* pile);
+pile_t* get_piles(game_t* game, int i);
+bool add_pile(game_t* game, pile_t* pile);
 
 #endif // __GAME_H
