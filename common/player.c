@@ -62,18 +62,15 @@ get_x(point_t* point) {
   }
   return -1;
 }
-
+// assumes player letter is not NULL
 void set_player_letter(player_t* player, char playerLetter){
-  if(player != NULL && playerLetter!= NULL){
+  if(player != NULL){
     player->playerLetter = playerLetter;
   }
 }
-
+// assumes player is not NULL
 char get_player_letter(player_t* player){
-  if(player != NULL){
-    return player->playerLetter;
-  }
-  return NULL;
+  return player->playerLetter;
 }
 /**************** get_x ****************/
 /*

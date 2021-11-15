@@ -39,5 +39,13 @@ player_t* get_spectator(game_t* game);
 point_t* get_pile_location(pile_t* pile);
 pile_t* get_piles(game_t* game, int i);
 bool add_pile(game_t* game, pile_t* pile);
+int get_num_piles(game_t* game);
+pile_t* pile_new(point_t* location, int amount);
+bool set_gold_distributed(game_t* game, int goldDis);
+int get_gold_distributed(game_t* game);
+int get_gold_remaining(game_t* game);
+int get_amount(pile_t* pile);
+void pile_delete(pile_t* pile);
+void change_remaining_gold(game_t* game, int amount);
 
 #endif // __GAME_H

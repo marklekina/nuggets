@@ -32,5 +32,6 @@ void display_map(grid_t* grid);
 int get_rows(grid_t* grid);
 int get_cols(grid_t* grid);
 char* get_map(grid_t* grid);
+bool update_map(grid_t* grid, char* map);
 
 #endif // __GRID_H

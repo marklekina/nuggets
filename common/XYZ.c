@@ -62,7 +62,9 @@ bool handlePlayer(game_t* game, addr_t* to, char* playerName){
         
         // send OK message
         char playerLetter = 'a' + player_id;
-	      message_send(to, "OK %c", playerLetter);
+        char message[50];
+        sprintf(message, "OK %c\n", playerLetter);
+	      message_send(*to, message);
         set_player_letter(player, playerLetter);
 
         addr_t* to = get_address(player);
@@ -364,7 +366,7 @@ update_display(game_t* game) {
       // TODO: add this variables in game
       int num_piles = get_num_piles(game);
       for (int i = 0; i < num_piles; i++) {
-        point_t* pile = get_pile(game, i);
+        pile_t* pile = get_piles(game, i);
 
         if (pile != NULL) {
           // get x and y coordinates
@@ -433,18 +435,18 @@ distribute_gold(game_t* game)
   }
 
   // assign total amount of gold distributed to game
-  game->gold_distributed = goldInPurse;
+  set_gold_distributed(game, goldInPurse);
 }
 
 
-point_t*
+pile_t*
 player_on_gold(game_t* game, int x, int y) {
   // validate parameters
   if (game != NULL && x >= 0 && y >= 0) {
 
     // loop through all piles
-    for (int i = 0; i < game->num_piles; i++) {
-      pile_t* pile = game->piles[i];
+    for (int i = 0; i < get_num_piles(game); i++) {
+      pile_t* pile = get_piles(game, i);
       
       if (pile != NULL) {
         // get location of the pile
@@ -471,11 +473,15 @@ collect_gold(game_t* game, player_t* player, pile_t* pile)
 
     // transfer the gold in the pile to the player's purse
     // subtract it from goldRemaining
-    int purse = get_purse(player);
+  // int purse = get_purse(player);
     int amount = get_amount(pile);
 
-    purse += amount;
-    game->gold_distributed -= amount;
+    // purse += amount;
+    // int goldRemaining = get_gold_remaining(game);
+    // goldDistributed -= amount;
+    add_to_purse(player, amount);
+    change_remaining_gold(game, amount);
+
 
     // send gold message to player
     sendGold(game, player, get_amount(pile));
@@ -497,7 +503,8 @@ sendGrid(game_t* game, player_t* player) {
     int ncols = get_cols(grid);
 
     // build message string
-    char* message = sprintf("GRID %d %d\n", nrows, ncols);
+    char message[50];
+    sprintf(message, "GRID %d %d\n", nrows, ncols);
     
     // send the client the message
     message_send(*get_address(player), message);	
@@ -517,10 +524,11 @@ sendGold(game_t* game, player_t* player, int collected){
 
     // get gold info from game's grid and player
     int purse = get_purse(player);
-    int remaining = game->gold_remaining;
+    int remaining = get_gold_remaining(game);
 
     // build message string
-    char* message = sprintf("GOLD %d %d %d\n", collected, purse, remaining);
+    char message[50];
+    sprintf(message, "GOLD %d %d %d\n", collected, purse, remaining);
     
     // send the client the message
     message_send(*get_address(player), message);	
@@ -540,7 +548,7 @@ sendDisplay(game_t* game, player_t* player) {
 
     // fetch the entire map if the player is a spectator
     if (strcmp(get_type(player), "spectator") == 0) {
-      map = get_map(game->grid);
+      map = get_map(get_grid(game));
     }
 
     // otherwise fetch only the part of the map visible to the player
@@ -549,7 +557,8 @@ sendDisplay(game_t* game, player_t* player) {
     }
     
     // build message string
-    char* message = sprintf("DISPLAY\n%s", map);
+    char message[50];
+    sprintf(message, "DISPLAY\n%s", map);
     
     // send the client the message
     message_send(*get_address(player), message);	

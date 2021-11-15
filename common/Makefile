@@ -2,12 +2,13 @@
 #
 # Palmer's Posse
 
-L = ../../tse-meghanokeefe/libcs50
+L = ../../tse-AvaKoros/libcs50
 C = ../common
 CC = gcc
+
 FLAGS =
 CFLAGS = -Wall -pedantic -std=c11 -ggdb -I$L -I$C
-OBJS = grid.o player.o game.o XYZ.o common.o
+OBJS = grid.o player.o game.o XYZ.o 
 LIB = common.a
 
 
