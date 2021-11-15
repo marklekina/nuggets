@@ -17,9 +17,9 @@ bool handlePlayer(game_t* game, addr_t* to, char* playerName);
 bool handleSpectator(game_t* game, addr_t* to);
 bool handleKey(game_t* game, player_t* player, char key);
 
-bool sendGrid(player_t* player);
-bool sendGold(player_t* player);
-bool sendDisplay(player_t* player);
+bool sendGrid(game_t* game, player_t* player);
+bool sendGold(game_t* game, player_t* player);
+bool sendDisplay(game_t* game, player_t* player);
 
 
 /******************* handlePlayer *******************/
@@ -348,13 +348,15 @@ update_display(game_t* game) {
       for (int i = 0; i < num_piles; i++) {
         point_t* pile = get_pile(game, i);
 
-        // get x and y coordinates
-        int x = pile->x;
-        int y = pile->y;
+        if (pile != NULL) {
+          // get x and y coordinates
+          int x = pile->x;
+          int y = pile->y;
 
-        // find spot in map string and update it
-        int idx = y * (grid->ncols + 1) + x;
-        map[idx] = '*';
+          // find spot in map string and update it
+          int idx = y * (grid->ncols + 1) + x;
+          map[idx] = '*';
+        }
       }
 
       // refresh game's map
@@ -363,44 +365,169 @@ update_display(game_t* game) {
   }
 }
 
+/**************** distribute_gold ****************/
+/*
+ * see header file for details
+ */
+void
+distribute_gold(game_t* game)
+{
+  // initialize number of piles to be created (should be between GoldMinNumPiles and GoldMaxNumPiles)
+  // initialize variable to hold total gold distributed
+  int num_piles = rand() % (GoldMaxNumPiles - GoldMinNumPiles + 1) + GoldMinNumPiles;
+  int goldInPurse = 0;
+  
+  // initiate an array of gold piles to hold pile locations and gold amounts
+  for (int i = 0; i < num_piles; i++) {
+    // find random location to set up a gold pile
 
-// TODO: finish modifying this module from here
+    do {
+      int x_pos = rand() % game->grid->nrows;
+      int y_pos = rand() % game->grid->ncols;
+    } while (!spot_is_open(game->grid, x_pos, y_pos));
+    
+    point_t* location = point_new(x_pos, y_pos);
+    // TODO: implement a check to make sure a location isn't picked twice
+    
+    // compute random amount of gold to drop
 
-bool sendGrid(grid_t* grid, addr_t to){
-	// put together a string message that includes GRID nrows ncols
-	if(grid != NULL){
-		int nrows = grid_getnRows(grid);
-		int ncols = grid_getnCols(grid);
+    // determine average gold to put in a pile
+    int avgGold = GoldTotal / num_piles;
 
-		char* charRows = convertInt(nrows);
-		char* charCols = convertInt(ncols);
+    // determine random amount of gold to put in pile (between 1/2 and 3/2 of avgGold)
+    // subtract amount from remaining gold
+    int amount = rand() % (avgGold + 1) + (avgGold/2);
+    goldInPurse += amount;
 
-		// send the grid the client
-		char* message = strcat("GRID ", charRows);
-		message = strcat(message, " ");
-		message = strcat(message, charCols);
+    // add location and amount to pile
+    pile_t* pile = pile_new(location, amount);
 
-		message_send(to, message);	
-		return true;
-	}
-	return false;	
+    // add pile to game array
+    if (pile != NULL) {
+      game->piles[i] = pile;
+    }
+  }
+
+  // assign total amount of gold distributed to game
+  game->gold_distributed = goldInPurse;
 }
 
-// !!
-bool sendGold(game_t* game, addr_t to){
-	// put together a string message that includes GOLD # nuggets, purse count, remaining gold
 
-	// check if has been updated, if so send to clients
-	// message_send(to, "GOLD %d %d %d", collected, purse, remaining);	
-	return false;
+point_t*
+player_on_gold(game_t* game, int x, int y) {
+  // validate parameters
+  if (game != NULL && x >= 0 && y >= 0) {
+
+    // loop through all piles
+    for (int i = 0; i < game->num_piles; i++) {
+      pile_t* pile = game->piles[i];
+      
+      if (pile != NULL) {
+        // get location of the pile
+        point_t* location = pile->location;
+        
+        // compare coordinates and return pile if they match
+        if (x == location->x && y == location->y) {
+          return pile;
+        }
+      }
+    }
+  }
+
+  // otherwise return false
+  return NULL;
 }
 
-bool sendDisplay(char* map, addr_t to){
-	// retrieve the text version of the map and send it to client in a message
-	if(map!= NULL){
-		char* message = strcat("DISPLAY\n ", map);
-		message_send(to, message);	
-		return true;
-	}
-	return false;
+
+void
+collect_gold(game_t* game, player_t* player, pile_t* pile)
+{ 
+  // validate parameters
+  if (game != NULL && player != NULL && pile != NULL) {
+
+    // transfer the gold in the pile to the player's purse
+    // subtract it from goldRemaining
+    player->purse += pile->amount;
+    game->gold_remaining -= pile->amount;
+
+    // send gold message to player
+    sendGold(game, player, pile->amount);
+    
+    // delete pile
+    pile_delete(pile);
+  }
+}
+
+
+bool
+sendGrid(game_t* game, player_t* player) {
+  // validate parameters
+  if (game != NULL && player != NULL) {
+
+    // get nrows and ncols from game's grid
+    int nrows = get_grid(game)->nrows;
+    int ncols = get_grid(game)->ncols;
+
+    // build message string
+    char* message = sprintf("GRID %d %d\n", nrows, ncols);
+    
+    // send the client the message
+    message_send(player->to, message);	
+    return true;
+  }
+
+  // otherwise return false
+  return false;	
+}
+
+
+
+bool
+sendGold(game_t* game, player_t* player, int collected) {
+  // validate parameters
+  if (game != NULL && player != NULL) {
+
+    // get gold info from game's grid and player
+    int purse = player->purse;
+    int remaining = game->gold_remaining;
+
+    // build message string
+    char* message = sprintf("GOLD %d %d %d\n", collected, purse, remaining);
+    
+    // send the client the message
+    message_send(player->to, message);	
+    return true;
+  }
+
+  // otherwise return false
+  return false;	
+}
+
+
+bool
+sendDisplay(game_t* game, player_t* player) {
+  // validate parameters
+  if (game != NULL && player != NULL) {
+    char* map;
+
+    // fetch the entire map if the player is a spectator
+    if (strcmp(get_type(player), "spectator") == 0) {
+      map = get_map(game->grid);
+    }
+
+    // otherwise fetch only the part of the map visible to the player
+    else {
+      map = get_visible_map(player);
+    }
+    
+    // build message string
+    char* message = sprintf("DISPLAY\n%s", map);
+    
+    // send the client the message
+    message_send(player->to, message);	
+    return true;
+  }
+
+  // otherwise return false
+  return false;	
 }

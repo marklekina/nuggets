@@ -242,72 +242,47 @@ compute_visibility(point_t* player, grid_t* grid)
 }
 
 
-/**************** distribute_gold ****************/
-/*
- * see header file for details
- */
-void
-distribute_gold(game_t* game)
-{
-  // initialize number of piles to be created (should be between GoldMinNumPiles and GoldMaxNumPiles)
-  // initialize variable to hold total gold distributed
-  int num_piles = rand() % (GoldMaxNumPiles - GoldMinNumPiles + 1) + GoldMinNumPiles;
-  int goldInPurse = 0;
-  
-  // initiate an array of gold piles to hold pile locations and gold amounts
-  for (int i = 0; i < num_piles; i++) {
-    // find random location to set up a gold pile
+point_t*
+player_on_gold(game_t* game, int x, int y) {
+  // validate parameters
+  if (game != NULL && x >= 0 && y >= 0) {
 
-    do {
-      int x_pos = rand() % game->grid->nrows;
-      int y_pos = rand() % game->grid->ncols;
-    } while (!spot_is_open(game->grid, x_pos, y_pos));
-    
-    point_t* location = point_new(x_pos, y_pos);
-    // TODO: implement a check to make sure a location isn't picked twice
-    
-    // compute random amount of gold to drop
-
-    // determine average gold to put in a pile
-    int avgGold = GoldTotal / num_piles;
-
-    // determine random amount of gold to put in pile (between 1/2 and 3/2 of avgGold)
-    // subtract amount from remaining gold
-    int amount = rand() % (avgGold + 1) + (avgGold/2);
-    goldInPurse += amount;
-
-    // add location and amount to pile
-    pile_t* pile = pile_new(location, amount);
-
-    // add pile to game array
-    if (pile != NULL) {
-      game->piles[i] = pile;
+    // loop through all piles
+    for (int i = 0; i < game->num_piles; i++) {
+      pile_t* pile = game->piles[i];
+      
+      if (pile != NULL) {
+        // get location of the pile
+        point_t* location = pile->location;
+        
+        // compare coordinates and return pile if they match
+        if (x == location->x && y == location->y) {
+          return pile;
+        }
+      }
     }
   }
 
-  // assign total amount of gold distributed to game
-  game->gold_distributed = goldInPurse;
+  // otherwise return false
+  return NULL;
 }
 
 
 void
-collect_gold(player_t* player, int* goldRemaining, point_t* locations[], int goldAmounts[], int numPiles)
-{
-  // extract player's location
-  int x = player->xPos;
-  int y = player->yPos;
-  
-  // loop through all gold piles and find the one that matches the player's location
-  for (int i = 0; i < numPiles; i++) {
-    if (x == locations[i]->x && y == locations[i]->y) {
+collect_gold(game_t* game, player_t* player, pile_t* pile)
+{ 
+  // validate parameters
+  if (game != NULL && player != NULL && pile != NULL) {
 
-      // transfer the gold in the pile to the player's purse
-      // subtract it from goldRemaining
-      player->purse += goldAmounts[i];
-      *goldRemaining -= goldAmounts[i];
+    // transfer the gold in the pile to the player's purse
+    // subtract it from goldRemaining
+    player->purse += pile->amount;
+    game->gold_remaining -= pile->amount;
 
-      // terminate loop
-      break;
-    }
+    // send gold message to player
+    sendGold(game, player, pile->amount);
+    
+    // delete pile
+    pile_delete(pile);
   }
 }
