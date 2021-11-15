@@ -29,7 +29,7 @@ static const int GoldMaxNumPiles = 30; // maximum number of gold piles
 
 /******************* handlePlayer *******************/
 /*
- * see XYZ.h for detailed description
+ * receive a message that a client wants to play and sets them up accordingly
  */
 bool handlePlayer(game_t* game, addr_t* to, char* playerName){
   // validate parameters
@@ -67,13 +67,12 @@ bool handlePlayer(game_t* game, addr_t* to, char* playerName){
 	      message_send(*to, message);
         set_player_letter(player, playerLetter);
 
+        // retrieve address and send message to it
         addr_t* to = get_address(player);
-
         message_send(*to, message);
         
         // send grid, gold and display information
         if(sendGrid(game, player)){
-
           if(sendGold(game, player, 0)){
             if(sendDisplay(game, player)){
               // if all successful, return true
@@ -89,7 +88,10 @@ bool handlePlayer(game_t* game, addr_t* to, char* playerName){
   return false;
 }
 
-
+/******************* handleSpectator *******************/
+/*
+ * receive a message that a client wants to spectate and sets them up accordingly
+ */
 bool handleSpectator(game_t* game, addr_t* to) {
   // validate parameters
   if (game != NULL && to != NULL) {
@@ -97,7 +99,7 @@ bool handleSpectator(game_t* game, addr_t* to) {
     // add spectator to game
     if (add_spectator(game)) {
       
-      // set spectator address
+      // create spectator and set spectator address
       player_t* spectator = get_spectator(game);
       set_address(spectator, to);
 
@@ -117,7 +119,10 @@ bool handleSpectator(game_t* game, addr_t* to) {
   return false;
 }
 
-
+/******************* handleKey *******************/
+/*
+ * receive a message that the client input a key and handle that keystoke
+ */
 bool handleKey(game_t* game, player_t* player, char key) {
   // validate parameters
   if (game != NULL && player != NULL) {
@@ -304,7 +309,10 @@ bool handleKey(game_t* game, player_t* player, char key) {
   return false;
 }
 
-
+/******************* spot_is_open *******************/
+/*
+ * checks if a client can stand on a specific spot on the grid
+ */
 bool spot_is_open(grid_t* grid, int x, int y) {
   if (grid == NULL || x < 0 || y < 0) {
     return false;
@@ -332,13 +340,17 @@ bool spot_is_open(grid_t* grid, int x, int y) {
   return true;
 }
 
-
-void
-update_display(game_t* game) {
+/******************* update_display *******************/
+/*
+ * update all the player locations and gold locations, updating them if needed
+ */
+void update_display(game_t* game) {
   // validate parameters
   if (game != NULL) {
+    // get the grid and do null check
     grid_t* grid = get_grid(game);
     if (grid != NULL) {
+      // pull out the map
       char* originalMap = get_map(grid);
 
       // initialize copy of original map
@@ -363,11 +375,10 @@ update_display(game_t* game) {
       }
 
       // loop through gold piles and update their locations on map
-      // TODO: add this variables in game
       int num_piles = get_num_piles(game);
       for (int i = 0; i < num_piles; i++) {
         pile_t* pile = get_piles(game, i);
-
+        // null check on pile
         if (pile != NULL) {
           // get x and y coordinates
           point_t* point = get_pile_location(pile);
@@ -389,11 +400,9 @@ update_display(game_t* game) {
 
 /**************** distribute_gold ****************/
 /*
- * see header file for details
+ * initialize piles, locations of piles, gold per pile and arrya holding all piles
  */
-void
-distribute_gold(game_t* game)
-{
+void distribute_gold(game_t* game){
   // initialize number of piles to be created (should be between GoldMinNumPiles and GoldMaxNumPiles)
   // initialize variable to hold total gold distributed
   int num_piles = rand() % (GoldMaxNumPiles - GoldMinNumPiles + 1) + GoldMinNumPiles;
@@ -412,10 +421,8 @@ distribute_gold(game_t* game)
     } while (!spot_is_open(grid, x_pos, y_pos));
     
     point_t* location = point_new(x_pos, y_pos);
-    // TODO: implement a check to make sure a location isn't picked twice
-    
-    // compute random amount of gold to drop
 
+    // compute random amount of gold to drop
     // determine average gold to put in a pile
     int avgGold = GoldTotal / num_piles;
 
@@ -438,9 +445,11 @@ distribute_gold(game_t* game)
   set_gold_distributed(game, goldInPurse);
 }
 
-
-pile_t*
-player_on_gold(game_t* game, int x, int y) {
+/**************** player_on_gold ****************/
+/*
+ * check if a player is standing on gold
+ */
+pile_t* player_on_gold(game_t* game, int x, int y) {
   // validate parameters
   if (game != NULL && x >= 0 && y >= 0) {
 
@@ -464,21 +473,18 @@ player_on_gold(game_t* game, int x, int y) {
   return NULL;
 }
 
-
-void
-collect_gold(game_t* game, player_t* player, pile_t* pile)
+/**************** collect_gold ****************/
+/*
+ * adds gold to the players purse and takes it out of game play
+ */
+void collect_gold(game_t* game, player_t* player, pile_t* pile)
 { 
   // validate parameters
   if (game != NULL && player != NULL && pile != NULL) {
 
     // transfer the gold in the pile to the player's purse
-    // subtract it from goldRemaining
-  // int purse = get_purse(player);
     int amount = get_amount(pile);
 
-    // purse += amount;
-    // int goldRemaining = get_gold_remaining(game);
-    // goldDistributed -= amount;
     add_to_purse(player, amount);
     change_remaining_gold(game, amount);
 
@@ -491,9 +497,11 @@ collect_gold(game_t* game, player_t* player, pile_t* pile)
   }
 }
 
-
-bool
-sendGrid(game_t* game, player_t* player) {
+/**************** sendGrid ****************/
+/*
+ * sends a message with grid as well as the rows and columns of the grid to the client
+ */
+bool sendGrid(game_t* game, player_t* player) {
   // validate parameters
   if (game != NULL && player != NULL) {
 
@@ -516,9 +524,11 @@ sendGrid(game_t* game, player_t* player) {
 }
 
 
-
-bool
-sendGold(game_t* game, player_t* player, int collected){
+/**************** sendGold ****************/
+/*
+ * send the number of nuggets, the amount in the player's purse and the amount of gold remaining to the client
+ */
+bool sendGold(game_t* game, player_t* player, int collected){
   // validate parameters
   if (game != NULL && player != NULL) {
 
@@ -539,9 +549,11 @@ sendGold(game_t* game, player_t* player, int collected){
   return false;	
 }
 
-
-bool
-sendDisplay(game_t* game, player_t* player) {
+/**************** sendDisplay ****************/
+/*
+ * will send a string interpretation of the map, the section of the map depends on the player
+ */
+bool sendDisplay(game_t* game, player_t* player) {
   // validate parameters
   if (game != NULL && player != NULL) {
     char* map;
