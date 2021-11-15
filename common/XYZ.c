@@ -13,10 +13,11 @@
 #include "grid.h"
 #include "mem.h"
 #include "game.h"
+#include "player.h"
 
-// bool handlePlay(game_t game, char** playerNames, char* playerName, int currentNumPlayers, addr_t to);
-// bool handleSpectator(game_t* game, addr_t to);
-// bool handleKey(char key, addr_t to, player_t* player, game_t* game);
+bool handlePlay(game_t* game, addr_t to, char* playerName);
+bool handleSpectator(game_t* game, addr_t to, player_t* player);
+bool handleKey(char key, addr_t to, player_t* player, game_t* game);
 
 bool sendGrid(grid_t* grid, addr_t to);
 bool sendGold(game_t* game, addr_t to);
@@ -29,7 +30,8 @@ static const int MaxPlayers = 26;      // maximum number of players
 
 // parameters given by handleMessage
 bool handlePlay(game_t* game, addr_t to, char* playerName){
-    // takes in a string message starting with "PLAY"
+
+	// takes in a string message starting with "PLAY"
 	// ensure max number of players has not been reached
 	int index = get_location(game);
 	if(index >= MaxPlayers){
