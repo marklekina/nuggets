@@ -117,4 +117,9 @@ void addToPurse(player_t* player, int numGold, int GoldTotal);
  */
 int getPurse(player_t* player);
 
+/**************** getAddress ****************/
+/*
+ * see player.h for more information
+ */
+addr_t* getAddress(player_t* player);
 #endif

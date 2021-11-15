@@ -79,4 +79,28 @@ game_addPlayer(game_t* game, char* name, char* type);
 player_t* 
 game_getSpectator(game_t* game);
 
+/**************** game_setSeed ****************/
+/* 
+ * comments
+ */
+bool game_setSeed(game_t* game, int seed);
+
+/**************** game_setMap ****************/
+/* 
+ * comments
+ */
+void game_setMap(game_t* game, FILE* map);
+
+/**************** game_setMap ****************/
+/* 
+ * comments
+ */
+player_t* get_Player(game_t* game, int location);
+
+/**************** game_setMap ****************/
+/* 
+ * comments
+ */
+bool game_setGrid(game_t* game, grid_t* grid);
+
 #endif

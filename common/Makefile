@@ -10,6 +10,7 @@ CFLAGS = -Wall -pedantic -std=c11 -ggdb -I$L -I$C
 OBJS = grid.o player.o game.o XYZ.o common.o
 LIB = common.a
 
+
 .PHONY: all clean 
 
 all: $(LIB)

@@ -28,7 +28,7 @@ typedef struct player {
   char* type;
   int xPos;
   int yPos;
-  addr_t to;
+  addr_t* to;
   int purse;
 } player_t;
 
@@ -227,5 +227,15 @@ void addToPurse(player_t* player, int numGold, int GoldTotal){
 }
 
 int getPurse(player_t* player){
-  return player->purse;
+  if(player != NULL){
+    return player->purse;
+  }
+  return 0;
+}
+
+addr_t* getAddress(player_t* player){
+  if(player != NULL){
+    return player->to;
+  }
+  return NULL;
 }
