@@ -15,7 +15,6 @@
 #include "player.h"
 #include "message.h"
 #include "grid.h"
-#include "common.c"
 #include "XYZ.c"
 #include "mem.h"
 #include "file.h"
@@ -64,8 +63,8 @@ void parseArgs(const int argc, char* argv[], game_t* game){
         fclose(fp);
 
         srand(getpid());
-        int randSeed = rand();
-        game_setSeed(game, randSeed);
+       // int randSeed = rand();
+       // game_setSeed(game, randSeed);
     }
 
     if(argc == 3){
@@ -82,8 +81,8 @@ void parseArgs(const int argc, char* argv[], game_t* game){
         game_t* game = game_new(fp, 0, 0);
         fclose(fp);
 
-        int* seed = 0;
-        sscanf(argv[3], "%d", seed);
+       // int* seed = 0;
+       // sscanf(argv[3], "%d", seed);
 
         // quick check because zero is an edge case in strcmp
         if(strcmp(argv[3],"0") == 0) {
@@ -91,7 +90,7 @@ void parseArgs(const int argc, char* argv[], game_t* game){
             exit(3);
         }
 
-        game_setSeed(game, *seed);
+       // game_setSeed(game, *seed);
     }
     else{
         fprintf(stderr, "Faulty commandline, one or two arguments only.");
@@ -128,16 +127,16 @@ bool parseMessage(void* item, const addr_t to, const char* message){
             i++;
             nameCount++;
         }
-        handlePlay(game, to, name);
+        handlePlayer(game, name);
         return true;
     }
 
     if(strcmp(firstWord, "SPECTATE") == 0){
         player_t* player = player_new(NULL, "spectator");
 
-        if(spectatorAdd(game, player)){
-            player_t* spectator = game_getSpectator(game);
-            handleSpectator(game, to, spectator);
+        if(add_spectator(game, player)){
+            player_t* spectator = get_spectator(game);
+            handleSpectator(game, to);
             return true;
         }
         return false;
@@ -230,7 +229,7 @@ void printResults(game_t* game){
         player_t* player = get_Player(game, i);
         char* name = player_getName(player);
         printf("%s", name);
-        int purse = player->purse;
+        int purse = get_purse(player);
         printf("%d", purse);
     }
     

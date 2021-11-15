@@ -2,13 +2,13 @@
 #
 # Palmer's Posse
 
-L = ../tse-meghanokeefe/libcs50
-LIBS = $L/libcs50.a -lm
+
 C = common
 S = support
+LIBS = $C/libcs50.a -lm
 
 FLAGS = 
-CFLAGS = -Wall -pedantic -std=c11 -ggdb -I$L -I$C -I$S
+CFLAGS = -Wall -pedantic -std=c11 -ggdb  -I$C -I$S
 CC = gcc
 MAKE = make 
 
@@ -19,7 +19,7 @@ CLIENTLOGS = -DLOG_CLIENT=stderr -DLOG_MESSAGE=NULL
 
 
 
-server.o: server.c $C/game.h $C/player.h $C/grid.h $S/message.h $C/XYZ.c $L/mem.h $L/file.h $S/log.h
+server.o: server.c $C/game.h $C/player.h $C/grid.h $S/message.h $C/XYZ.c $C/mem.h $C/file.h $S/log.h
 	$(CC) $(CFLAGS) $(SERVERLOGS) -c server.c -o $@
 
 server: server.o $(LIBS)
