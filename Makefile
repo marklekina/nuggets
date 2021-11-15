@@ -8,7 +8,7 @@ S = support
 CC = gcc
 CFLAGS = -Wall -pedantic -std=c11 -ggdb -I$C
 
-SOURCES = $S/message.h $C/log.h $C/file.h $C/mem.h $C/game.h $C/player.h $C/XYZ.c
+SOURCES = $S/message.h $C/file.h $C/mem.h $C/game.h $C/player.h $C/XYZ.c
 LIBS = $C/common.a $C/libcs50.a $S/support.a -lm
 
 all:

@@ -13,7 +13,7 @@
 #include <unistd.h>
 #include "game.h"
 #include "player.h"
-#include "message.h"
+#include "support/message.h"
 #include "grid.h"
 #include "XYZ.c"
 #include "mem.h"
