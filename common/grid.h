@@ -11,8 +11,19 @@
  * Palmer's Posse, November 2021
  */
 
+
 #ifndef __GRID_H
 #define __GRID_H
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+#include "mem.h"
+#include "file.h"
+
+/**************** global types ****************/
+typedef struct grid grid_t;  // opaque to users of the module
 
 grid_t* grid_new(int nrows, int ncols);
 void grid_delete(grid_t* grid);

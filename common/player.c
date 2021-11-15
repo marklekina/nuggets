@@ -11,6 +11,7 @@
 #include <ctype.h>
 #include "mem.h"
 #include "player.h"
+#include "../support/message.h"
 
 
 /**************** file-local global variables ****************/
@@ -49,6 +50,29 @@ point_new(int x, int y) {
   return pt;
 }
 
+/**************** get_x ****************/
+/*
+ * see player.h for detailed description
+ */
+int
+get_x(point_t* point) {
+  if(point != NULL){
+    return point->x;
+  }
+  return -1;
+}
+
+/**************** get_x ****************/
+/*
+ * see player.h for detailed description
+ */
+int
+get_y(point_t* point) {
+  if(point != NULL){
+    return point->y;
+  }
+  return -1;
+}
 
 /**************** player_new ****************/
 /*
@@ -76,7 +100,7 @@ player_new(char* name, char* type) {
     
     // format player's name
     for (int i = 0; i < len; i++) {
-      if (!isGraph(name[i]) && !isBlank(name[i])) {
+      if (!isgraph(name[i]) && !isblank(name[i])) {
         player_name[i] = '_';
       }
       else {
@@ -184,7 +208,7 @@ get_type(player_t* player) {
 }
 
 
-point*
+point_t*
 get_location(player_t* player) {
 
   // if player exists
@@ -247,7 +271,7 @@ set_location(player_t* player, int x, int y) {
     point_t* location = point_new(x, y);
 
     // assign point to player
-    if (point != NULL) {
+    if (location != NULL) {
       player->location = location;
       return true;
     }
@@ -272,6 +296,16 @@ set_address(player_t* player, addr_t* to) {
   if (player != NULL) {
     // assign address to player
     player->to = to;
+    return true;
+  }
+  return false;
+}
+
+bool
+set_name(player_t* player, char* name) {
+  if (player != NULL && name != NULL) {
+    // assign name to player
+    player->name = name;
     return true;
   }
   return false;

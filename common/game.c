@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <math.h>
 #include "mem.h"
 #include "file.h"
 #include "game.h"
@@ -27,7 +28,7 @@ typedef struct game {
   grid_t* grid;          // holds grid information
   player_t* spectator;   // one game spectator
   player_t* players[26]; // array of game players
-  point_t* piles[];
+  point_t* piles[30];
   int num_players;       // number of players currently in the game
 
 } game_t;
@@ -101,7 +102,6 @@ game_new(FILE* fp, int nrows, int ncols) {
 
       // initialize the rest of the variables as null (or zero)
       game->spectator = NULL;
-      game->players = NULL;
       game->num_players = 0;
     }
 
@@ -150,7 +150,8 @@ remove_spectator(game_t* game) {
   player_t* spectator = get_spectator(game);
 
   if (spectator != NULL) {
-    message_send(spectator->to, "QUIT You have been replaced by a new spectator\n");
+    addr_t* to = get_address(spectator);
+    message_send(*to, "QUIT You have been replaced by a new spectator\n");
 
     // delete player object
     player_delete(spectator);
@@ -168,7 +169,7 @@ add_spectator(game_t* game) {
   if (game != NULL) {
     // if a spectator is already present, kick them out
     if (game->spectator != NULL){
-      removeSpectator(game);
+      remove_spectator(game);
     }
 
     // create player_t object of spectator type
@@ -177,7 +178,7 @@ add_spectator(game_t* game) {
     // to solve potential double free errors, reassign spectator name to null
     player_t* player = player_new("spectator", "spectator");
     if (player != NULL) {
-      player->name = NULL;
+      set_name(player, "");
       game->spectator = player;
       return true;
     }
@@ -250,4 +251,230 @@ get_spectator(game_t* game) {
     return game->spectator;
   }
   return NULL;
+}
+
+/*************** compute_visibility ***********/
+/*
+ * given a player's position (x,y) and 2D array of characters representing a grid, compute the player's visibility from each point in the grid
+ * return a 2D array representing visible points with ones and invisible points with zeros.
+ */
+char*
+compute_visibility(point_t* player, grid_t* grid)
+{
+  // define map size
+  int x = get_cols(grid);
+  int y = get_rows(grid);
+
+  // create a map array (a 2D array of characters representing a grid) from the grid object
+  char map[x][y];
+
+  int i = 0;  // track x (columns)
+  int j = 0;  // track y (rows)
+
+  char* gridMap = get_map(grid);
+
+  // loop through the grid's map string and write it into the array
+  for(int k = 0; k < strlen(get_map(grid)); k++) {
+    // increment row each time we encounter a newline
+    
+    if(gridMap[k] == '\n') {
+      j += 1;
+    }
+    // otherwise assign character to array, increment and modulate column
+    else {
+      map[i][j] = gridMap[k];
+      i += 1;
+      i = i % x;
+    }
+  }
+
+  // initialize visibity array
+  int arr[x][y];
+
+  // loop through each point in the grid and compute its visibility from pt
+  // if visible; asssign 1, otherwise; assign 0
+
+  for (int i = 0; i < x; i++) {
+    for (int j = 0; j < y; j++) {
+      // compute change in x and change in y
+      point_t* point = get_location(player);
+
+      int dx = i - get_x(point);
+      int dy = j - get_y(point);
+
+      // case 1: line between points is horizontal
+      if (dy == 0) {
+        
+        // if player and target border each other (or if they are one and the same point), target is, by default, visible to player
+        if (abs(dx) <= 1) {
+          arr[i][j] = 1;
+        }
+
+        // if not, loop through the points between player and target
+        // note that movement is dependent on direction, take that into account using a unit step increment in the correct direction
+        else {
+          int step = dx / abs(dx);
+          bool isVisible = true;
+          point_t* playerPoint = get_location(player);
+
+          for (int k = get_x(playerPoint) + step; k != i; k += step) {
+            
+            // if any of the points is not a room spot, mark target as invisible to player;
+            // and break the loop
+            if(map[k][j] != '.') {
+              isVisible = false;
+              break;
+            }
+          }
+
+          // assign appropriate value to target
+          if(isVisible) {
+            arr[i][j] = 1;
+          }
+          else {
+            arr[i][j] = 0;
+          }
+        }
+      }
+
+      // case 2: line between points is vertical
+      if (dx == 0) {
+
+        // if player and target border each other (or if they are one and the same point), target is, by default, visible to player
+        if(abs(dy) <= 1) {
+          arr[i][j] = 1;
+        }
+
+        // otherwise, loop through the points between player and target
+        // note that movement is dependent on direction, take that into account using a unit step increment in the correct direction
+        else {
+          int step = dy / abs(dy);
+          bool isVisible = true;
+          point_t* playerPoint = get_location(player);
+
+          for (int k = get_y(playerPoint) + step; k != j; k += step) {
+
+            // if any of the points is not a room spot, mark target as invisible to player and break the loop
+            if (map[i][k] != '.') {
+              isVisible = false;
+              break;
+            }
+          }
+
+          // assign appropriate value to target
+          if(isVisible) {
+            arr[i][j] = 1;
+          }
+          else {
+            arr[i][j] = 0;
+          }
+        }
+      }
+
+      // case 3: line between points is diagonal
+      if(dx != 0 && dy != 0) {
+        // compute gradient
+        float gradient = (float) dy/dy;
+        bool isVisible;
+        
+        // loop through all columns(x) between player and target
+        isVisible = true;
+        int step_x = dx / abs(dx);
+        point_t* playerPoint = get_location(player);
+
+        for(int k = get_x(playerPoint) + step_x; k != i; k += step_x) {
+
+          // examine intersects
+          float y_intersect = gradient * (k - get_x(playerPoint)) + get_y(playerPoint);
+          float lower_pt = floor(y_intersect);
+          float upper_pt = ceil(y_intersect);
+
+          // if line intersects perfectly on grid point, inspect intersect
+          if(lower_pt == upper_pt) {
+
+            // if intersect is not a room spot, mark target as invisible to player and break the loop
+            if(map[k][(int) y_intersect] != '.') {
+              isVisible = false;
+              break;
+            }
+          }
+          
+          // otherwise inspect lower and upper grid points
+          else {
+            // if both grid points are not room spots, mark target as invisible to player and break the loop
+            if(map[k][(int) lower_pt] != '.' && map[k][(int) upper_pt] != '.') {
+              isVisible = false;
+              break;
+            }
+          }
+        }
+
+        // assign appropriate value to target
+        if (isVisible) {
+          arr[i][j] = 1;
+        }
+        else {
+          arr[i][j] = 0;
+        }
+
+
+        // loop through all rows(y) between player and target
+        isVisible = true;
+        int step_y = dy / abs(dy);
+        for (int k = get_y(playerPoint) + step_y; k != j; k += step_y) {
+
+          // examine intersects
+          float x_intersect = ((k - get_y(playerPoint)) / gradient) + get_x(playerPoint);
+          float lower_pt = floor(x_intersect);
+          float upper_pt = ceil(x_intersect);
+
+          // if line intersects perfectly on grid point, inspect intersect
+          if (lower_pt == upper_pt) {
+
+            // if intersect is not a room spot, mark target as invisible to player and break the loop
+            if (map[(int) x_intersect][k] != '.') {
+              isVisible = false;
+              break;
+            }
+          }
+          // otherwise inspect lower and upper grid points
+          else {
+            // if both grid points are not room spots, mark target as invisible to player and break the loop
+            if (map[(int) lower_pt][k] != '.' && map[(int) upper_pt][k] != '.') {
+              isVisible = false;
+              break;
+            }
+          }
+        }
+
+        // assign appropriate value to target
+        if (isVisible) {
+          arr[i][j] = 1;
+        }
+        else {
+          arr[i][j] = 0;
+        }
+      }
+    }
+  }
+
+  // initialize visibility string
+  char visString[x * y + 1];
+  int k = 0;
+
+  // loop through array and write output into string
+  for (int i = 0; i < x; i++) {
+    for (int j = 0; j < y; j++) {
+      // if spot invisible to player, print nothing
+      if (arr[i][j] == 0) {
+        visString[k] = " ";
+      }
+      // otherwise, print appropriate character
+      else {
+        visString[k] = gridMap[k];
+      }
+    }
+  }
+  // return visibility string
+  return visString;
 }

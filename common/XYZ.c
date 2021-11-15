@@ -9,8 +9,9 @@
 #include <stdbool.h>
 #include <string.h>
 #include "mem.h"
-#include "message.h"
+#include "../support/message.h"
 #include "game.h"
+#include "player.h"
 #include "grid.h"
 
 bool handlePlayer(game_t* game, addr_t* to, char* playerName);
@@ -18,7 +19,7 @@ bool handleSpectator(game_t* game, addr_t* to);
 bool handleKey(game_t* game, player_t* player, char key);
 
 bool sendGrid(game_t* game, player_t* player);
-bool sendGold(game_t* game, player_t* player);
+bool sendGold(game_t* game, player_t* player, int collected);
 bool sendDisplay(game_t* game, player_t* player);
 
 
@@ -35,13 +36,13 @@ bool handlePlayer(game_t* game, addr_t* to, char* playerName){
     int num_players = get_num_players(game);
     
     if (num_players > MaxPlayers) {
-      message_send(to, "QUIT Game is full: no more players can join\n");
+      message_send(*to, "QUIT Game is full: no more players can join\n");
       return false;
     }
 
     // ensure playerName is provided
     if (playerName == NULL) {
-      message_send(to, "QUIT Sorry - you must provide player's name\n");
+      message_send(*to, "QUIT Sorry - you must provide player's name\n");
       return false;
     }
 
@@ -58,15 +59,21 @@ bool handlePlayer(game_t* game, addr_t* to, char* playerName){
         // send OK message
         char playerLetter = "a" + player_id;
         char message = strcat("OK ", to_upper(playerLetter));
-        message_send(player->to, message);
+        
+        addr_t* to = get_address(player);
+
+        message_send(*to, message);
         
         // send grid, gold and display information
-        sendGrid(player);
-        sendGold(player);
-        sendDisplay(player);
+        if(sendGrid(game, player)){
 
-        // if all successful, return true
-        return true;
+          if(sendGold(game, player, 0)){
+            if(sendDisplay(game, player)){
+              // if all successful, return true
+              return true;
+            }
+          }
+        }
       }
     }
   }
@@ -88,12 +95,14 @@ bool handleSpectator(game_t* game, addr_t* to) {
       set_address(spectator, to);
 
       // send grid, gold and display information
-      sendGrid(spectator);
-      sendGold(spectator);
-      sendDisplay(spectator);
-
-      // if all successful, return true
-      return true;
+      if(sendGrid(game, player)){
+        if(sendGold(game, player, 0)){
+          if(sendDisplay(game, player)){
+            // if all successful, return true
+            return true;
+          }
+        }
+      }
     }    
   }
 
@@ -112,14 +121,15 @@ bool handleKey(game_t* game, player_t* player, char key) {
     
     // case q: quit the game.
     if (tolower(key) == 'q') {
+      char* type = get_type(player);
       // respond appropriately depending on player type
-      if (strcmp(player->type, "player") == 0) {
-        message_send(to, "QUIT Thanks for playing!\n");
+      if (strcmp(type, "player") == 0) {
+        message_send(*to, "QUIT Thanks for playing!\n");
         return true;
       }
 
-      else if (strcmp(player->type, "spectator") == 0) {
-        message_send(to, "QUIT Thanks for watching!\n");
+      else if (strcmp(type, "spectator") == 0) {
+        message_send(*to, "QUIT Thanks for watching!\n");
         return true;
       }
     }
@@ -483,7 +493,7 @@ sendGrid(game_t* game, player_t* player) {
 
 
 bool
-sendGold(game_t* game, player_t* player, int collected) {
+sendGold(game_t* game, player_t* player, int collected){
   // validate parameters
   if (game != NULL && player != NULL) {
 

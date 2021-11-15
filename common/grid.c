@@ -100,7 +100,7 @@ load_map(grid_t* grid, FILE* fp)
       grid->map = map;
       grid->original_map = map;
       grid->nrows = file_numLines(fp_copy);
-      grid->ncols = strlen(file_readLine(fp_copy););
+      grid->ncols = strlen(file_readLine(fp_copy));
       return true;
     }
   }
