@@ -192,6 +192,7 @@ player_delete(player_t* player) {
 /*
  * see player.h for detailed description
  */
+/**************** get_name ****************/
 char*
 get_name(player_t* player) {
 
@@ -204,7 +205,7 @@ get_name(player_t* player) {
   return NULL;
 }
 
-
+/**************** get_type ****************/
 char*
 get_type(player_t* player) {
 
@@ -217,7 +218,7 @@ get_type(player_t* player) {
   return NULL;
 }
 
-
+/**************** get_location ****************/
 point_t*
 get_location(player_t* player) {
 
@@ -230,7 +231,7 @@ get_location(player_t* player) {
   return NULL;
 }
 
-
+/**************** get_visible_map ****************/
 char*
 get_visible_map(player_t* player) {
 
@@ -243,7 +244,7 @@ get_visible_map(player_t* player) {
   return NULL;
 }
 
-
+/**************** get_address ****************/
 addr_t*
 get_address(player_t* player) {
 
@@ -256,6 +257,7 @@ get_address(player_t* player) {
   return NULL;
 }
 
+/**************** get_purse ****************/
 int
 get_purse(player_t* player) {
   // if player exists
@@ -274,6 +276,7 @@ get_purse(player_t* player) {
 /*
  * see player.h for detailed description
  */
+/**************** set_location ****************/
 bool
 set_location(player_t* player, int x, int y) {
   if (player != NULL) {
@@ -289,7 +292,7 @@ set_location(player_t* player, int x, int y) {
   return false;
 }
 
-
+/**************** set_visible_map ****************/
 bool
 set_visible_map(player_t* player, char* visible_map) {
   if (player != NULL) {
@@ -300,7 +303,7 @@ set_visible_map(player_t* player, char* visible_map) {
   return false;
 }
 
-
+/**************** set_address ****************/
 bool
 set_address(player_t* player, addr_t* to) {
   if (player != NULL) {
@@ -311,6 +314,7 @@ set_address(player_t* player, addr_t* to) {
   return false;
 }
 
+/**************** set_name ****************/
 bool
 set_name(player_t* player, char* name) {
   if (player != NULL && name != NULL) {
