@@ -13,3 +13,12 @@ When all gold nuggets are collected, the game ends and a summary is printed.
 See the [support library](support/README.md) for some useful modules.
 
 See the [maps](maps/README.md) for some draft maps.
+
+## Assumptions
+
+We also were provided with a client since we were a group of three. 
+We  ignored implementing the seed portion of the project but did include it in the comments of the server. 
+On a smaller level, we assumed for a few of our getters and setters that the given parameters were not NULL. 
+
+## Issues
+See implementation spec for the issues we ran into during this lab
