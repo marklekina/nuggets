@@ -20,19 +20,13 @@
 #include "file.h"
 
 
-void parseArgs(const int argc, char* argv[], game_t* game);
+void parseArgs(const int argc, char* argv[]);
 bool parseMessage(void* item, const addr_t to, const char* message);
-player_t* findPlayer(game_t* game, addr_t to);
-bool load_grid(game_t* game, int nrows, int ncols);
-void disperseGold();
-
 bool initiateNetwork();
-char* loadMap(char* filename);
-void disperseGold();
 void updateGame(char stroke);
 void printResults(game_t* game);
-
-
+player_t* findPlayer(game_t* game, addr_t to);
+game_t* game;             // game object
 
 /**************** parseArgs ****************/
 /* Parse the command line arguments and initialize a game module.
@@ -43,59 +37,28 @@ void printResults(game_t* game);
  *  game- an empty game module
  * 
  */
-void parseArgs(const int argc, char* argv[], game_t* game){
-    if(argc == 2){
-        char* map = argv[1];
+void parseArgs(const int argc, char* argv[]){
+  // ignore seed for now
+  if (argc == 2 || argc == 3) {
+    // parse filename
+    char* map = argv[1];
         
-        // file validation
-        FILE *fp;
-        fp = fopen(map, "r"); // attempt to open for reading
+    // attempt to open file for reading
+    FILE *fp = fopen(map, "r");
 
-        // if you cannot read into the file, throw error to user
-        if(fp == NULL){
-            fprintf(stderr, "invalid map; invalid path\n");
-            exit(1);
-        }
-
-        // check that this works and flows!
-        // THIS IS WRONG NEED REAL ROWS AND COLS
-        game_t* game = game_new(fp, 0, 0);
-        fclose(fp);
-
-        srand(getpid());
-       // int randSeed = rand();
-       // game_setSeed(game, randSeed);
+    // if you cannot read into the file, throw error to user
+    if(fp == NULL){
+      fprintf(stderr, "invalid map; invalid path\n");
+      exit(1);
     }
 
-    if(argc == 3){
-        char* map = argv[1];
-        // file validation
-        FILE *fp;
-        fp = fopen(map, "r"); // attempt to open for reading
-
-        // if you cannot read into the file, throw error to user
-        if(fp == NULL){
-            fprintf(stderr, "invalid map; invalid path\n");
-            exit(2);
-        }
-        game_t* game = game_new(fp, 0, 0);
-        fclose(fp);
-
-       // int* seed = 0;
-       // sscanf(argv[3], "%d", seed);
-
-        // quick check because zero is an edge case in strcmp
-        if(strcmp(argv[3],"0") == 0) {
-            fprintf(stderr, "cannot have a seed of zero");
-            exit(3);
-        }
-
-       // game_setSeed(game, *seed);
-    }
-    else{
-        fprintf(stderr, "Faulty commandline, one or two arguments only.");
-        exit(4);
-    }
+    fclose(fp);
+  }
+  
+  else {
+    fprintf(stderr, "Faulty commandline, one or two arguments only.");
+    exit(4);
+  }
 }
 
 /**************** parseMessage ****************/
@@ -105,65 +68,85 @@ void parseArgs(const int argc, char* argv[], game_t* game){
  *  message- a string message sent by the client
  * 
  */
-bool parseMessage(void* item, const addr_t to, const char* message){
-    game_t* game = item;
+bool parseMessage(void* item, const addr_t address, const char* message){
 
-    if(message == NULL){
-        return false;
-    }
+  if(message == NULL){
+    return false;
+  }
 
-    char* firstWord = NULL;
-    int i=0;
-    while(!isspace(message)){
-        firstWord[i] = message[i]; //check if allowed
-        i++;
-    }
+  // copy pointer to address
+  addr_t* to = (addr_t*) &address;
 
-    if((strcmp(firstWord, "PLAY")) == 0){
-        int nameCount = 0;
-        char* name = NULL;
-        while(message[i] != '\0'){
-            name[nameCount] = message[i];
-            i++;
-            nameCount++;
-        }
-        handlePlayer(game, name);
-        return true;
-    }
+  if((strncmp(message, "PLAY ", strlen("PLAY "))) == 0){
+    // copy the rest of the message into a string
+    int len = strlen(message) - strlen("PLAY");
+    char* name = mem_malloc(sizeof(char) * len);
+    strcpy(name, &message[strlen("PLAY ")]);
 
-    if(strcmp(firstWord, "SPECTATE") == 0){
-        player_t* player = player_new(NULL, "spectator");
+    // initiate player object and set it's address to message source
+    player_t* player = player_new(name, "player");
+    set_address(player, to);
+    
+    // call handle player
+    handlePlayer(game, to, name);
+    return true;
+  }
 
-        if(add_spectator(game, player)){
-            player_t* spectator = get_spectator(game);
-            handleSpectator(game, to);
-            return true;
-        }
-        return false;
-    }
+  
+  if((strncmp(message, "SPECTATE ", strlen("SPECTATE "))) == 0){
+    // copy the rest of the message into a string
+    int len = strlen(message) - strlen("SPECTATE");
+    char* name = mem_malloc(sizeof(char) * len);
+    strcpy(name, &message[strlen("SPECTATE ")]);
 
-    if(strcmp(firstWord, "KEY") == 0){
-        player_t* player = findPlayer(game, to);
-        if(player != NULL){
-            int check = 0;
-            char key;
-            while((message[i] != '\0') && (check == 0)){
-                if(isspace(message[i]) == 0){
-                    key = message[i];
-                    check++;
-                }
-            }
-            handleKey(key, to, player, game);
-        }
-        return true;
-    }
+    // initiate spectator object and set it's address to message source
+    player_t* player = player_new(name, "spectator");
+    set_address(player, to);
+    
+    // call handle player
+    handleSpectator(game, to);
+    return true;
+  }
 
-    else{
-        fprintf(stderr, "bad message from client, quitting game");
-        message_send(to, "QUIT invalid message!");
-        return false;
-    }
+  if((strncmp(message, "KEY ", strlen("KEY "))) == 0){
+    // copy the rest of the message into a char
+    char key = message[strlen("KEY ")];
+    
+    // find player that sent the message
+    player_t* player = findPlayer(game, *to);
+    
+    // call handle key
+    handleKey(game, player, key);
+    return true;
+  }
+
+  if((strncmp(message, "Q", strlen("Q"))) == 0){
+    // find player that sent the message
+    player_t* player = findPlayer(game, *to);
+
+    // call handle key
+    handleKey(game, player, 'Q');
+    return true;
+  }
+
+  else{
+    fprintf(stderr, "bad message from client, quitting game");
+    message_send(*to, "QUIT invalid message!");
+    return false;
+  }
 }
+
+void
+printResults(game_t* game){
+  int num_players = get_num_players(game);
+  for(int i = 0; i <= num_players; i++){
+    player_t* player = get_player(game, i);
+    char* name = get_name(player);
+    int purse = get_purse(player);
+    printf("%s %d\n", name, purse);
+  } 
+}
+
 
 /**************** findPlayer ****************/
 /* Find a player based on the 'to' address from the client.
@@ -174,66 +157,18 @@ bool parseMessage(void* item, const addr_t to, const char* message){
  * 
  */
 player_t* findPlayer(game_t* game, addr_t to){
-    int location = get_location(game);
-    for(int i = 0; i < location; i++){
-        player_t* player = get_Player(game, location);
-        addr_t* playerAddress = getAddress(player);
-        
-        if(message_eqAddr(*playerAddress, to)){
-            return player;
-        }
-    }
-    return NULL;
-}
-
-/**************** load_grid ****************/
-/* Basically a wrapper for the load_map function in grid.
- * 
- * Given:
- *  to- a unique client address
- *  game- an game module
- * 
- */
-// static bool load_grid(game_t* game, int nrows, int ncols){
-//     grid_t* grid = grid_new(nrows, ncols);
-//     char* map = load_map(grid, game->map);
-//     if(map != NULL){
-//         if(game_setGrid(game, grid)){
-//             return true;
-//         }
-//     }
-//     return false;
-// }
-
-// /**************** loadMap ****************/
-// /* LEKINA?!?!?
-//  * 
-//  * 
-//  */
-// static void disperseGold(){
-// 	// pick random number between minGold and maxGold
-// 	// populate grid with the random amount of gold
-// }
-
-// static void updateGame(char stroke){
-// 	checks if keystroke is valid
-// 		if so, performs function associated with that key
-// 		sends updated game to all players
-// 	else does nothing
-
-// }
-
-void printResults(game_t* game){
-    int location = get_location(game);
-    for(int i =0; i<=location; i++){
-        player_t* player = get_Player(game, i);
-        char* name = player_getName(player);
-        printf("%s", name);
-        int purse = get_purse(player);
-        printf("%d", purse);
-    }
+  int num_players = get_num_players(game);
+  for(int i = 0; i < num_players; i++){
+    player_t* player = get_player(game, num_players);
+    addr_t* playerAddress = get_address(player);
     
+    if(message_eqAddr(*playerAddress, to)){
+      return player;
+    }
+  }
+  return NULL;
 }
+
 
 /**************** initiateNetwork ****************/
 /* Open the communication port with the client and start a message loop.
@@ -254,13 +189,32 @@ bool initiateNetwork(){
 }
 
 int main(const int argc, char* argv[]){
-    game_t* game = NULL;
-    parseArgs(argc, argv, game);
-    // might need to pass the LOG_MESSAGE into initiate network
-    if(initiateNetwork()){
-        return 0;
-    }
-    else{
-        return 2;
-    }
+  
+  // parse arguments
+  parseArgs(argc, argv);
+
+  // load map info
+  char* map_filename = argv[1];
+  FILE* fp = fopen(map_filename, "r");
+  FILE* fp_copy = fp;
+  
+  // define nrows, ncols and map
+  int nrows = file_numLines(fp);
+  int ncols = strlen(file_readLine(fp));
+
+  fp = fp_copy;
+
+  // initialize game
+  game = game_new(fp, nrows, ncols);
+
+  // distribute gold
+  distribute_gold(game);
+
+  // initiate game
+  if(initiateNetwork()){
+    return 0;
+  }
+  else{
+    return 2;
+  }
 }
