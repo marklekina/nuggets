@@ -19,11 +19,15 @@ For testing we are all going to work together and be sure to test code that othe
 ## Server
 
 ### Data structures
-`struct game`: holds the game information including the map described in design as well as player positions, gold distribution, and player structs for each player. 
+`struct game`: holds the game information including the grid described in design as well as the game's one spectator, pile structs for each gold pile, total number of players and player structs for each player. 
 
- `struct grid`: holds information about the game board (functions; including one that turns the map into a string)
+`struct pile` : holds the location and amount for the gold piles 
 
- `struct player`: holds information for each individual player. Some of it includes player visibility, name, type of player (spectator or player) and purse information. 
+ `struct grid`: holds information about the game board including the original map, a map intended to be motified, as well as dimmensions of the grid (functions; including one that turns the map into a string)
+
+`struct point`: holds x and y values 
+
+`struct player`: holds information for each individual player. This includes player's name, type, location (as a point), visibility, address, and purse information.  
 
 
 ### Definition of function prototypes

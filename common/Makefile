@@ -2,7 +2,7 @@
 #
 # Palmer's Posse
 
-L = ../../tse-meghanokeefe/libcs50
+L = ../../tse-AvaKoros/libcs50
 C = ../common
 CC = gcc
 FLAGS =
