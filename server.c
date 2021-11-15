@@ -23,6 +23,7 @@
 #include "XYZ.c"
 #include "mem.h"
 #include "file.h"
+
 void parseArgs(const int argc, char* argv[], game_t* game);
 bool parseMessage(void* item, const addr_t to, const char* message);
 player_t* findPlayer(game_t* game, addr_t to);
@@ -33,6 +34,7 @@ char* loadMap(char* filename);
 void disperseGold();
 void updateGame(char stroke);
 void printResults(game_t* game);
+
 /**************** parseArgs ****************/
 /* Parse the command line arguments and initialize a game module.
  *
