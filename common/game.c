@@ -16,6 +16,11 @@
 #include "grid.h"
 #include "player.h"
 
+/**************** global variables ****************/
+const int MaxPlayers = 26;      // maximum number of players
+const int GoldTotal = 250;      // amount of gold in the game
+const int GoldMinNumPiles = 10; // minimum number of gold piles
+const int GoldMaxNumPiles = 30; // maximum number of gold piles
 
 /**************** global types ****************/
 typedef struct pile {
@@ -24,12 +29,12 @@ typedef struct pile {
 } pile_t;
   
 typedef struct game {
-  grid_t* grid;          // holds grid information
-  player_t* spectator;   // one game spectator
-  player_t* players[26]; // array of game players
-  point_t* piles[];
-  int num_players;       // number of players currently in the game
-
+  grid_t* grid;                   // holds grid information
+  player_t* spectator;            // one game spectator
+  player_t* players[MaxPlayers];  // array of game players
+  pile_t* piles[GoldMaxNumPiles]; // array of gold piles
+  int num_players;                // number of players currently in the game
+  int gold_remaining;
 } game_t;
 
 

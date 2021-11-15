@@ -242,47 +242,4 @@ compute_visibility(point_t* player, grid_t* grid)
 }
 
 
-point_t*
-player_on_gold(game_t* game, int x, int y) {
-  // validate parameters
-  if (game != NULL && x >= 0 && y >= 0) {
 
-    // loop through all piles
-    for (int i = 0; i < game->num_piles; i++) {
-      pile_t* pile = game->piles[i];
-      
-      if (pile != NULL) {
-        // get location of the pile
-        point_t* location = pile->location;
-        
-        // compare coordinates and return pile if they match
-        if (x == location->x && y == location->y) {
-          return pile;
-        }
-      }
-    }
-  }
-
-  // otherwise return false
-  return NULL;
-}
-
-
-void
-collect_gold(game_t* game, player_t* player, pile_t* pile)
-{ 
-  // validate parameters
-  if (game != NULL && player != NULL && pile != NULL) {
-
-    // transfer the gold in the pile to the player's purse
-    // subtract it from goldRemaining
-    player->purse += pile->amount;
-    game->gold_remaining -= pile->amount;
-
-    // send gold message to player
-    sendGold(game, player, pile->amount);
-    
-    // delete pile
-    pile_delete(pile);
-  }
-}
