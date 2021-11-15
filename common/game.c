@@ -550,8 +550,10 @@ compute_visibility(point_t* point, grid_t* grid)
     }
   }
   // return visibility string
+  char* returnstring = mem_malloc(x * y + 1);
+  strcpy(returnstring, visString);
   
-  return visString;
+  return returnstring;
   
 }
 void change_remaining_gold(game_t* game, int amount){

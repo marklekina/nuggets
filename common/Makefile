@@ -2,12 +2,12 @@
 #
 # Palmer's Posse
 
-L = ../../tse-AvaKoros/libcs50
+
 C = ../common
 CC = gcc
 
 FLAGS =
-CFLAGS = -Wall -pedantic -std=c11 -ggdb -I$L -I$C
+CFLAGS = -Wall -pedantic -std=c11 -ggdb -I$C
 OBJS = grid.o player.o game.o XYZ.o 
 LIB = common.a
 
@@ -18,10 +18,10 @@ all: $(LIB)
 $(LIB): $(OBJS)
 		ar cr $(LIB) $(OBJS)
 
-grid.o: grid.h $L/file.h $L/mem.h 
-player.o: player.h $L/file.h $L/mem.h
+grid.o: grid.h $C/file.h $C/mem.h 
+player.o: player.h $C/file.h $C/mem.h
 game.o: game.h
-XYZ.o: $L/mem.h
+XYZ.o: $C/mem.h
 
 clean: 
 	rm -f grid
