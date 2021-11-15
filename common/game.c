@@ -28,11 +28,11 @@ typedef struct game {
   grid_t* grid;          // holds grid information
   player_t* spectator;   // one game spectator
   player_t* players[26]; // array of game players
-  pile_t* piles[30];
+  pile_t* piles[30];     // array of piles
   int num_players;       // number of players currently in the game
-  int num_piles;
-  int gold_distributed;
-  int gold_remaining;
+  int num_piles;         // number of piles currently in the game
+  int gold_distributed;  // amount of gold distributed
+  int gold_remaining;    // amount of gold left
 } game_t;
 
 
@@ -69,6 +69,7 @@ pile_new(point_t* location, int amount) {
  */
 void
 pile_delete(pile_t* pile) {
+  // null check
   if (pile != NULL) {
     // free location
     if (pile->location != NULL) {
@@ -124,7 +125,7 @@ game_new(FILE* fp, int nrows, int ncols) {
  */
 void
 game_delete(game_t* game) {
-  // free the spectator
+  // null check and free the spectator
   if (NULL != game->spectator) {
     player_delete(game->spectator);
   }
@@ -154,7 +155,8 @@ remove_spectator(game_t* game) {
   // send quit message to current spectator
   player_t* spectator = get_spectator(game);
 
-  if (spectator != NULL) {
+  // null check; get address and send spectator quit message
+  if(spectator != NULL) {
     addr_t* to = get_address(spectator);
     message_send(*to, "QUIT You have been replaced by a new spectator\n");
 
@@ -179,7 +181,6 @@ add_spectator(game_t* game) {
 
     // create player_t object of spectator type
     // assign them to game and return true
-    // NB: name parameter doesn't matter for spectator, we never use it
     // to solve potential double free errors, reassign spectator name to null
     player_t* player = player_new("spectator", "spectator");
     if (player != NULL) {
@@ -247,6 +248,7 @@ add_pile(game_t* game, pile_t* pile) {
  */
 int
 get_num_players(game_t* game) {
+  // null check then return num_players
   if (game != NULL) {
     return game->num_players;
   }
@@ -255,20 +257,25 @@ get_num_players(game_t* game) {
 
 int
 get_amount(pile_t* pile) {
+  // null check then return pile->amount of gold
   if(pile != NULL) {
     return pile->amount;
   }
   return -1;
 }
+
 int
 get_gold_remaining(game_t* game) {
+  // null check then return gold_remaining in game
   if(game != NULL) {
     return game->gold_remaining;
   }
   return -1;
 }
+
 int
 get_gold_distributed(game_t* game) {
+  // null check then return gold_distributed in game
   if(game != NULL) {
     return game->gold_distributed;
   }
@@ -277,6 +284,7 @@ get_gold_distributed(game_t* game) {
 
 point_t* 
 get_pile_location(pile_t* pile){
+  // null check then return pile->location
   if (pile != NULL) {
     return pile->location;
   }
@@ -285,6 +293,7 @@ get_pile_location(pile_t* pile){
 
 player_t*
 get_player(game_t* game, int idx){
+  // null checks then return game->players[idx]
   if (game != NULL) {
     if (game->players != NULL) {
       return game->players[idx];
@@ -295,6 +304,7 @@ get_player(game_t* game, int idx){
 
 grid_t*
 get_grid(game_t* game){
+  // null check then return game->grid
   if (game != NULL){
     return game->grid;
   }
@@ -303,6 +313,7 @@ get_grid(game_t* game){
 
 player_t*
 get_spectator(game_t* game) {
+  // null check then return game->spectator
   if (game!= NULL) {
     return game->spectator;
   }
@@ -311,19 +322,23 @@ get_spectator(game_t* game) {
 
 pile_t* 
 get_piles(game_t* game, int i){
+  // null check then return pile
   if (game!= NULL && i >= 0) {
     pile_t* pile = game->piles[i];
     return pile;
   }
   return NULL;
 }
+
 int
 get_num_piles(game_t* game) {
+  // null check then num_piles
   if (game != NULL) {
     return game->num_piles;
   }
   return 0;
 }
+
 bool set_gold_distributed(game_t* game, int goldDis){
   if(game!= NULL || goldDis<0){
     return false;
@@ -556,6 +571,7 @@ compute_visibility(point_t* point, grid_t* grid)
   return returnstring;
   
 }
+
 void change_remaining_gold(game_t* game, int amount){
   if(game != NULL && game->gold_remaining > 0 && amount > 0){
     game->gold_remaining -= amount;
