@@ -279,11 +279,10 @@ Our testing plan will be informed while we code, but some preliminary ideas incl
  - try and input incorrect command line arguments
  - have players step on each other
  - play game on multiple maps, several times, to ensure a thourough functionality of the game
-
 ---
 
 ## Limitations
-Currently not relevant, but may be added to as we work on the project.
+Given the time constraints, we didn't have time to do in depth integration tests or system tests. If we had more time, we would have planned to fully implement these tests as a group to test our code. 
 We have all of the common directory files (XYZ.c, grid, game, player) compiling. 
 We figured out the math and nuances of visibility and gold distribution.
 Unfortunatly, due to time constraints we are struggling to piece these modules together in server (in a way the game can be functional).
