@@ -126,13 +126,14 @@ bool handleSpectator(game_t* game, addr_t* to) {
 bool handleKey(game_t* game, player_t* player, char key) {
   // validate parameters
   if (game != NULL && player != NULL) {
-    
+    fprintf(stderr, "we entered the if -> %c\n", key);
     // fetch player's address and the game's grid
     addr_t* to = get_address(player);
     grid_t* grid = get_grid(game);
     
     // case q: quit the game.
     if (tolower(key) == 'q') {
+      fprintf(stderr, "we entered the if -> %c\n", key);
       char* type = get_type(player);
       // respond appropriately depending on player type
       if (strcmp(type, "player") == 0) {
@@ -147,7 +148,8 @@ bool handleKey(game_t* game, player_t* player, char key) {
     }
     
     // case h: move left, if possible
-    else if (tolower(key) == 'h') {
+    else if (key == 'H' || key == 'h') {
+      fprintf(stderr, "we entered the if -> %c\n", key);
       // fetch player's location
       point_t* old_loc = get_location(player);
 

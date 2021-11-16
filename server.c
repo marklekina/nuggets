@@ -86,6 +86,8 @@ bool parseMessage(void* item, const addr_t address, const char* client_message){
     ptr++;
   }
 
+  fflush(stdout);
+  
   // handle different message types
   if((strncmp(message, "PLAY ", strlen("PLAY "))) == 0){
     // copy the rest of the message into a string
@@ -105,8 +107,7 @@ bool parseMessage(void* item, const addr_t address, const char* client_message){
     sendGold(game, player, 0);
     sendDisplay(game, player);
 
-    // return true
-    return true;
+    return false;
   }
 
   
@@ -122,21 +123,19 @@ bool parseMessage(void* item, const addr_t address, const char* client_message){
     sendGold(game, player, 0);
     sendDisplay(game, player);
 
-    // return true
-    return true;
+    return false;
   }
 
   if((strncmp(message, "KEY ", strlen("KEY "))) == 0){
     // copy the rest of the message into a char
     char key = message[strlen("KEY ")];
-    
     // find player that sent the message
     player_t* player = findPlayer(game, *to);
     
     // call handle key
     handleKey(game, player, key);
 
-    return true;
+    return false;
   }
 
   if((strncmp(message, "Q", strlen("Q"))) == 0){
@@ -144,14 +143,17 @@ bool parseMessage(void* item, const addr_t address, const char* client_message){
     player_t* player = findPlayer(game, *to);
 
     // call handle key
-    handleKey(game, player, 'Q');
-    return true;
+    if (player != NULL) {
+      handleKey(game, player, 'Q');
+      return false;
+    }
   }
 
+  
   else{
     fprintf(stderr, "bad message from client, quitting game");
     message_send(*to, "QUIT invalid message!");
-    return false;
+    return true;
   }
 }
 
@@ -180,9 +182,11 @@ player_t* findPlayer(game_t* game, addr_t to){
   for(int i = 0; i < num_players; i++){
     player_t* player = get_player(game, num_players);
     addr_t* playerAddress = get_address(player);
-    
-    if(message_eqAddr(*playerAddress, to)){
-      return player;
+
+    if (playerAddress != NULL) { 
+      if(message_eqAddr(*playerAddress, to)){
+        return player;
+      }
     }
   }
   return NULL;
@@ -226,14 +230,13 @@ int main(const int argc, char* argv[]){
   // initialize game
   game = game_new(fp, nrows, ncols);
 
-  // distribute gold
-  distribute_gold(game);
+  if (game != NULL) {
+    // distribute gold
+    distribute_gold(game);
 
-  // initiate game
-  if(initiateNetwork()){
-    return 0;
+    // initiate game
+    initiateNetwork();
   }
-  else{
-    return 2;
-  }
+  // return zero
+  return 0;
 }

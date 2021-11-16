@@ -120,7 +120,7 @@ player_new(char* name, char* type) {
     player_name[len] = '\0';
 
     // replace original with formatted copy
-    strcpy(name, player_name);
+    // strcpy(name, player_name);
 
     // check that valid type has been provided
     if (strcmp(type, "player") == 0 || strcmp(type, "spectator") == 0) {
