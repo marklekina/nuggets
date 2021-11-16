@@ -155,6 +155,7 @@ bool parseMessage(void* item, const addr_t address, const char* client_message){
     message_send(*to, "QUIT invalid message!");
     return true;
   }
+  return false;
 }
 
 void

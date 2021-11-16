@@ -94,30 +94,30 @@ player_new(char* name, char* type) {
   if (name != NULL && type != NULL) {
 
     // truncate name length to MaxNameLength
-    int len;
-    int MaxNameLength = 50;
+    // int len;
+    // int MaxNameLength = 50;
 
-    if (strlen(name) < MaxNameLength) {
-      len = strlen(name);
-    }
+    // if (strlen(name) < MaxNameLength) {
+    //   len = strlen(name);
+    // }
 
-    else {
-      len = MaxNameLength;
-    }
+    // else {
+    //  len = MaxNameLength;
+    // }
 
     // initialize player's name copy
-    char player_name[len+1];
+    // char player_name[len+1];
     
     // format player's name
-    for (int i = 0; i < len; i++) {
-      if (!isgraph(name[i]) && !isblank(name[i])) {
-        player_name[i] = '_';
-      }
-      else {
-        player_name[i] = name[i];
-      }
-    }
-    player_name[len] = '\0';
+    // for (int i = 0; i < len; i++) {
+    //   if (!isgraph(name[i]) && !isblank(name[i])) {
+    //      player_name[i] = '_';
+    //   }
+    //   else {
+    //     player_name[i] = name[i];
+    //   }
+    // }
+    // player_name[len] = '\0';
 
     // replace original with formatted copy
     // strcpy(name, player_name);
