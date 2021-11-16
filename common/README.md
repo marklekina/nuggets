@@ -78,3 +78,9 @@ In terms of implementation, we mostly refer to where the player moves.
 Player Movement:
 Movement of the player is primarily handled in the handleKey function in the message (XYZ) module. Essentially, handleKey checks for the key pressed, creates a new location in accordance with that key, and sets the players location to the new location. This logic is where all the getters and setters come in handy from player.
 The next aspect of movement requires visibly moving the player. This is done in `update_display(game_t* game)`, also in the XYZ message module. In addition to updating the gold stats, this function loops through all the players in the game and updates their locations if they have moved. Due to time constraint, we were not able to integrate this function into the server (where it should go after each handleKey call). Given more time this is one of the things we would do.
+
+#### Game Over Summary 
+We made a module called print results which would print the leaderboard once the game ends. Given our player and game module it would be easy to do this. 
+
+#### Valgrind
+We were very careful to code defensively and look for memory errors. Since we couldn't actually play the game, testing for this was impossible, but if we had more time we would have done this. 
