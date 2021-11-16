@@ -21,4 +21,7 @@ We  ignored implementing the seed portion of the project but did include it in t
 On a smaller level, we assumed for a few of our getters and setters that the given parameters were not NULL. 
 
 ## Issues
-See implementation spec for the issues we ran into during this lab
+Note! We have debugged all files in a way such that they compile without warnings/errors. There is a Makefile for the server and one for the modules in the common directory. 
+
+See the README.md in project-palmers-posse/common for an outline of issue and how we would have implemented/fixed them with more time.
+Additionally, our group's map file we made can be found in the project-palmers-posse/maps directory and is called palmer-posse-maps. It is an interpretation of the Taj Mahal.
