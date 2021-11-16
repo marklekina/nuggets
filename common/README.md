@@ -19,3 +19,15 @@ On a smaller level, we assumed for a few of our getters and setters that the giv
 
 ## Issues
 See implementation spec for the issues we ran into during this lab
+
+### Visibility
+We have a working and tested visibility function, which we tested by passing it random room spots (which are substitutes for a player's location), and the game's grid. and the function returned what would be visible from that location in a satisfactory manner.
+
+`char* compute_visibility(point_t* point, grid_t* grid);`
+
+NB: the `char*` string returned is of the same length as the game's map, with blanks for spots that are not visible to the player, and appropriate spots for the visible areas.
+
+`point_t* point` refers to a player's location in the grid.
+`grid_t* grid` is a struct that holds the player's map and the size of the grid.
+
+Our primary issue with the visibility function is that we haven't integrated it into the `update_dislay` function, which would in turn send the updated display to the player using `send_display`.
