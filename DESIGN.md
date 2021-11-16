@@ -185,3 +185,5 @@ OUTPUTS:
 		retrieve the text version of the map (depends on if spectator or client for amount)
 		put it into a string
 		sent to client(s)
+### Testing Plan
+Unit tests, integration tests, system tests will be outlined in IMPLEMENTATION.md.
