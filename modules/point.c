@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "mem.h"
+#include "point.h"
 
 /**************** file-local global variables ****************/
 /* none */
@@ -45,7 +46,7 @@ void
 point_delete(point_t* point)
 {
   if (point != NULL) {
-    // free the struct
+    // free point memory
     mem_free(point);
   }
 }
