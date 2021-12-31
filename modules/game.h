@@ -56,6 +56,17 @@ void game_delete(game_t* game);
  */
 bool add_pile(game_t* game, pile_t* pile);
 
+/**************** remove_pile ****************/
+/* remove a pile of gold from the game (presumably after its gold has been collected)
+ * caller provides:
+ *   valid game pointer
+ *   valid pile pointer
+ * we return:
+ *   number of remaining piles if the pile is removed successfully
+ *   -1 otherwise (error)
+ */
+int remove_pile(game_t* game, pile_t* pile);
+
 /**************** add_player ****************/
 /* add a player to the game and keep track of the updated number of players
  * caller provides:

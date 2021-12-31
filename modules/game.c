@@ -127,6 +127,27 @@ add_pile(game_t* game, pile_t* pile) {
 }
 
 
+/**************** remove_pile() ****************/
+/* see game.h for description */
+int
+remove_pile(game_t* game, pile_t* pile) {
+  if (game != NULL) {
+    // free pile memory
+    pile_delete(pile);
+
+    // decrement number of piles in game by 1
+    // assumption: this function will only be called to delete piles already in the game
+    game->num_piles = game->num_piles - 1;
+
+    // return number of remaining piles if successful
+    return game->num_piles;
+  }
+
+  // otherwise return -1
+  return -1;
+}
+
+
 /**************** add_player() ****************/
 /* see game.h for description */
 bool

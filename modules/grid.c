@@ -61,6 +61,7 @@ grid_new(FILE* fp)
   return NULL;
 }
 
+
 /**************** grid_delete() ****************/
 /* see grid.h for description */
 void
@@ -75,4 +76,21 @@ grid_delete(grid_t* grid)
     // free grid memory
     mem_free(grid);
   }
+}
+
+/**************** point_to_index() ****************/
+/* see grid.h for description */
+int
+point_to_index(grid_t* grid, point_t* point) {
+  // validate parameters
+  if (grid != NULL && point != NULL) {
+    // compute index on mapstring
+    int idx = (point->y * (grid->nx + 1)) + point->x;
+
+    // return index
+    return idx;
+  }
+
+  // otherwise return -1 (error)
+  return -1;
 }
