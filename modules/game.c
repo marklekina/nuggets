@@ -129,7 +129,6 @@ add_pile(game_t* game, pile_t* pile) {
 
 /**************** add_player() ****************/
 /* see game.h for description */
-
 bool
 add_player(game_t* game, player_t* player) {
   // validate parameters
@@ -154,13 +153,13 @@ int
 update_gold(game_t* game, int gold_collected) {
   // validate parameters
   if (game != NULL) {
+    // remove collected gold from the remaining gold
     game->gold_remaining = game->gold_remaining - gold_collected;
+
+    // return updated gold remainder
     return game->gold_remaining;
   }
 
   // otherwise return -1
-  // returned value is negative only if:
-  //    i) game doesn't exist
-  //   ii) gold collected exceeds remaining gold)
   return -1;
 }
