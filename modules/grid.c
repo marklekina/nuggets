@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "mem.h"
+#include "file.h"
 #include "grid.h"
 
 /**************** file-local global variables ****************/
@@ -26,11 +27,23 @@ typedef struct grid {
 /**************** grid_new() ****************/
 /* see grid.h for description */
 grid_t*
-grid_new(char* map, int nx, int ny)
+grid_new(FILE* fp)
 {
-  // validate parameters
-  if (map != NULL && nx > 0 && ny > 0) {
-    // allocate memory for point
+  // validate map file pointer
+  if (fp != NULL) {
+    // compute number of rows
+    int ny = file_numLines(fp);
+
+    // compute number of columns
+    char* first_line = file_readLine(fp);
+    int nx = strlen(first_line);
+    mem_free(first_line);
+
+    // load map string from file
+    rewind(fp);
+    char* map = file_readFile(fp);
+    
+    // allocate memory for grid
     grid_t* grid = mem_malloc(sizeof(grid_t));
 
     // assign parameters to grid

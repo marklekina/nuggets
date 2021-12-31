@@ -17,14 +17,13 @@ typedef struct grid grid_t;  // opaque to users of the module
 /**************** grid_new ****************/
 /* create a new grid
  * caller provides:
- *   valid map string
- *   valid number of rows and columns
+ *   valid pointer to map file
  * we return:
  *   pointer to a new grid, or NULL if error.
  * caller is responsible for:
  *   later calling grid_delete.
  */
-grid_t* grid_new(char* map, int nx, int ny);
+grid_t* grid_new(FILE* fp);
 
 /**************** grid_delete ****************/
 /* delete the grid.
