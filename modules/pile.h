@@ -1,9 +1,9 @@
 /*
  * pile.h - header file for 'pile' module
- * 
- * A 'pile' is a struct that represents a location on the grid and a predetermined amount of gold in that location 
  *
- * Mark Lekina Rorat, December 2021
+ * A 'pile' is a struct that represents a location on the grid and a predetermined amount of gold in that location
+ *
+ * Mark Lekina Rorat, December 2021, August 2022
  */
 
 #ifndef __PILE_H
@@ -24,7 +24,7 @@ typedef struct pile pile_t;  // opaque to users of the module
  * caller is responsible for:
  *   later calling pile_delete.
  */
-pile_t* pile_new(point_t* location, int amount);
+pile_t* pile_new(point_t* location, int gold);
 
 /**************** pile_delete ****************/
 /* delete the pile.
@@ -32,10 +32,29 @@ pile_t* pile_new(point_t* location, int amount);
  * caller provides:
  *   a valid pile pointer.
  * we guarantee:
- *   we free the pile's location memory
  *   we free the pile's memory
  *   we ignore NULL point.
  */
 void pile_delete(pile_t* pile);
+
+/**************** get_location ****************/
+/* returns the pile's location.
+ *
+ * caller provides:
+ *   a valid pile pointer.
+ * we return:
+ *   a pointer to the gold pile's location.
+ */
+point_t* get_location(pile_t* pile);
+
+/**************** get_location ****************/
+/* returns the amount of gold in the pile.
+ *
+ * caller provides:
+ *   a valid pile pointer.
+ * we return:
+ *   the integer quantity of the gold in the pile.
+ */
+int get_gold(pile_t* pile);
 
 #endif // __PILE_H
