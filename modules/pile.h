@@ -10,7 +10,7 @@
 #define __PILE_H
 
 /**************** global types ****************/
-typedef struct pile pile_t;  // opaque to users of the module
+typedef struct pile pile_t;
 
 /**************** functions ****************/
 
@@ -34,6 +34,7 @@ pile_t* pile_new(point_t* location, int gold);
  * we guarantee:
  *   we free the pile's memory
  *   we ignore NULL point.
+ * we do not free the pile's location memory because that location memory is handled at the grid level
  */
 void pile_delete(pile_t* pile);
 

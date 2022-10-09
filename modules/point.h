@@ -64,6 +64,18 @@ int get_x(point_t* point);
  */
 int get_y(point_t* point);
 
+/**************** get_occupant ****************/
+/*
+ * getter for the point's occupant
+ * caller provides:
+ *   a valid point_t pointer.
+ *
+ * we return:
+ *   a valid pile (*) or player (@, A-Z) char symbol
+ *
+ */
+char get_occupant(point_t* point);
+
 /**************** set_occupant ****************/
 /*
  * setter for the point's occupant, i.e., either a player or gold point_delete
@@ -79,17 +91,5 @@ int get_y(point_t* point);
  *
  */
 bool set_occupant(point_t* point, char occupant);
-
-/**************** get_occupant ****************/
-/*
- * getter for the point's occupant
- * caller provides:
- *   a valid point_t pointer.
- *
- * we return:
- *   a valid pile (*) or player (@, A-Z) char symbol
- *
- */
-char get_occupant(point_t* point);
 
 #endif // __POINT_H

@@ -3,7 +3,7 @@
  *
  * see point.h for more information.
  *
- * Mark Lekina Rorat, December 2021, August 2022
+ * Mark Lekina Rorat, December 2021, August, October 2022
  */
 
 #include <stdio.h>
@@ -16,10 +16,9 @@
 
 /**************** global types ****************/
 typedef struct point {
-  int x;              // x coordinate
-  int y;              // y coordinate
-  char type;          // room, wall or boundary spot
-  char occupant;      // player or gold pile
+  int row;            // row coordinate
+  int col;            // column coordinate
+  char symbol;        // room, wall or boundary spot
 } point_t;
 
 /**************** functions ****************/
@@ -27,17 +26,16 @@ typedef struct point {
 /**************** point_new() ****************/
 /* see point.h for description */
 point_t*
-point_new(int x, int y, char type)
+point_new(int x, int y, char symbol)
 {
   // allocate memory for point
   point_t* point = mem_malloc(sizeof(point_t));
 
-  // assign coordinates to point
+  // assign coordinates and symbol to point
   if (point != NULL) {
     point->x = x;
     point->y = y;
-    point->type = type;
-    point->occupant = "";
+    point->symbol = symbol;
   }
 
   // return struct
@@ -55,48 +53,54 @@ point_delete(point_t* point)
   }
 }
 
-
-/**************** get_x() ****************/
+/**************** get_row() ****************/
 /* see point.h for description */
 int
-get_x(point_t* point)
+get_row(point_t* point)
 {
   if (point != NULL) {
-    return point->x;
+    return point->row;
   }
   return NULL;
 }
 
-/**************** get_y() ****************/
+/**************** get_col() ****************/
 /* see point.h for description */
 int
-get_y(point_t* point)
+get_col(point_t* point)
 {
   if (point != NULL) {
-    return point->y;
+    return point->col;
   }
   return NULL;
 }
 
-/**************** set_occupant() ****************/
-/* see point.h for description */
-bool
-set_occupant(point_t* point, char occupant)
-{
-  if (point != NULL) {
-    point->occupant = occupant;
-    return true;
-  }
-  return false;
-}
-
-/**************** get_occupant() ****************/
+/**************** get_symbol() ****************/
 /* see point.h for description */
 char
-get_occupant(point_t* point)
+get_symbol(point_t* point)
 {
   if (point != NULL) {
-    return point->occupant;
+    return point->symbol;
   }
   return NULL;
+}
+
+/**************** is_same_location() ****************/
+/* see point.h for description */
+bool
+is_same_location(point_t* point_x, point_t* point_y)
+{
+  // validate points
+  if (point_x == NULL || point_y == NULL) {
+    return false;
+  }
+
+  // compare coordinates and return true if we have a match
+  if (get_row(point_x) == get_row(point_y) && get_col(point_x) == get_col(point_y)) {
+    return true;
+  }
+
+  // return false otherwise
+  return false;
 }

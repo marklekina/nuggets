@@ -58,19 +58,6 @@ pile_delete(pile_t* pile)
   }
 }
 
-
-/**************** pile_delete() ****************/
-/* see pile.h for description */
-void
-pile_delete(pile_t* pile)
-{
-  if (pile != NULL) {
-    // free pile memory
-    mem_free(pile);
-  }
-}
-
-
 /**************** get_location() ****************/
 /* see pile.h for description */
 point_t*
@@ -81,7 +68,6 @@ get_location(pile_t* pile);
   }
   return NULL;
 }
-
 
 /**************** get_gold() ****************/
 /* see pile.h for description */

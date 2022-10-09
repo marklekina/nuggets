@@ -1,4 +1,4 @@
-/* 
+/*
  * game.c - 'game' module
  *
  * see game.h for more information.
@@ -55,7 +55,7 @@ game_new(FILE* fp, int max_players, int max_piles) {
     if (piles != NULL) {
       return NULL;
     }
-    
+
     // allocate memory for game struct
     game_t* game = mem_malloc(sizeof(game_t));
 
@@ -183,4 +183,57 @@ update_gold(game_t* game, int gold_collected) {
 
   // otherwise return -1
   return -1;
+}
+
+/**************** build_mapstring() ****************/
+/* see grid.h for description */
+char*
+build_mapstring(game_t* game, player_t* player) {
+  // validate game and player
+  if (game == NULL || player == NULL) {
+    return NULL;
+  }
+
+  // validate the game's grid, gold piles and players array
+  grid_t* grid = game->grid;
+  player_t** players = game->players;
+  pile_t** goldPiles = game->goldPiles;
+  if (grid == NULL || players == NULL || goldPiles == NULL) {
+    return NULL;
+  }
+
+  // load grid points array from grid, ensure it is valid and contains grid points
+  point_t** gridPoints = grid->gridPoints;
+  if (gridPoints == NULL || gridPoints[i] == NULL) {
+    return NULL;
+  }
+
+  // loop through the grid points and lay them out in a map string
+  char* mapString = (char) mem_malloc(sizeof(char) * (grid->size + 1));
+  for (int i = 0; i < grid->size; i++) {
+    mapString[i] = get_symbol(gridPoints[i]);
+  }
+  mapString[grid->size] = "\0";
+
+  // loop through all gold piles and replace grid point symbol with asterisk
+  for (int i = 0; i < strlen(goldPiles); i++) {
+    point_t* pile_location = get_location(goldPiles[i]);
+    int idx = get_row(pile_location) * grid->ncols + get_col(pile_location);
+    mapString[idx] = "*";
+  }
+
+  // loop through all players and replace grid point symbol with player letters
+  for (int i = 0; i < strlen(players); i++) {
+    point_t* player_location = get_location(players[i]);
+    int idx = get_row(player_location) * grid->ncols + get_col(player_location);
+    if (players[i] == player) {
+      mapString[idx] = "@";
+    }
+    else {
+      mapString[idx] = get_letter(players[i]);
+    }
+  }
+
+  // return map string
+  return mapString;
 }

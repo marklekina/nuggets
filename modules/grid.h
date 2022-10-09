@@ -1,6 +1,6 @@
 /*
  * grid.h - header file for 'grid' module
- * 
+ *
  * A 'grid' is a struct holding a string representation of the game's map, as well as the number of rows and columns in the map
  *
  * Mark Lekina Rorat, December 2021
@@ -36,17 +36,5 @@ grid_t* grid_new(FILE* fp);
  *   we ignore NULL grid.
  */
 void grid_delete(grid_t* grid);
-
-/**************** point_to_index ****************/
-/* compute the index of a grid point on the map string, i.e. (x,y) -> map[idx]
- *
- * caller provides:
- *   grid pointer
- *   point pointer
- * we return:
- *   the index of the grid point on the map string, if computed successfully
- *   -1 on error 
- */
-int point_to_index(grid_t* grid, point_t* point);
 
 #endif // __GRID_H
