@@ -2,7 +2,7 @@
  * point.h - header file for 'point' module
  *
  *
- * Mark Lekina Rorat, December 2021, August 2022
+ * Mark Lekina Rorat, December 2021; August, October 2022
  */
 
 #ifndef __POINT_H
@@ -14,82 +14,85 @@ typedef struct point point_t;
 /**************** functions ****************/
 
 /**************** point_new ****************/
-/* create a new point
+/*
+ * creates a new point
+ *
  * caller provides:
- *  valid x and y coordinates (integers)
- *  valid grid point type, i.e., one of the following:
+ *  - valid row and column coordinates
+ *  - valid grid point symbol, i.e.:
  *      - room spot ('.'')
  *      - solid rock (' ')
  *      - boundary ('|', '-', '+')
+ *
  * we return:
  *   pointer to a new point_t, or NULL if error.
+ *
  * caller is responsible for:
- *   assigning an occupant if necessary
- *   calling point_delete.
+ *   calling point_delete to free dynamically allocated memory.
  */
-point_t* point_new(int x, int y, char type);
+point_t* point_new(int row, int col, char symbol);
 
 /**************** point_delete ****************/
 /* delete the point.
  *
  * caller provides:
  *   a valid point_t pointer.
+ *
  * we guarantee:
  *   we free the point's memory
- *   we ignore NULL point.
+ *   we ignore a NULL point.
  */
 void point_delete(point_t* point);
 
-/**************** get_x ****************/
+/**************** get_row ****************/
 /*
- * getter for the point's x coordinate.
- * caller provides:
- *   a valid point_t pointer.
- *
- * function returns:
- *  x coordinate or null on error
- *
- */
-int get_x(point_t* point);
-
-/**************** get_y ****************/
-/*
- * getter for the point's y coordinate.
+ * getter for the point's row coordinate.
  *
  * caller provides:
  *   a valid point_t pointer.
  *
  * function returns:
- *  y coordinate or null on error
- */
-int get_y(point_t* point);
-
-/**************** get_occupant ****************/
-/*
- * getter for the point's occupant
- * caller provides:
- *   a valid point_t pointer.
- *
- * we return:
- *   a valid pile (*) or player (@, A-Z) char symbol
+ *  row coordinate or null on error
  *
  */
-char get_occupant(point_t* point);
+int get_row(point_t* point);
 
-/**************** set_occupant ****************/
+/**************** get_col ****************/
 /*
- * setter for the point's occupant, i.e., either a player or gold point_delete
- *  by default, the point has no occupant
+ * getter for the point's column coordinate.
  *
  * caller provides:
  *   a valid point_t pointer.
- *   a valid pile (*) or player (@, A-Z) char symbol
  *
  * function returns:
- *   true if successful
+ *  column coordinate or null on error
+ */
+int get_col(point_t* point);
+
+/**************** get_symbol ****************/
+/*
+ * getter for the point's type symbol.
+ *
+ * caller provides:
+ *   a valid point_t pointer.
+ *
+ * function returns:
+ *  the point's type symbol or null on error
+ */
+char get_symbol(point_t* point);
+
+/**************** is_same_point ****************/
+/*
+ * compares the coordinates of two points to determine if they refer to the same grid point
+ *
+ * caller provides:
+ *   two valid point_t pointer.
+ *
+ * function returns:
+ *   true if they point to the same gridpoint
  *   false otherwise
  *
  */
-bool set_occupant(point_t* point, char occupant);
+bool is_same_point(point_t* pointA, point_t* pointB);
 
 #endif // __POINT_H
