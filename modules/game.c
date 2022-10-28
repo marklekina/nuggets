@@ -218,6 +218,7 @@ build_mapstring(game_t* game, player_t* player) {
   }
 
   // loop through the grid points and lay them out in a map string
+  // TODO: replace grid point symbols with ' ' if grid point not visible to the player
   char* mapString = (char) mem_malloc(sizeof(char) * (grid->size + 1));
   for (int i = 0; i < grid_size; i++) {
     mapString[i] = get_symbol(gridPoints[i]);

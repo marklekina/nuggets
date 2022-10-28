@@ -20,7 +20,7 @@ typedef struct point point_t;
  * caller provides:
  *  - valid row and column coordinates
  *  - valid grid point symbol, i.e.:
- *      - room spot ('.'')
+ *      - room spot ('.')
  *      - solid rock (' ')
  *      - boundary ('|', '-', '+')
  *

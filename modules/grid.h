@@ -117,4 +117,17 @@ int get_nrows(grid_t* grid);
  */
 int get_ncols(grid_t* grid);
 
+/**************** compute_visibility ****************/
+/*
+ * compute whether pointA is visible from pointB
+ *
+ * caller provides:
+ *   valid grid pointer
+ *   two valid grid point pointers
+ *
+ * we return:
+ *   true if visible, false otherwise
+ */
+bool compute_visibility(grid_t* grid, point_t* pointA, point_t* pointB);
+
 #endif // __GRID_H
