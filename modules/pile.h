@@ -37,6 +37,7 @@ pile_t* pile_new(point_t* location, int gold);
  *   a valid pile pointer.
  *
  * we guarantee:
+ *   we free the pile's location memory
  *   we free the pile's memory
  *   we ignore NULL point.
  *

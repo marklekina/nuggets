@@ -37,7 +37,6 @@ grid_t* grid_new(FILE* fp);
  *   a valid grid pointer.
  *
  * we guarantee:
- *   the function assigns the number of rows, columns and grid size to the grid,
  *   we populate the grid's grid points array as defined by the grid's map string.
  */
 void build_grid(grid_t* grid);
@@ -80,6 +79,20 @@ char* get_map_string(grid_t* grid);
  *   the grid's array of grid points.
  */
 point** get_gridpoints(grid_t* grid);
+
+/**************** get_gridpoint ****************/
+/*
+ * returns a specific grid point from the grid points array.
+ *
+ * caller provides:
+ *   a valid grid pointer
+ *   row coordinate
+ *   column coordinate
+ *
+ * we return:
+ *   a pointer to the specified grid point.
+ */
+point* get_gridpoint(grid_t* grid, int row, int col);
 
 /**************** get_size ****************/
 /*

@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "mem.h"
+#include "log.h"
 #include "point.h"
 #include "pile.h"
 
@@ -29,22 +30,30 @@ pile_t*
 pile_new(point_t* location, int gold)
 {
   // validate parameters
-  if (location != NULL && gold > 0) {
-    // allocate memory for pile
-    pile_t* pile = mem_malloc(sizeof(pile_t));
-
-    // assign location and gold amount to pile
-    if (pile != NULL) {
-      pile->location = location;
-      pile->gold = gold;
-    }
-
-    // return struct
-    return pile;
+  if (location == NULL) {
+    log_v("pile_new: NULL point passed to function");
+    return NULL;
+  }
+  if (gold <= 0) {
+    log_d("pile_new: invalid gold amount (%d) allocated to pile", gold);
+    return NULL;
   }
 
-  // otherwise return null
-  return NULL;
+  // allocate memory for pile
+  pile_t* pile = mem_malloc(sizeof(pile_t));
+
+  // log memory allocation error
+  if (pile == NULL) {
+    log_v("pile_new: error allocating memory for pile struct");
+    return NULL;
+  }
+
+  // assign location and gold amount to pile
+  pile->location = location;
+  pile->gold = gold;
+
+  // return struct
+  return pile;
 }
 
 /**************** pile_delete() ****************/
@@ -52,10 +61,15 @@ pile_new(point_t* location, int gold)
 void
 pile_delete(pile_t* pile)
 {
-  if (pile != NULL) {
-    // free pile memory
-    mem_free(pile);
+  // log if NULL pointer is passed
+  if (pile == NULL) {
+    log_v("pile_delete: NULL pile passed to function");
+    return;
   }
+
+  // free pile memory
+  point_delete(pile->location);
+  mem_free(pile);
 }
 
 /**************** get_location() ****************/
@@ -63,10 +77,11 @@ pile_delete(pile_t* pile)
 point_t*
 get_location(pile_t* pile);
 {
-  if (pile != NULL) {
-    return pile->location;
+  if (pile == NULL) {
+    log_v("get_location: NULL pile passed to function");
+    return NULL;
   }
-  return NULL;
+  return pile->location;
 }
 
 /**************** get_gold() ****************/
@@ -74,8 +89,9 @@ get_location(pile_t* pile);
 int
 get_gold(pile_t* pile);
 {
-  if (pile != NULL) {
-    return pile->gold;
+  if (pile == NULL) {
+    log_v("get_gold: NULL pile passed to function");
+    return -1;
   }
-  return NULL;
+  return pile->gold;
 }

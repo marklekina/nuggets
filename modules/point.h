@@ -81,9 +81,9 @@ int get_col(point_t* point);
  */
 char get_symbol(point_t* point);
 
-/**************** is_same_point ****************/
+/**************** is_same_location ****************/
 /*
- * compares the coordinates of two points to determine if they refer to the same grid point
+ * compares the coordinates of two points to determine if they are the same grid point
  *
  * caller provides:
  *   two valid point_t pointer.
@@ -93,6 +93,6 @@ char get_symbol(point_t* point);
  *   false otherwise
  *
  */
-bool is_same_point(point_t* pointA, point_t* pointB);
+bool is_same_location(point_t* pointA, point_t* pointB);
 
 #endif // __POINT_H

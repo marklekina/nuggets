@@ -23,7 +23,6 @@ typedef struct player player_t;
  *  a valid player's letter representation (character)
  *  a valid room spot location in the grid (point_t*)
  *  a string with the portion of the grid that is visible to the player
- *  the amount of gold present in the player's wallet at the start of the game (presumably 0)
  *
  * we return:
  *   pointer to a new player, or NULL if error.
@@ -35,8 +34,7 @@ player_t* player_new(
   char* name,
   char letter,
   point_t* location,
-  char* visible_map,
-  int wallet
+  char* visible_map
 );
 
 /**************** player_delete ****************/
@@ -49,13 +47,9 @@ player_t* player_new(
  * we guarantee:
  *   we free the player's name string
  *   we free the player's visible map string
+ *   we free the player's location memory
  *   we free the player's memory
  *   we ignore NULL player.
- *
- * notes:
- *  - we do not free the player's location memory
- *  - this is because the location is only held by the pile as a reference to that grid point on the grid
- *  - the location memory is, therefore, handled at the grid level
  */
 void player_delete(player_t* player);
 
