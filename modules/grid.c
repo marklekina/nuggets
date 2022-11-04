@@ -264,3 +264,122 @@ compute_visibility(grid_t* grid, point_t* pointA, point_t* pointB) {
 
   return true;
 }
+
+void
+compute_intersection(int row_a, int col_a, int row_b, int col_b) {
+  // compute distance between points
+  int row_diff = row_b - row_a;
+  int col_diff = col_b - col_a;
+
+  // compute direction of movement
+  int row_step = row_diff / abs(row_diff);
+  int col_step = col_diff / abs(col_diff);
+
+  // edge case: the two points lie on the same vertical line
+  if (col_diff == 0) {
+    // moving stepwise by row
+    if (abs(row_diff) > 1) {
+      printf("moving stepwise by row\n");
+      // variables to hold column intersections
+      double col_i;
+      int col_floor;
+      int col_ceil;
+
+      // loop through each row between the points
+      for (int row_i = row_a + row_step; row_i != row_b; row_i += row_step) {
+        // compute points of intersection
+        col_i = col_a;
+        col_floor = (int) floor(col_i);
+        col_ceil = (int) ceil(col_i);
+
+        // print point(s) of intersection
+        // TODO: replace this with returning the grid point with specified coordinates
+        printf("\tcolumn %d, row %d\n", col_floor, row_i);
+        if (col_floor != col_ceil) {
+          printf("\tcolumn %d, row %d\n", col_i, col_ceil);
+        }
+      }
+    }
+    return;
+  }
+
+  // edge case: the two points lie on the same horizontal line
+  if (row_diff == 0) {
+    // moving stepwise by column
+    if (abs(col_diff) > 1) {
+      printf("moving stepwise by column\n");
+      // variables to hold row intersections
+      double row_i;
+      int row_floor;
+      int row_ceil;
+
+      // loop through each column between the points
+      for (int col_i = col_a + col_step; col_i != col_b; col_i += col_step) {
+        // compute points of intersection
+        row_i = row_a;
+        row_floor = (int) floor(row_i);
+        row_ceil = (int) ceil(row_i);
+
+        // print point(s) of intersection
+        // TODO: replace this with returning the grid point with specified coordinates
+        printf("\tcolumn %d, row %d\n", col_i, row_floor);
+        if (row_floor != row_ceil) {
+          printf("\tcolumn %d, row %d\n", col_i, row_ceil);
+        }
+      }
+    }
+    return;
+  }
+
+  // compute slope
+  double slope = (float) row_diff / col_diff;
+
+  // moving stepwise by column
+  if (abs(col_diff) > 1) {
+    printf("moving stepwise by column\n");
+
+    // variables to hold row intersections
+    double row_i;
+    int row_floor;
+    int row_ceil;
+
+    // loop through each column between the points
+    for (int col_i = col_a + col_step; col_i != col_b; col_i += col_step) {
+      // compute points of intersection
+      row_i = row_a + slope * (col_i - col_a);
+      row_floor = (int) floor(row_i);
+      row_ceil = (int) ceil(row_i);
+
+      // print point(s) of intersection
+      // TODO: replace this with returning the grid point with specified coordinates
+      printf("\tcolumn %d, row %d\n", col_i, row_floor);
+      if (row_floor != row_ceil) {
+        printf("\tcolumn %d, row %d\n", col_i, row_ceil);
+      }
+    }
+  }
+
+  // moving stepwise by row
+  if (abs(row_diff) > 1) {
+    printf("moving stepwise by row\n");
+    // variables to hold column intersections
+    double col_i;
+    int col_floor;
+    int col_ceil;
+
+    // loop through each row between the points
+    for (int row_i = row_a + row_step; row_i != row_b; row_i += row_step) {
+      // compute points of intersection
+      col_i = col_a + (row_i - row_a) / slope;
+      col_floor = (int) floor(col_i);
+      col_ceil = (int) ceil(col_i);
+
+      // print point(s) of intersection
+      // TODO: replace this with returning the grid point with specified coordinates
+      printf("\tcolumn %d, row %d\n", col_floor, row_i);
+      if (col_floor != col_ceil) {
+        printf("\tcolumn %d, row %d\n", col_i, col_ceil);
+      }
+    }
+  }
+}
