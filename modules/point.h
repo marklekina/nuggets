@@ -95,4 +95,19 @@ char get_symbol(point_t* point);
  */
 bool is_same_location(point_t* pointA, point_t* pointB);
 
+/**************** is_transparent ****************/
+/*
+ * checks whether a room spot is "see-through"
+ * "see-through" spots are either room spots('.') or passage spots('#')
+ *
+ * caller provides:
+ *   valid point_t pointer.
+ *
+ * function returns:
+ *   true if the room spot is "see-through"
+ *   false otherwise
+ *
+ */
+bool is_transparent(point_t* point);
+
 #endif // __POINT_H

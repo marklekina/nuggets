@@ -248,7 +248,7 @@ compute_visibility(grid_t* grid, point_t* pointA, point_t* pointB) {
     return false;
   }
 
-  // validate point
+  // validate points
   if (pointA == NULL || pointB == NULL) {
     log_v("compute_visibility: NULL grid point pointer passed to function");
     return false;
@@ -260,84 +260,73 @@ compute_visibility(grid_t* grid, point_t* pointA, point_t* pointB) {
   int col_a = get_col(pointA);
   int col_b = get_col(pointB);
 
-  // TODO: implement visibility algorithm here
-
-  return true;
-}
-
-void
-compute_intersection(int row_a, int col_a, int row_b, int col_b) {
   // compute distance between points
   int row_diff = row_b - row_a;
   int col_diff = col_b - col_a;
 
-  // compute direction of movement
-  int row_step = row_diff / abs(row_diff);
-  int col_step = col_diff / abs(col_diff);
+  // variables to specify direction of movement
+  int row_step;
+  int col_step;
 
-  // edge case: the two points lie on the same vertical line
+  // variables to hold gridpoint pointers
+  point_t* grid_point;
+  point_t* grid_point_floor;
+  point_t* grid_point_ceil;
+
+  // edge case: the two points lie on the same column
   if (col_diff == 0) {
-    // moving stepwise by row
+    log_v("compute_visibility: points lie on the same column");
+
+    // moving vertically stepwise by row
     if (abs(row_diff) > 1) {
-      printf("moving stepwise by row\n");
-      // variables to hold column intersections
-      double col_i;
-      int col_floor;
-      int col_ceil;
+      // compute direction of movement
+      row_step = row_diff / abs(row_diff);
 
       // loop through each row between the points
       for (int row_i = row_a + row_step; row_i != row_b; row_i += row_step) {
-        // compute points of intersection
-        col_i = col_a;
-        col_floor = (int) floor(col_i);
-        col_ceil = (int) ceil(col_i);
-
-        // print point(s) of intersection
-        // TODO: replace this with returning the grid point with specified coordinates
-        printf("\tcolumn %d, row %d\n", col_floor, row_i);
-        if (col_floor != col_ceil) {
-          printf("\tcolumn %d, row %d\n", col_i, col_ceil);
+        // check if point(s) of intersection is see-through
+        grid_point = get_gridpoint(grid, row_i, col_a);
+        if (!is_transparent(grid_point)) {
+          return false;
         }
       }
     }
-    return;
+    return true;
   }
 
-  // edge case: the two points lie on the same horizontal line
+  // edge case: the two points lie on the same row
   if (row_diff == 0) {
-    // moving stepwise by column
+    log_v("compute_visibility: points lie on the same row");
+
+    // moving horizontally stepwise by column
     if (abs(col_diff) > 1) {
-      printf("moving stepwise by column\n");
-      // variables to hold row intersections
-      double row_i;
-      int row_floor;
-      int row_ceil;
+      // compute direction of movement
+      col_step = col_diff / abs(col_diff);
 
       // loop through each column between the points
       for (int col_i = col_a + col_step; col_i != col_b; col_i += col_step) {
-        // compute points of intersection
-        row_i = row_a;
-        row_floor = (int) floor(row_i);
-        row_ceil = (int) ceil(row_i);
-
-        // print point(s) of intersection
-        // TODO: replace this with returning the grid point with specified coordinates
-        printf("\tcolumn %d, row %d\n", col_i, row_floor);
-        if (row_floor != row_ceil) {
-          printf("\tcolumn %d, row %d\n", col_i, row_ceil);
+        // check if point(s) of intersection is see-through
+        grid_point = get_gridpoint(grid, row_a, col_i);
+        if (!is_transparent(grid_point)) {
+          return false;
         }
       }
     }
-    return;
+    return true;
   }
 
+  // generic case: points lie on different rows and columns
+  log_v("compute_visibility: points lie on different rows and columns");
+
+  // compute direction of movement
+  row_step = row_diff / abs(row_diff);
+  col_step = col_diff / abs(col_diff);
+
   // compute slope
-  double slope = (float) row_diff / col_diff;
+  double slope = (double) row_diff / col_diff;
 
-  // moving stepwise by column
+  // moving horizontally stepwise by column
   if (abs(col_diff) > 1) {
-    printf("moving stepwise by column\n");
-
     // variables to hold row intersections
     double row_i;
     int row_floor;
@@ -346,22 +335,37 @@ compute_intersection(int row_a, int col_a, int row_b, int col_b) {
     // loop through each column between the points
     for (int col_i = col_a + col_step; col_i != col_b; col_i += col_step) {
       // compute points of intersection
+      // line of sight passes between row_floor and row_ceil, and intesects exactly with row_i
       row_i = row_a + slope * (col_i - col_a);
       row_floor = (int) floor(row_i);
       row_ceil = (int) ceil(row_i);
 
-      // print point(s) of intersection
-      // TODO: replace this with returning the grid point with specified coordinates
-      printf("\tcolumn %d, row %d\n", col_i, row_floor);
+
       if (row_floor != row_ceil) {
-        printf("\tcolumn %d, row %d\n", col_i, row_ceil);
+        // at least one of the two points (grid_point_floor and grid_point_ceil) must be transparent for the line of sight to be direct
+        grid_point_floor = get_gridpoint(grid, row_floor, col_i);
+        grid_point_ceil = get_gridpoint(grid, row_ceil, col_i);
+
+        // return false if both points are not see-through
+        if (!is_transparent(grid_point_floor) && !is_transparent(grid_point_ceil)) {
+          return false;
+        }
+      }
+      else {
+        // the point where the line of sight intersects directly has to be see-through
+        grid_point = get_gridpoint(grid, row_floor, col_i);
+
+        // return false if the point is not see through
+        if (!is_transparent(grid_point)) {
+          return false;
+        }
       }
     }
   }
 
-  // moving stepwise by row
+  // moving vertically stepwise by row
   if (abs(row_diff) > 1) {
-    printf("moving stepwise by row\n");
+
     // variables to hold column intersections
     double col_i;
     int col_floor;
@@ -370,16 +374,34 @@ compute_intersection(int row_a, int col_a, int row_b, int col_b) {
     // loop through each row between the points
     for (int row_i = row_a + row_step; row_i != row_b; row_i += row_step) {
       // compute points of intersection
+      // line of sight passes between col_floor and col_ceil, and intesects exactly with col_i
       col_i = col_a + (row_i - row_a) / slope;
       col_floor = (int) floor(col_i);
       col_ceil = (int) ceil(col_i);
 
-      // print point(s) of intersection
-      // TODO: replace this with returning the grid point with specified coordinates
-      printf("\tcolumn %d, row %d\n", col_floor, row_i);
       if (col_floor != col_ceil) {
-        printf("\tcolumn %d, row %d\n", col_i, col_ceil);
+        // at least one of the two points (grid_point_floor and grid_point_ceil) must be transparent for the line of sight to be direct
+        grid_point_floor = get_gridpoint(grid, row_i, col_floor);
+        grid_point_ceil = get_gridpoint(grid, row_i, col_ceil);
+
+        // return false if both points are not see-through
+        if (!is_transparent(grid_point_floor) && !is_transparent(grid_point_ceil)) {
+          return false;
+        }
+      }
+      else {
+        // the point where the line of sight intersects directly has to be see-through
+        grid_point = get_gridpoint(grid, row_i, col_floor);
+
+        // return false if the point is not see through
+        if (!is_transparent(grid_point)) {
+          return false;
+        }
       }
     }
   }
+
+  // if none of the points intersected by the line of sight are not see-through, or there are no points between the two gridpoints,
+  // then we have a direct line of sight between the two points
+  return true;
 }

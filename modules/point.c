@@ -126,3 +126,23 @@ is_same_location(point_t* pointA, point_t* pointB)
   // return false otherwise
   return false;
 }
+
+/**************** is_transparent() ****************/
+/* see point.h for description */
+bool
+is_transparent(point_t* point) {
+  // validate parameters
+  if (point == NULL) {
+    log_v("is_transparent: NULL point passed to function");
+    return false;
+  }
+
+  // "see-through" spots are either room spots('.') or passage spots('#')
+  // return true if a room spot is either of those
+  if (get_symbol(point) == '.' || get_symbol(point) == '#') {
+    return true;
+  }
+
+  // otherwise return false
+  return false;
+}
