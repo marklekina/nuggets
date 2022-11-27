@@ -97,7 +97,7 @@ bool is_same_location(point_t* pointA, point_t* pointB);
 
 /**************** is_transparent ****************/
 /*
- * checks whether a room spot is "see-through"
+ * checks whether a grid point is "see-through"
  * "see-through" spots are either room spots('.') or passage spots('#')
  *
  * caller provides:
@@ -109,5 +109,34 @@ bool is_same_location(point_t* pointA, point_t* pointB);
  *
  */
 bool is_transparent(point_t* point);
+
+/**************** is_room_spot ****************/
+/*
+ * checks whether a point on the grid is a room spot
+ *
+ * caller provides:
+ *   valid point_t pointer.
+ *
+ * function returns:
+ *   true if we have a room spot
+ *   false otherwise
+ *
+ */
+bool is_room_spot(point_t* point)
+
+/**************** is_point_in_list ****************/
+/*
+ * checks whether a grid point is present in a list of grid points
+ *
+ * caller provides:
+ *   valid grid point pointer,
+ *   list of valid grid point pointers.
+ *
+ * function returns:
+ *   true if the given grid point is present in the given list,
+ *   false otherwise
+ *
+ */
+bool is_point_in_list(point_t* point, point_t* point_list);
 
 #endif // __POINT_H

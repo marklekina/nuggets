@@ -63,7 +63,7 @@ void game_delete(game_t* game);
  *   true if the gold piles are distributed successfully
  *   false otherwise
  */
-bool distribute_gold(game_t* game);
+bool distribute_gold(game_t* game, int min_piles, int max_piles);
 
 /**************** add_player ****************/
 /*
@@ -73,12 +73,13 @@ bool distribute_gold(game_t* game);
  * caller provides:
  *   valid game pointer
  *   valid player pointer
+ *   maximum number of players allowed in the game
  *
  * we return:
  *   true if the player is added successfully
  *   false otherwise
  */
-bool add_player(game_t* game, player_t* player);
+bool add_player(game_t* game, player_t* player, int max_players);
 
 /**************** move_player ****************/
 /*

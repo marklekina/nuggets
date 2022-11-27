@@ -146,3 +146,46 @@ is_transparent(point_t* point) {
   // otherwise return false
   return false;
 }
+
+
+/**************** is_room_spot() ****************/
+/* see point.h for description */
+bool
+is_room_spot(point_t* point) {
+  // validate parameters
+  if (point == NULL) {
+    log_v("is_room_spot: NULL point passed to function");
+    return false;
+  }
+
+  // return true if the point is a room spot
+  if (get_symbol(point) == '.') {
+    return true;
+  }
+
+  // otherwise return false
+  return false;
+}
+
+
+/**************** is_point_in_list() ****************/
+/* see point.h for description */
+bool
+is_point_in_list(point_t* point, point_t** point_list) {
+  // validate parameters
+  if (point == NULL || point_list == NULL) {
+    log_v("is_point_in_list: NULL pointer(s) passed to function");
+    return false;
+  }
+
+  // loop through list of points and compare each point to the given point
+  for (int i = 0; point_list[i] != NULL; i++) {
+    // return true if same point
+    if (is_same_location(point, point_list[i])) {
+      return true;
+    }
+  }
+
+  // return false otherwise
+  return false;
+}
