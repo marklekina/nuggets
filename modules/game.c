@@ -214,40 +214,102 @@ add_player(game_t* game, player_t* player, int max_players) {
 }
 
 
-
-
-
-
-
-
-
-
-/* TODO: continue here */
-
-
-
-
-
-
-
-
-
-
-/**************** update_gold() ****************/
+/**************** move_player() ****************/
 /* see game.h for description */
-int
-update_gold(game_t* game, int gold_collected) {
+bool
+move_player(game_t* game, player_t* player, point_t* point) {
   // validate parameters
-  if (game != NULL) {
-    // remove collected gold from the remaining gold
-    game->gold_balance = game->gold_balance - gold_collected;
-
-    // return updated gold remainder
-    return game->gold_balance;
+  if (game == NULL || player == NULL || point == NULL) {
+    log_v("move_player: NULL pointer(s) passed to function");
+    return false;
   }
 
-  // otherwise return -1
-  return -1;
+  // 1. Switch locations with an occupant player (if target location is occupied)
+
+  // loop through list of players
+  for (int i = 0; i < game->num_players; i++) {
+    player_t* player_occupant = game->players[i];
+
+    // check if destination spot is occupied by any of the players
+    if (is_same_location(point, get_location(player_occupant))) {
+
+      // switch the occupant player to the moving player's location
+      bool switched_location = update_location(player_occupant, get_location(player));
+
+      // log unsuccessful location switch
+      if (!switched_location) {
+        log_v("move_player: error switching player locations");
+        return false;
+      }
+      break;
+    }
+  }
+
+  // 2. Move the player to the desired location
+
+  // move the player onto the desired location
+  bool moved_player = update_location(player, point);
+
+  // log unsuccessful player movement
+  if (!moved_player) {
+    log_v("move_player: error moving player");
+    return false;
+  }
+
+  // 3. Collect gold if necessary
+
+  // loop through list of gold piles
+  for (int i = 0; i < game->num_piles; i++) {
+    pile_t* pile = game->piles[i];
+
+    // check if destination spot is occupied by any of the gold piles
+    if (is_same_location(point, get_location(pile))) {
+
+      // add the gold into the player's wallet
+      int gold_collected = collect_gold(game, player, pile);
+
+      // log unsuccessful gold collection
+      if (gold_collected < 0) {
+        log_v("move_player: error collecting gold from pile");
+        return false;
+      }
+      break;
+    }
+  }
+
+  // return successfully
+  return true;
+}
+
+
+/**************** collect_gold() ****************/
+/* see game.h for description */
+int
+collect_gold(game_t* game, player_t* player, pile_t* pile) {
+  // validate parameters
+  if (game == NULL || player == NULL || pile == NULL) {
+    log_v("collect_gold: NULL pointer(s) passed to function");
+    return -1;
+  }
+
+  // 1. Add gold from pile to a player's wallet
+  int gold_collected = get_gold(pile);
+  bool added_gold = update_wallet_balance(player, gold_collected);
+
+  // log unsuccessful addition of gold to player's wallet
+  if (!added_gold) {
+    log_v("collect_gold: error adding gold to player's wallet");
+    return -1;
+  }
+
+  // 2. Delete the gold pile
+  pile_delete(pile);
+
+  // 3. Update the amount of gold remaining in the game
+  game->gold_balance -= gold_collected;
+
+  // return successfully
+  return gold_collected;
 }
 
 // check player location to see if they're on a gold pile - server level
@@ -255,32 +317,37 @@ update_gold(game_t* game, int gold_collected) {
 // update gold remaining in game - game level
 // delete gold pile - game level
 
-/**************** build_mapstring() ****************/
+
+/**************** build_visible_mapstring() ****************/
 /* see grid.h for description */
 char*
-build_mapstring(game_t* game, player_t* player) {
-  // validate game and player
+build_visible_mapstring(game_t* game, player_t* player) {
+  // validate parameters
   if (game == NULL || player == NULL) {
+    log_v("build_visible_mapstring: NULL pointer(s) passed to function");
     return NULL;
   }
 
-  // validate the game's grid, gold piles and players array
   grid_t* grid = game->grid;
   player_t** players = game->players;
-  pile_t** goldPiles = game->goldPiles;
-  int grid_size = get_size(grid);
+  pile_t** goldPiles = game->piles;
+
+  // validate the game's grid, gold piles and players array
   if (grid == NULL || players == NULL || goldPiles == NULL) {
+    log_v("build_visible_mapstring: NULL values for grid, piles or players");
     return NULL;
   }
+  // fetch grid size
+  int grid_size = get_size(grid);
 
   // load grid points array from grid, ensure it is valid and contains grid points
   point_t** gridPoints = grid->gridPoints;
   if (gridPoints == NULL || gridPoints[i] == NULL) {
+    log_v("build_visible_mapstring: error fetching gridpoints array from grid");
     return NULL;
   }
 
   // loop through the grid points and lay them out in a map string
-  // TODO: replace grid point symbols with ' ' if grid point not visible to the player
   char* mapString = (char) mem_malloc(sizeof(char) * (grid->size + 1));
   for (int i = 0; i < grid_size; i++) {
     mapString[i] = get_symbol(gridPoints[i]);
@@ -303,6 +370,17 @@ build_mapstring(game_t* game, player_t* player) {
     }
     else {
       mapString[idx] = get_letter(players[i]);
+    }
+  }
+
+  // loop through each gridpoint
+  player_location = get_location(player);
+  for (int i = 0; i < grid_size; i++) {
+    bool is_visible = compute_visibility(grid, player_location, gridPoints[i]);
+
+    // replace grid point symbol with ' ' if grid point not visible to the player
+    if (!is_visible) {
+      mapString[i] = ' ';
     }
   }
 
