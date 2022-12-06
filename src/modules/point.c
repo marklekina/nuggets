@@ -50,17 +50,18 @@ point_new(int row, int col, char symbol)
 
 /**************** point_delete() ****************/
 /* see point.h for description */
-void
+bool
 point_delete(point_t* point)
 {
   // log if NULL pointer is passed
   if (point == NULL) {
     log_v("point_delete: NULL point passed to function");
-    return;
+    return false;
   }
 
   // free point memory
   mem_free(point);
+  return true;
 }
 
 /**************** get_row() ****************/
@@ -190,16 +191,3 @@ is_point_in_list(point_t* point, point_t** point_list) {
   // return false otherwise
   return false;
 }
-
-
-// UNIT TEST
-
-#ifdef UNIT_TEST
-
-int
-main(const int argc, char* argv[])
-{
-  printf("Unit test is running\n");
-}
-
-#endif // UNIT_TEST
