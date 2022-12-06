@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include "mem.h"
 #include "log.h"
 #include "point.h"
@@ -119,7 +120,7 @@ is_same_location(point_t* pointA, point_t* pointB)
   }
 
   // compare coordinates and return true if we have a match
-  if (get_row(pointA) == get_row(pointB) && get_col() == get_col(pointB)) {
+  if (get_row(pointA) == get_row(pointB) && get_col(pointA) == get_col(pointB)) {
     return true;
   }
 
@@ -189,3 +190,16 @@ is_point_in_list(point_t* point, point_t** point_list) {
   // return false otherwise
   return false;
 }
+
+
+// UNIT TEST
+
+#ifdef UNIT_TEST
+
+int
+main(const int argc, char* argv[])
+{
+  printf("Unit test is running\n");
+}
+
+#endif // UNIT_TEST

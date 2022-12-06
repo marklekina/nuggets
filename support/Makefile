@@ -6,7 +6,7 @@
 #
 
 LIB = support.a
-TESTS = miniclient miniserver messagetest
+TESTS = miniclient messagetest
 
 CFLAGS = -Wall -pedantic -std=c11 -ggdb
 CC = gcc
@@ -15,9 +15,9 @@ MAKE = make
 .PHONY: all clean
 
 ############# default rule ###########
-all: $(LIB) $(TESTS) 
+all: $(LIB) $(TESTS)
 
-$(LIB): message.o log.o
+$(LIB): message.o log.o mem.o file.o
 	ar cr $(LIB) $^
 
 messagetest: message.c message.h log.h log.o
@@ -33,6 +33,8 @@ miniclient.o: message.h
 miniserver.o: message.h
 message.o: message.h
 log.o: log.h
+mem.o: mem.h
+file.o: file.h
 
 ############# clean ###########
 clean:

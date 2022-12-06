@@ -1,27 +1,50 @@
-# Makefile for the Nuggets modules.
+# Makefile for the 'modules.a'
 #
 # Mark Lekina Rorat, December 2022
 
-CC = gcc
-CFLAGS = -Wall -pedantic -std=c11 -ggdb
-TESTS = point
+
+S = ../support
+
+# specify where to search for support module headers and source files
+vpath %.h $S
+vpath %.c $S
+
+LIB = modules.a
+TESTS = pointtest
+
 OBJS = point.o
-LIBS =
+SOBJS = log.o mem.o
 
-vpath %.h ../support
+CFLAGS = -Wall -pedantic -std=c11 -ggdb
+CC = gcc
+MAKE = make
+VALGRIND = valgrind --leak-check=full --show-leak-kinds=all
 
-.PHONY: all clean
+.PHONY: all test valgrind clean
 
-all: point
+all: $(LIB) $(TESTS)
 
-# executable depends on object files
-$(TESTS): $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) $(LIBS) -o $(TESTS)
+$(LIB): $(OBJS) $(SOBJS)
+	ar cr $@ $^
 
-# object files depend on include files
-point.o: point.h log.h
+pointtest: point.c $(SOBJS)
+	$(CC) $(CFLAGS) -DUNIT_TEST -I$S $^ -o $@
+
+point.o: point.c
+	$(CC) $(CFLAGS) -c -I$S $^
+
+log.o: log.c
+mem.o: mem.c
+
+test: $(TESTS) testing.sh
+	bash -v testing.sh
+
+valgrind: $(TESTS) testing.sh
+	$(VALGRIND) bash -v testing.sh
 
 clean:
+	rm -f core
+	rm -rf *~ *.o *.gch *.dSYM
+	rm -f *.log
+	rm -f $(LIB)
 	rm -f $(TESTS)
-	rm -f *~ *.o
-	rm -rf *.dSYM

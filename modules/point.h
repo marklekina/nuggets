@@ -8,6 +8,8 @@
 #ifndef __POINT_H
 #define __POINT_H
 
+#include <stdbool.h>
+
 /**************** global types ****************/
 typedef struct point point_t;
 
@@ -122,7 +124,7 @@ bool is_transparent(point_t* point);
  *   false otherwise
  *
  */
-bool is_room_spot(point_t* point)
+bool is_room_spot(point_t* point);
 
 /**************** is_point_in_list ****************/
 /*
@@ -137,6 +139,6 @@ bool is_room_spot(point_t* point)
  *   false otherwise
  *
  */
-bool is_point_in_list(point_t* point, point_t* point_list);
+bool is_point_in_list(point_t* point, point_t** point_list);
 
 #endif // __POINT_H
