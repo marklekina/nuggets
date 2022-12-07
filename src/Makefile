@@ -2,7 +2,7 @@
 #
 # Mark Lekina Rorat, December 2022
 
-.PHONY: all clean test
+.PHONY: all clean test valgrind
 
 all:
 	make --directory=support
@@ -16,3 +16,6 @@ clean:
 
 test:
 	make test --directory=tests
+
+valgrind:
+	make valgrind --directory=tests
