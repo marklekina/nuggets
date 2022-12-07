@@ -34,7 +34,7 @@ test: $(TESTS) testing.sh
 
 # expects bash script `testing.sh` to exist.
 valgrind: $(TESTS) testing.sh
-	$(VALGRIND) bash -v testing.sh
+	cat testing.sh | xargs -n1 $(VALGRIND)
 
 clean:
 	rm -rf *.dSYM
