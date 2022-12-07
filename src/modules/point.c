@@ -173,7 +173,7 @@ is_room_spot(point_t* point) {
 /**************** is_point_in_list() ****************/
 /* see point.h for description */
 bool
-is_point_in_list(point_t* point, point_t** point_list) {
+is_point_in_list(point_t* point, point_t* point_list[], int size) {
   // validate parameters
   if (point == NULL || point_list == NULL) {
     log_v("is_point_in_list: NULL pointer(s) passed to function");
@@ -181,7 +181,7 @@ is_point_in_list(point_t* point, point_t** point_list) {
   }
 
   // loop through list of points and compare each point to the given point
-  for (int i = 0; point_list[i] != NULL; i++) {
+  for (int i = 0; i < size; i++) {
     // return true if same point
     if (is_same_location(point, point_list[i])) {
       return true;
