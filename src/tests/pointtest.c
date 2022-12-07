@@ -58,8 +58,8 @@ main(const int argc, char* argv[])
   point_list[3] = point_D;
 
   // is_point_in_list
-  assert(is_point_in_list(point_A, point_list) && is_point_in_list(point_C, point_list));
-  assert(!is_point_in_list(point_E, point_list));
+  assert(is_point_in_list(point_A, point_list, 4) && is_point_in_list(point_C, point_list, 4));
+  assert(!is_point_in_list(point_E, point_list, 4));
 
   // point_delete
   for (int i = 0; i < 4; i++) {

@@ -139,6 +139,6 @@ bool is_room_spot(point_t* point);
  *   false otherwise
  *
  */
-bool is_point_in_list(point_t* point, point_t** point_list);
+bool is_point_in_list(point_t* point, point_t* point_list[], int size);
 
 #endif // __POINT_H
