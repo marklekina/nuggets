@@ -66,9 +66,10 @@ main(const int argc, char* argv[])
     assert(point_delete(point_list[i]));
   }
   assert(!point_delete(NULL));
+  mem_free(point_list);
 
   // print if all code passes all tests
-  log_v("point module: all tests passed\n");
+  log_v("point module: test successful\n");
   log_done();
 
   // return successfully

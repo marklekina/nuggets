@@ -1,17 +1,17 @@
-/* 
+/*
  * miniclient - a simple client using the messaging module
  *
  * Given the address of a server, this simple client sends each line of stdin
  * as a message to the server, and prints to stdout every message received
  * from the server; each printed message is surrounded by 'quotes'.
- * 
+ *
  * David Kotz - May 2021
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <strings.h>
+#include <string.h>
 #include "message.h"
 
 /**************** file-local functions ****************/
@@ -34,7 +34,7 @@ main(const int argc, char* argv[])
     fprintf(stderr, "usage: %s hostname port\n", program);
     return 3; // bad commandline
   }
-  
+
   // commandline provides address for server
   const char* serverHost = argv[1];
   const char* serverPort = argv[2];
@@ -50,7 +50,7 @@ main(const int argc, char* argv[])
 
   // shut down the message module
   message_done();
-  
+
   return ok? 0 : 1; // status code depends on result of message_loop
 }
 
@@ -73,7 +73,7 @@ handleInput(void* arg)
     fprintf(stderr, "handleInput called without a correspondent.");
     return true;
   }
-  
+
   // allocate a buffer into which we can read a line of input
   // (it can't be any longer than a message)!
   char line[message_MaxBytes];
