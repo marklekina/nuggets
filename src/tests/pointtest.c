@@ -66,6 +66,7 @@ main(const int argc, char* argv[])
     assert(point_delete(point_list[i]));
   }
   assert(!point_delete(NULL));
+  assert(point_delete(point_E));
   mem_free(point_list);
 
   // print if all code passes all tests
