@@ -29,7 +29,7 @@ pointtest.o: $(SOURCES)
 
 # expects bash script `testing.sh` to exist.
 test: $(TESTS) testing.sh
-	bash -v testing.sh
+	sh testing.sh
 
 
 # expects bash script `testing.sh` to exist.
