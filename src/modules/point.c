@@ -9,8 +9,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include "mem.h"
-#include "log.h"
 #include "point.h"
 
 /**************** file-local global variables ****************/
@@ -31,11 +29,10 @@ point_t*
 point_new(int row, int col, char symbol)
 {
   // allocate memory for point
-  point_t* point = mem_malloc(sizeof(point_t));
+  point_t* point = malloc(sizeof(point_t));
 
-  // log memory allocation error
+  // memory allocation error
   if (point == NULL) {
-    log_v("point_new: error allocating memory for point struct");
     return NULL;
   }
 
@@ -50,18 +47,16 @@ point_new(int row, int col, char symbol)
 
 /**************** point_delete() ****************/
 /* see point.h for description */
-bool
+void
 point_delete(point_t* point)
 {
-  // log if NULL pointer is passed
+  // if NULL pointer is passed
   if (point == NULL) {
-    log_v("point_delete: NULL point passed to function");
-    return false;
+    return;
   }
 
   // free point memory
-  mem_free(point);
-  return true;
+  free(point);
 }
 
 /**************** get_row() ****************/
@@ -69,9 +64,8 @@ point_delete(point_t* point)
 int
 get_row(point_t* point)
 {
-  // log if NULL pointer is passed
+  // if NULL pointer is passed
   if (point == NULL) {
-    log_v("get_row: NULL point passed to function");
     return -1;
   }
 
@@ -84,9 +78,8 @@ get_row(point_t* point)
 int
 get_col(point_t* point)
 {
-  // log if NULL pointer is passed
+  // if NULL pointer is passed
   if (point == NULL) {
-    log_v("get_col: NULL point passed to function");
     return -1;
   }
 
@@ -99,9 +92,8 @@ get_col(point_t* point)
 char
 get_symbol(point_t* point)
 {
-  // log if NULL pointer is passed
+  // if NULL pointer is passed
   if (point == NULL) {
-    log_v("get_symbol: NULL point passed to function");
     return '!';
   }
 
@@ -116,7 +108,6 @@ is_same_location(point_t* pointA, point_t* pointB)
 {
   // validate points
   if (pointA == NULL || pointB == NULL) {
-    log_v("is_same_location: NULL point passed to function");
     return false;
   }
 
@@ -135,7 +126,6 @@ bool
 is_transparent(point_t* point) {
   // validate parameters
   if (point == NULL) {
-    log_v("is_transparent: NULL point passed to function");
     return false;
   }
 
@@ -156,7 +146,6 @@ bool
 is_room_spot(point_t* point) {
   // validate parameters
   if (point == NULL) {
-    log_v("is_room_spot: NULL point passed to function");
     return false;
   }
 
@@ -176,7 +165,6 @@ bool
 is_point_in_list(point_t* point, point_t* point_list[], int size) {
   // validate parameters
   if (point == NULL || point_list == NULL) {
-    log_v("is_point_in_list: NULL pointer(s) passed to function");
     return false;
   }
 

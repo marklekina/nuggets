@@ -8,8 +8,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "mem.h"
-#include "log.h"
 #include "point.h"
 #include "player.h"
 
@@ -32,21 +30,18 @@ player_new(char* name, char letter, point_t* location, char* visible_map)
 {
   // validate parameters
   if (name == NULL || location == NULL || visible_map == NULL) {
-    log_v("player_new: NULL name, location or visible map string passed to function");
     return NULL;
   }
 
   if (letter == '\0') {
-    log_v("player_new: invalid letter passed to function");
     return NULL;
   }
 
   // allocate memory for player
-  player_t* player = mem_malloc(sizeof(player_t));
+  player_t* player = malloc(sizeof(player_t));
 
-  // log memory allocation error
+  // memory allocation error
   if (player == NULL) {
-    log_v("player_new: error allocating memory for player struct");
     return NULL;
   }
 
@@ -68,17 +63,16 @@ void
 player_delete(player_t* player)
 {
   if (player == NULL) {
-    log_v("player_delete: NULL player passed to function");
     return;
   }
 
   // free player variables memory
-  mem_free(player->name);
-  mem_free(player->visible_map);
+  free(player->name);
+  free(player->visible_map);
   point_delete(player->location);
 
   // free player memory
-  mem_free(player);
+  free(player);
 }
 
 
@@ -88,7 +82,6 @@ char*
 get_name(player_t* player)
 {
   if (player == NULL) {
-    log_v("get_name: NULL player passed to function");
     return NULL;
   }
   return player->name;
@@ -101,7 +94,6 @@ char
 get_letter(player_t* player)
 {
   if (player == NULL) {
-    log_v("get_letter: NULL player passed to function");
     return (char) 0;
   }
   return player->letter;
@@ -114,7 +106,6 @@ point_t*
 get_location(player_t* player)
 {
   if (player == NULL) {
-    log_v("get_location: NULL player passed to function");
     return NULL;
   }
   return player->location;
@@ -127,7 +118,6 @@ bool
 update_location(player_t* player, point_t* location) {
   // validate parameters
   if (player == NULL || location == NULL) {
-    log_v("update_location: NULL player or location passed to function");
     return false;
   }
 
@@ -143,7 +133,6 @@ char*
 get_visible_map(player_t* player)
 {
   if (player == NULL) {
-    log_v("get_visible_map: NULL player passed to function");
     return NULL;
   }
   return player->visible_map;
@@ -156,7 +145,6 @@ bool
 update_visible_map(player_t* player, char* visible_map) {
   // validate parameters
   if (player == NULL || visible_map == NULL) {
-    log_v("update_visible_map: NULL player or visible map string passed to function");
     return false;
   }
 
@@ -171,7 +159,6 @@ update_visible_map(player_t* player, char* visible_map) {
 int
 get_wallet_balance(player_t* player) {
   if (player == NULL) {
-    log_v("get_wallet_balance: NULL player passed to function");
     return -1;
   }
   return player->wallet;
@@ -184,7 +171,6 @@ bool
 update_wallet_balance(player_t* player, int gold) {
   // validate parameters
   if (player == NULL || gold <= 0) {
-    log_d("update_wallet_balance: NULL player or invalid gold amount (%d) passed to function", gold);
     return false;
   }
 

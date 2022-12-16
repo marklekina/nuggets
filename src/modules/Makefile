@@ -9,10 +9,8 @@ S = ../support
 vpath %.h $S
 vpath %.c $S
 
-LIBS = modules.a
-
-OBJS = point.o
-SOBJS = log.o mem.o
+LIB = modules.a
+OBJS = point.o pile.o player.o
 
 CFLAGS = -Wall -pedantic -std=c11 -ggdb -I$S
 CC = gcc
@@ -20,17 +18,17 @@ MAKE = make
 
 .PHONY: all clean
 
-all: $(LIBS)
+all: $(LIB)
 
-$(LIBS): $(OBJS) $(SOBJS)
+$(LIB): $(OBJS)
 	ar cr $@ $^
 
 point.o: point.c
-log.o: log.c
-mem.o: mem.c
+pile.o: pile.c
+player.o: player.c
 
 clean:
 	rm -f core
 	rm -rf *~ *.o *.gch *.dSYM
 	rm -f *.log
-	rm -f $(LIBS)
+	rm -f $(LIB)

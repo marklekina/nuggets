@@ -1,12 +1,10 @@
+# Makefile for the support directory
 #
-# Makefile for 'support.a'
-# CS50 project 'Nuggets'
-#
-# David Kotz, May 2019, 2021
-#
+# Mark Lekina Rorat, December 2022
+
 
 LIB = support.a
-TESTS = miniclient messagetest
+OBJS = tester.o file.o
 
 CFLAGS = -Wall -pedantic -std=c11 -ggdb
 CC = gcc
@@ -14,32 +12,16 @@ MAKE = make
 
 .PHONY: all clean
 
-############# default rule ###########
-all: $(LIB) $(TESTS)
+all: $(LIB)
 
-$(LIB): message.o log.o mem.o file.o
-	ar cr $(LIB) $^
+$(LIB): $(OBJS)
+	ar cr $@ $^
 
-messagetest: message.c message.h log.h log.o
-	$(CC) $(CFLAGS) -DUNIT_TEST message.c log.o -o messagetest
+tester.o: tester.c
+file.o: file.c
 
-miniclient: miniclient.o message.o log.o
-	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
-
-miniserver: miniserver.o message.o log.o
-	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
-
-miniclient.o: message.h
-miniserver.o: message.h
-message.o: message.h
-log.o: log.h
-mem.o: mem.h
-file.o: file.h
-
-############# clean ###########
 clean:
 	rm -f core
 	rm -rf *~ *.o *.gch *.dSYM
 	rm -f *.log
 	rm -f $(LIB)
-	rm -f $(TESTS)

@@ -8,8 +8,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "mem.h"
-#include "log.h"
 #include "point.h"
 #include "pile.h"
 
@@ -31,20 +29,17 @@ pile_new(point_t* location, int gold)
 {
   // validate parameters
   if (location == NULL) {
-    log_v("pile_new: NULL point passed to function");
     return NULL;
   }
   if (gold <= 0) {
-    log_d("pile_new: invalid gold amount (%d) allocated to pile", gold);
     return NULL;
   }
 
   // allocate memory for pile
-  pile_t* pile = mem_malloc(sizeof(pile_t));
+  pile_t* pile = malloc(sizeof(pile_t));
 
-  // log memory allocation error
+  // memory allocation error
   if (pile == NULL) {
-    log_v("pile_new: error allocating memory for pile struct");
     return NULL;
   }
 
@@ -61,23 +56,21 @@ pile_new(point_t* location, int gold)
 void
 pile_delete(pile_t* pile)
 {
-  // log if NULL pointer is passed
+  // if NULL pointer is passed
   if (pile == NULL) {
-    log_v("pile_delete: NULL pile passed to function");
     return;
   }
 
   // free pile memory
-  mem_free(pile);
+  free(pile);
 }
 
 /**************** get_location() ****************/
 /* see pile.h for description */
 point_t*
-get_location(pile_t* pile);
+get_location(pile_t* pile)
 {
   if (pile == NULL) {
-    log_v("get_location: NULL pile passed to function");
     return NULL;
   }
   return pile->location;
@@ -86,10 +79,9 @@ get_location(pile_t* pile);
 /**************** get_gold() ****************/
 /* see pile.h for description */
 int
-get_gold(pile_t* pile);
+get_gold(pile_t* pile)
 {
   if (pile == NULL) {
-    log_v("get_gold: NULL pile passed to function");
     return -1;
   }
   return pile->gold;

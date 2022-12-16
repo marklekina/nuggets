@@ -44,7 +44,7 @@ point_t* point_new(int row, int col, char symbol);
  *   we free the point's memory
  *   we ignore a NULL point.
  */
-bool point_delete(point_t* point);
+void point_delete(point_t* point);
 
 /**************** get_row ****************/
 /*
