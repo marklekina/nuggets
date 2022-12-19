@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <setjmp.h>
 #include <signal.h>
 #include <unistd.h>
 #include <assert.h>
 #include "tester.h"
+#include "mem.h"
 #include "file.h"
 #include "point.h"
 #include "player.h"
@@ -14,7 +14,7 @@
 int
 main(const int argc, char* argv[]) {
   // initialize testing
-  srand(time(0));
+  srand(strlen(argv[0]));
   printf("%s: running tests...\n", argv[0]);
   testerInit();
 
@@ -27,7 +27,7 @@ main(const int argc, char* argv[]) {
   char symbol_A = 'A';
   point_t* location_A = point_new(row_A, col_A, symbol_A);
 
-  FILE* fp_A = fopen("/Users/markrorat/projects/C/nuggets/data/maps/big.txt", "r");
+  FILE* fp_A = fopen("../../data/maps/big.txt", "r");
   assert(fp_A);
   char* visible_map_A = file_readFile(fp_A);
   fclose(fp_A);
@@ -64,7 +64,7 @@ main(const int argc, char* argv[]) {
   char symbol_B = 'B';
   point_t* location_B = point_new(row_B, col_B, symbol_B);
 
-  FILE* fp_B = fopen("/Users/markrorat/projects/C/nuggets/data/maps/challenge.txt", "r");
+  FILE* fp_B = fopen("../../data/maps/challenge.txt", "r");
   assert(fp_B);
   char* visible_map_B = file_readFile(fp_B);
   fclose(fp_B);
@@ -95,7 +95,12 @@ main(const int argc, char* argv[]) {
 
   // complete testing
   testerReport(stdout, argv[0]);
+
+  // print memory report if net malloc-free count is unbalanced
+  if (mem_net() > 0) {
+    mem_report(stderr, argv[0]);
+  }
+
   printf("%s: testing complete\n", argv[0]);
   return testerResult();
-
 }

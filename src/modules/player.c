@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "mem.h"
 #include "point.h"
 #include "player.h"
 
@@ -38,7 +39,7 @@ player_new(char* name, char letter, point_t* location, char* visible_map)
   }
 
   // allocate memory for player
-  player_t* player = malloc(sizeof(player_t));
+  player_t* player = mem_malloc(sizeof(player_t));
 
   // memory allocation error
   if (player == NULL) {
@@ -67,12 +68,12 @@ player_delete(player_t* player)
   }
 
   // free player variables memory
-  free(player->name);
-  free(player->visible_map);
+  mem_free(player->name);
+  mem_free(player->visible_map);
   point_delete(player->location);
 
   // free player memory
-  free(player);
+  mem_free(player);
 }
 
 

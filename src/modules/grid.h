@@ -78,7 +78,7 @@ char* get_map_string(grid_t* grid);
  * we return:
  *   the grid's array of grid points.
  */
-point** get_gridpoints(grid_t* grid);
+point_t** get_gridpoints(grid_t* grid);
 
 /**************** get_gridpoint ****************/
 /*
@@ -92,7 +92,7 @@ point** get_gridpoints(grid_t* grid);
  * we return:
  *   a pointer to the specified grid point.
  */
-point* get_gridpoint(grid_t* grid, int row, int col);
+point_t* get_gridpoint(grid_t* grid, int row, int col);
 
 /**************** get_size ****************/
 /*

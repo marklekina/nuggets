@@ -10,7 +10,7 @@ vpath %.h $S
 vpath %.c $S
 
 LIB = modules.a
-OBJS = point.o pile.o player.o
+OBJS = point.o pile.o player.o grid.o
 
 CFLAGS = -Wall -pedantic -std=c11 -ggdb -I$S
 CC = gcc
@@ -26,6 +26,7 @@ $(LIB): $(OBJS)
 point.o: point.c
 pile.o: pile.c
 player.o: player.c
+grid.o: grid.c
 
 clean:
 	rm -f core

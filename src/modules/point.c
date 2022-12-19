@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include "mem.h"
 #include "point.h"
 
 /**************** file-local global variables ****************/
@@ -29,7 +30,7 @@ point_t*
 point_new(int row, int col, char symbol)
 {
   // allocate memory for point
-  point_t* point = malloc(sizeof(point_t));
+  point_t* point = mem_malloc(sizeof(point_t));
 
   // memory allocation error
   if (point == NULL) {
@@ -56,7 +57,7 @@ point_delete(point_t* point)
   }
 
   // free point memory
-  free(point);
+  mem_free(point);
 }
 
 /**************** get_row() ****************/

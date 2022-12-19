@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "mem.h"
 #include "point.h"
 #include "pile.h"
 
@@ -36,7 +37,7 @@ pile_new(point_t* location, int gold)
   }
 
   // allocate memory for pile
-  pile_t* pile = malloc(sizeof(pile_t));
+  pile_t* pile = mem_malloc(sizeof(pile_t));
 
   // memory allocation error
   if (pile == NULL) {
@@ -62,7 +63,7 @@ pile_delete(pile_t* pile)
   }
 
   // free pile memory
-  free(pile);
+  mem_free(pile);
 }
 
 /**************** get_location() ****************/

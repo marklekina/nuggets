@@ -1,17 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
+#include <string.h>
 #include <setjmp.h>
 #include <signal.h>
 #include <unistd.h>
 #include "tester.h"
+#include "mem.h"
 #include "point.h"
 
 int
 main(const int argc, char* argv[])
 {
   // initialize testing
-  srand(time(0));
+  srand(strlen(argv[0]));
   printf("%s: running tests...\n", argv[0]);
   testerInit();
 
@@ -57,7 +58,7 @@ main(const int argc, char* argv[])
   TEST_ASSERT(!is_room_spot(point_A));
   TEST_ASSERT(is_room_spot(point_B));
 
-  TRY { point_list = malloc(sizeof(point_t*) * 4); } ENDTRY;
+  TRY { point_list = mem_malloc(sizeof(point_t*) * 4); } ENDTRY;
   TRY { point_E = point_new(rand() % 100, rand() % 100, '+'); } ENDTRY;
   TEST_ASSERT(point_list);
 
@@ -78,10 +79,16 @@ main(const int argc, char* argv[])
 
   TRY { point_delete(NULL); } ENDTRY;
   TRY { point_delete(point_E); } ENDTRY;
-  TRY { free(point_list); } ENDTRY;
+  TRY { mem_free(point_list); } ENDTRY;
 
   // complete testing
   testerReport(stdout, argv[0]);
+
+  // print memory report if net malloc-free count is unbalanced
+  if (mem_net() > 0) {
+    mem_report(stderr, argv[0]);
+  }
+
   printf("%s: testing complete\n", argv[0]);
   return testerResult();
 }

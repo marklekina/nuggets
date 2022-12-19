@@ -9,9 +9,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 #include "mem.h"
 #include "file.h"
-#include "log.h"
 #include "point.h"
 #include "grid.h"
 
@@ -22,7 +22,7 @@
 typedef struct grid {
   int nrows;            // number of rows in the map grid
   int ncols;            // number of columns in the map grid
-  int size;             // number of grid points in the grid, i.e., nrows * ncols
+  int size;             // number of gridpoints, i.e., nrows * ncols
   char* mapString;      // original map string (without occupants)
   point_t** gridPoints; // array containing each grid point in the game
 } grid_t;
@@ -36,7 +36,6 @@ grid_new(FILE* fp)
 {
   // validate map file pointer
   if (fp == NULL) {
-    log_v("grid_new: NULL file pointer passed to function");
     return NULL;
   }
 
@@ -52,22 +51,19 @@ grid_new(FILE* fp)
   // allocate memory for the grid
   grid_t* grid = mem_malloc(sizeof(grid_t));
   if (grid == NULL) {
-    log_v("grid_new: error allocating memory for grid struct");
     return NULL;
   }
 
   // read map string from file
   char* mapString = file_readFile(fp);
   if (mapString == NULL) {
-    log_v("grid_new: error reading map string from file");
     return NULL;
   }
 
   // allocate memory for grid points array
-  int size = strlen(mapString);
+  int size = nrows * ncols;
   point_t** gridPoints = mem_malloc(sizeof(point_t*) * size);
   if (gridPoints == NULL) {
-    log_v("grid_new: error allocating memory for gridpoints array");
     return NULL;
   }
 
@@ -89,21 +85,28 @@ void
 build_grid(grid_t* grid) {
   // validate grid
   if (grid == NULL) {
-    log_v("grid_delete: NULL grid pointer passed to function");
     return;
   }
 
   // read grid points from map string to grid points array
-  for (int i = 0; i < grid->size; i++) {
-    // compute row and column numbers in the grid
-    int row = i / grid->ncols;
-    int col = i % grid->ncols;
-
+  int idx = 0;
+  int len = strlen(grid->mapString);
+  for (int i = 0; i < len; i++) {
     // specify grid point symbol
-    char* symbol = mapString[i];
+    char symbol = grid->mapString[i];
+
+    // skip newlines
+    if (symbol == '\n') {
+      continue;
+    }
+
+    // compute row and column numbers in the grid
+    int row = 1 + i / (grid->ncols + 1);
+    int col = 1 + i % (grid->ncols + 1);
 
     // create new grid point and add it to array
-    grid->gridPoints[i] = point_new(row, col, symbol);
+    grid->gridPoints[idx] = point_new(row, col, symbol);
+    idx++;
   }
 }
 
@@ -115,8 +118,7 @@ grid_delete(grid_t* grid)
 {
   // validate map text file
   if (grid == NULL) {
-    log_v("grid_delete: NULL grid pointer passed to function");
-    return NULL;
+    return;
   }
 
   // free grid points memory
@@ -141,7 +143,6 @@ char*
 get_map_string(grid_t* grid) {
   // validate grid
   if (grid == NULL) {
-    log_v("get_map_string: NULL grid pointer passed to function");
     return NULL;
   }
 
@@ -152,11 +153,10 @@ get_map_string(grid_t* grid) {
 
 /**************** get_gridpoints() ****************/
 /* see grid.h for description */
-point**
+point_t**
 get_gridpoints(grid_t* grid) {
   // validate grid
   if (grid == NULL) {
-    log_v("get_gridpoints: NULL grid pointer passed to function");
     return NULL;
   }
 
@@ -171,24 +171,20 @@ point_t*
 get_gridpoint(grid_t* grid, int row, int col) {
   // validate grid
   if (grid == NULL) {
-    log_v("get_gridpoint: NULL grid pointer passed to function");
     return NULL;
   }
 
   // ensure row and column numbers fall within the grid
-  // TODO: test range for edge cases (0, nrows + 1, ncols + 1)
-  if (row < 0 || row >= grid->nrows) {
-    log_d("get_gridpoint: row %d is outside the grid's range", row);
+  if (row <= 0 || row > grid->nrows) {
     return NULL;
   }
 
-  if (col < 0  || col >= grid->ncols) {
-    log_d("get_gridpoint: column %d is outside the grid's range", col);
+  if (col <= 0  || col > grid->ncols) {
     return NULL;
   }
 
   // return grid point at specified coordinates
-  int idx = row * grid->ncols + col;
+  int idx = (row - 1) * grid->ncols + (col - 1);
   return grid->gridPoints[idx];
 }
 
@@ -199,7 +195,6 @@ int
 get_size(grid_t* grid) {
   // validate grid
   if (grid == NULL) {
-    log_v("get_size: NULL grid pointer passed to function");
     return -1;
   }
 
@@ -214,7 +209,6 @@ int
 get_nrows(grid_t* grid) {
   // validate grid
   if (grid == NULL) {
-    log_v("get_nrows: NULL grid pointer passed to function");
     return -1;
   }
 
@@ -229,7 +223,6 @@ int
 get_ncols(grid_t* grid) {
   // validate grid
   if (grid == NULL) {
-    log_v("get_ncols: NULL grid pointer passed to function");
     return -1;
   }
 
@@ -244,13 +237,11 @@ bool
 compute_visibility(grid_t* grid, point_t* pointA, point_t* pointB) {
   // validate grid
   if (grid == NULL) {
-    log_v("compute_visibility: NULL grid pointer passed to function");
     return false;
   }
 
   // validate points
   if (pointA == NULL || pointB == NULL) {
-    log_v("compute_visibility: NULL grid point pointer passed to function");
     return false;
   }
 
@@ -275,8 +266,6 @@ compute_visibility(grid_t* grid, point_t* pointA, point_t* pointB) {
 
   // edge case: the two points lie on the same column
   if (col_diff == 0) {
-    log_v("compute_visibility: points lie on the same column");
-
     // moving vertically stepwise by row
     if (abs(row_diff) > 1) {
       // compute direction of movement
@@ -286,7 +275,7 @@ compute_visibility(grid_t* grid, point_t* pointA, point_t* pointB) {
       for (int row_i = row_a + row_step; row_i != row_b; row_i += row_step) {
         // check if point(s) of intersection is see-through
         grid_point = get_gridpoint(grid, row_i, col_a);
-        if (!is_transparent(grid_point)) {
+        if (!is_room_spot(grid_point)) {
           return false;
         }
       }
@@ -296,8 +285,6 @@ compute_visibility(grid_t* grid, point_t* pointA, point_t* pointB) {
 
   // edge case: the two points lie on the same row
   if (row_diff == 0) {
-    log_v("compute_visibility: points lie on the same row");
-
     // moving horizontally stepwise by column
     if (abs(col_diff) > 1) {
       // compute direction of movement
@@ -307,7 +294,7 @@ compute_visibility(grid_t* grid, point_t* pointA, point_t* pointB) {
       for (int col_i = col_a + col_step; col_i != col_b; col_i += col_step) {
         // check if point(s) of intersection is see-through
         grid_point = get_gridpoint(grid, row_a, col_i);
-        if (!is_transparent(grid_point)) {
+        if (!is_room_spot(grid_point)) {
           return false;
         }
       }
@@ -316,8 +303,6 @@ compute_visibility(grid_t* grid, point_t* pointA, point_t* pointB) {
   }
 
   // generic case: points lie on different rows and columns
-  log_v("compute_visibility: points lie on different rows and columns");
-
   // compute direction of movement
   row_step = row_diff / abs(row_diff);
   col_step = col_diff / abs(col_diff);
@@ -347,7 +332,7 @@ compute_visibility(grid_t* grid, point_t* pointA, point_t* pointB) {
         grid_point_ceil = get_gridpoint(grid, row_ceil, col_i);
 
         // return false if both points are not see-through
-        if (!is_transparent(grid_point_floor) && !is_transparent(grid_point_ceil)) {
+        if (!is_room_spot(grid_point_floor) && !is_room_spot(grid_point_ceil)) {
           return false;
         }
       }
@@ -356,7 +341,7 @@ compute_visibility(grid_t* grid, point_t* pointA, point_t* pointB) {
         grid_point = get_gridpoint(grid, row_floor, col_i);
 
         // return false if the point is not see through
-        if (!is_transparent(grid_point)) {
+        if (!is_room_spot(grid_point)) {
           return false;
         }
       }
@@ -385,7 +370,7 @@ compute_visibility(grid_t* grid, point_t* pointA, point_t* pointB) {
         grid_point_ceil = get_gridpoint(grid, row_i, col_ceil);
 
         // return false if both points are not see-through
-        if (!is_transparent(grid_point_floor) && !is_transparent(grid_point_ceil)) {
+        if (!is_room_spot(grid_point_floor) && !is_room_spot(grid_point_ceil)) {
           return false;
         }
       }
@@ -394,7 +379,7 @@ compute_visibility(grid_t* grid, point_t* pointA, point_t* pointB) {
         grid_point = get_gridpoint(grid, row_i, col_floor);
 
         // return false if the point is not see through
-        if (!is_transparent(grid_point)) {
+        if (!is_room_spot(grid_point)) {
           return false;
         }
       }

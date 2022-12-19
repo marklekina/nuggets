@@ -1,3 +1,4 @@
 ./pointtest
 ./piletest
 ./playertest
+./gridtest

@@ -1,10 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
+#include <string.h>
 #include <setjmp.h>
 #include <signal.h>
 #include <unistd.h>
 #include "tester.h"
+#include "mem.h"
 #include "point.h"
 #include "pile.h"
 
@@ -12,7 +13,7 @@ int
 main(const int argc, char* argv[]) {
 
   // initialize testing
-  srand(time(0));
+  srand(strlen(argv[0]));
   printf("%s: running tests...\n", argv[0]);
   testerInit();
 
@@ -46,8 +47,18 @@ main(const int argc, char* argv[]) {
   TRY { pile_delete(pile_A); } ENDTRY;
   TRY { pile_delete(pile_B); } ENDTRY;
 
+  // clean-up
+  point_delete(location_A);
+  point_delete(location_B);
+
   // complete testing
   testerReport(stdout, argv[0]);
+
+  // print memory report if net malloc-free count is unbalanced
+  if (mem_net() > 0) {
+    mem_report(stderr, argv[0]);
+  }
+
   printf("%s: testing complete\n", argv[0]);
   return testerResult();
 }
