@@ -17,5 +17,5 @@ clean:
 test:
 	make test --directory=tests
 
-valgrind:
-	make valgrind --directory=tests
+leaks:
+	make leaks --directory=tests

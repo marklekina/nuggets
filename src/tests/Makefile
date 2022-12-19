@@ -14,7 +14,7 @@ LIBS = $M/modules.a $S/support.a
 TESTS = pointtest piletest playertest gridtest
 
 # for memory-leak tests
-VALGRIND = valgrind --leak-check=full --show-leak-kinds=all
+LEAKS = leaks --atExit --
 
 all: $(TESTS)
 
@@ -36,7 +36,7 @@ playertest.o: playertest.c $M/player.h $M/point.h $S/tester.h $S/file.h
 gridtest.o: gridtest.c $M/grid.h $M/point.h $S/tester.h $S/file.h $S/mem.h
 
 
-.PHONY: all test valgrind clean
+.PHONY: all test leaks clean
 
 # expects bash script `testing.sh` to exist.
 test: $(TESTS) testing.sh
@@ -44,8 +44,8 @@ test: $(TESTS) testing.sh
 
 
 # expects bash script `testing.sh` to exist.
-valgrind: $(TESTS) testing.sh
-	cat testing.sh | xargs -n1 $(VALGRIND)
+leaks: $(TESTS) testing.sh
+	cat testing.sh | xargs -n1 $(LEAKS)
 
 clean:
 	rm -rf *.dSYM
