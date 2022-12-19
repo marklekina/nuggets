@@ -93,6 +93,10 @@ main(const int argc, char* argv[]) {
   // player_delete
   TRY { player_delete(player); } ENDTRY;
 
+  // clean-up
+  mem_free(visible_map_A);
+  point_delete(location_A);
+
   // complete testing
   testerReport(stdout, argv[0]);
 
