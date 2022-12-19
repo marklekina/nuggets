@@ -7,7 +7,7 @@
  *   - the gold piles to be collected, and
  *   - the amount of gold remaining in the game
  *
- * Mark Lekina Rorat, December 2021; October 2022
+ * Copyright (c) 2022 Mark Lekina Rorat All Rights Reserved.
  */
 
 #ifndef __GAME_H
@@ -52,79 +52,42 @@ game_t* game_new(FILE* fp, int max_players, int max_piles, int gold_balance);
  */
 void game_delete(game_t* game);
 
-/**************** distribute_gold ****************/
-/*
- * drops gold piles in random spots within the game's grid
- *
- * caller provides:
- *   valid game pointer
- *
- * we return:
- *   true if the gold piles are distributed successfully
- *   false otherwise
- */
-bool distribute_gold(game_t* game, int min_piles, int max_piles);
+/************ gettters ************/
 
-/**************** add_player ****************/
+/************ get_num_players ************/
 /*
- * - adds a new player to the game
- * - updates the number of players in the game
  *
- * caller provides:
- *   valid game pointer
- *   valid player pointer
- *   maximum number of players allowed in the game
- *
- * we return:
- *   true if the player is added successfully
- *   false otherwise
  */
-bool add_player(game_t* game, player_t* player, int max_players);
+int get_num_players(game_t* game);
 
-/**************** move_player ****************/
+/************ get_num_piles ************/
 /*
- * moves player to different location in the game's grid and perform relevant action if necessary:
- *  - switches locations with another player
- *  - collects gold if a non-empty gold pile is encountered
  *
- * caller provides:
- *   valid game pointer
- *   valid player pointer
- *   valid location pointer
- *
- * we return:
- *   true if the player is moved successfully
- *   false otherwise
  */
-bool move_player(game_t* game, player_t* player, point_t* point);
+int get_num_piles(game_t* game);
 
-/**************** collect_gold ****************/
+/************ get_gold_balance ************/
 /*
- * - adds gold from a gold pile to a player's wallet
- * - subtracts from the pile the gold collected (which, by default, is all the gold in the pile)
- * - updates gold remaining to be collected
  *
- * caller provides:
- *   valid game pointer
- *   valid player pointer
- *   valid pile pointer
- *
- * we return:
- *   the amount of gold collected by the player (if non-zero, we will broadcast a GOLD message)
  */
-int collect_gold(game_t* game, player_t* player, pile_t* pile);
+int get_gold_balance(game_t* game);
 
-/**************** build_visible_mapstring ****************/
+/************ get_grid ************/
 /*
- * construct the string representation of the grid portion visible to a player
  *
- * caller provides:
- *   valid game pointer
- *   valid player pointer
- *
- * we return:
- *   the map string visible to the player
  */
-char* build_visible_mapstring(game_t* game, player_t* player);
+grid_t* get_grid(game_t* game);
+
+/************ get_players ************/
+/*
+ *
+ */
+player_t** get_players(game_t* game);
+
+/************ get_piles ************/
+/*
+ *
+ */
+pile_t** get_piles(game_t* game);
 
 #endif // __GAME_H
