@@ -29,22 +29,27 @@ pile_t*
 pile_new(point_t* location, int gold)
 {
   // validate parameters
-  if (location != NULL && gold > 0) {
-    // allocate memory for pile
-    pile_t* pile = mem_malloc(sizeof(pile_t));
-
-    // assign location and gold amount to pile
-    if (pile != NULL) {
-      pile->location = location;
-      pile->gold = gold;
-    }
-
-    // return struct
-    return pile;
+  if (location == NULL) {
+    return NULL;
+  }
+  if (gold <= 0) {
+    return NULL;
   }
 
-  // otherwise return null
-  return NULL;
+  // allocate memory for pile
+  pile_t* pile = mem_malloc(sizeof(pile_t));
+
+  // memory allocation error
+  if (pile == NULL) {
+    return NULL;
+  }
+
+  // assign location and gold amount to pile
+  pile->location = location;
+  pile->gold = gold;
+
+  // return struct
+  return pile;
 }
 
 /**************** pile_delete() ****************/
@@ -52,44 +57,33 @@ pile_new(point_t* location, int gold)
 void
 pile_delete(pile_t* pile)
 {
-  if (pile != NULL) {
-    // free pile memory
-    mem_free(pile);
+  // if NULL pointer is passed
+  if (pile == NULL) {
+    return;
   }
+
+  // free pile memory
+  mem_free(pile);
 }
 
-
-/**************** pile_delete() ****************/
-/* see pile.h for description */
-void
-pile_delete(pile_t* pile)
-{
-  if (pile != NULL) {
-    // free pile memory
-    mem_free(pile);
-  }
-}
-
-
-/**************** get_location() ****************/
+/**************** get_pile_location() ****************/
 /* see pile.h for description */
 point_t*
-get_location(pile_t* pile);
+get_pile_location(pile_t* pile)
 {
-  if (pile != NULL) {
-    return pile->location;
+  if (pile == NULL) {
+    return NULL;
   }
-  return NULL;
+  return pile->location;
 }
-
 
 /**************** get_gold() ****************/
 /* see pile.h for description */
 int
-get_gold(pile_t* pile);
+get_gold(pile_t* pile)
 {
-  if (pile != NULL) {
-    return pile->gold;
+  if (pile == NULL) {
+    return -1;
   }
-  return NULL;
+  return pile->gold;
 }

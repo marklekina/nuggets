@@ -10,6 +10,6 @@ When all gold nuggets are collected, the game ends and a summary is printed.
 
 ## Materials provided
 
-See the [support library](support/README.md) for some useful modules.
+See the [support library](src/support/README.md) for some useful modules.
 
-See the [maps](maps/README.md) for some draft maps.
+See the [maps](data/maps/README.md) for some draft maps.

@@ -29,7 +29,7 @@ where `map.txt` parameter is the path to any of the valid map files provided in 
 
 The server will run as illustrated in this high-level workflow diagram:
 
-![img/server_workflow.png](img/server_workflow.png)
+![img/server_workflow.png](data/img/server_workflow.png)
 
 	execute from a command line per the requirement spec
 	parse the command line, validate parameters
@@ -61,7 +61,7 @@ The server will run as illustrated in this high-level workflow diagram:
 This next section briefly describes the structs included in the design to hold and manage the game's state in the server. Each struct is contained in its own module. The figure below illustrates how these structs organize the game's state.
 
 
-![img/game_state.png](img/game_state.png)
+![img/game_state.png](data/img/game_state.png)
 
 > In addition to the methods listed for each struct below, each of them will have two additional methods, i.e., `{struct}_new` and `{struct}_delete` to initialize and erase the struct respectfully.
 
