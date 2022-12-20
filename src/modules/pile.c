@@ -66,10 +66,10 @@ pile_delete(pile_t* pile)
   mem_free(pile);
 }
 
-/**************** get_location() ****************/
+/**************** get_pile_location() ****************/
 /* see pile.h for description */
 point_t*
-get_location(pile_t* pile)
+get_pile_location(pile_t* pile)
 {
   if (pile == NULL) {
     return NULL;

@@ -10,7 +10,6 @@
 #include <stdlib.h>
 #include "mem.h"
 #include "file.h"
-#include "log.h"
 #include "point.h"
 #include "pile.h"
 #include "grid.h"
@@ -38,35 +37,30 @@ game_t*
 game_new(FILE* fp, int max_players, int max_piles, int gold_balance) {
   // validate parameters
   if (fp == NULL) {
-    log_v("game_new: NULL file pointer passed to function");
     return NULL;
   }
 
   // create grid object from map file
   grid_t* grid = grid_new(fp);
   if (grid == NULL) {
-    log_v("game_new: error creating grid struct");
     return NULL;
   }
 
   // allocate memory for players array
   player_t** players = mem_malloc(sizeof(player_t*) * max_players);
   if (players == NULL) {
-    log_v("game_new: error allocating memory for players array");
     return NULL;
   }
 
   // allocate memory for piles array
   pile_t** piles = mem_malloc(sizeof(pile_t*) * max_piles);
   if (piles == NULL) {
-    log_v("game_new: error allocating memory for piles array");
     return NULL;
   }
 
   // allocate memory for game struct
   game_t* game = mem_malloc(sizeof(game_t));
   if (game == NULL) {
-    log_v("game_new: error allocating memory for game struct");
     return NULL;
   }
 
@@ -88,7 +82,6 @@ game_new(FILE* fp, int max_players, int max_piles, int gold_balance) {
 void
 game_delete(game_t* game) {
   if (game == NULL) {
-    log_v("game_delete: NULL game pointer passed to function");
     return;
   }
 
@@ -113,4 +106,47 @@ game_delete(game_t* game) {
 
   // free game memory
   mem_free(game);
+}
+
+
+/************ get_num_players() ************/
+/* see game.h for description */
+int
+get_num_players(game_t* game) {
+  return game->num_players;
+}
+
+/************ get_num_piles() ************/
+/* see game.h for description */
+int
+get_num_piles(game_t* game) {
+  return game->num_piles;
+}
+
+/************ get_gold_balance ************/
+/* see game.h for description */
+int
+get_gold_balance(game_t* game) {
+  return game->gold_balance;
+}
+
+/************ get_grid ************/
+/* see game.h for description */
+grid_t*
+get_grid(game_t* game) {
+  return game->grid;
+}
+
+/************ get_players ************/
+/* see game.h for description */
+player_t**
+get_players(game_t* game) {
+  return game->players;
+}
+
+/************ get_piles ************/
+/* see game.h for description */
+pile_t**
+get_piles(game_t* game) {
+  return game->piles;
 }

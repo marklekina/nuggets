@@ -48,7 +48,7 @@ pile_t* pile_new(point_t* location, int gold);
  */
 void pile_delete(pile_t* pile);
 
-/**************** get_location ****************/
+/**************** get_pile_location ****************/
 /*
  * returns the pile's location.
  *
@@ -58,7 +58,7 @@ void pile_delete(pile_t* pile);
  * we return:
  *   a pointer to the gold pile's location.
  */
-point_t* get_location(pile_t* pile);
+point_t* get_pile_location(pile_t* pile);
 
 /**************** get_gold ****************/
 /*

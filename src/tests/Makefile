@@ -11,7 +11,7 @@ CFLAGS = -Wall -pedantic -std=c11 -ggdb -I$S -I$M
 MAKE = make
 
 LIBS = $M/modules.a $S/support.a
-TESTS = pointtest piletest playertest gridtest
+TESTS = pointtest piletest playertest gridtest gametest
 
 # for memory-leak tests
 LEAKS = leaks --atExit --
@@ -30,18 +30,20 @@ playertest: playertest.o
 gridtest: gridtest.o
 	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
 
-pointtest.o: pointtest.c $M/point.h $S/tester.h
-piletest.o: piletest.c $M/pile.h $M/point.h $S/tester.h
-playertest.o: playertest.c $M/player.h $M/point.h $S/tester.h $S/file.h
-gridtest.o: gridtest.c $M/grid.h $M/point.h $S/tester.h $S/file.h $S/mem.h
+gametest: gametest.o
+	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
 
+pointtest.o: pointtest.c $M/point.h $S/tester.h $S/mem.h
+piletest.o: piletest.c $M/pile.h $M/point.h $S/tester.h $S/mem.h
+playertest.o: playertest.c $M/player.h $M/point.h $S/tester.h $S/file.h $S/mem.h
+gridtest.o: gridtest.c $M/grid.h $M/point.h $S/tester.h $S/file.h $S/mem.h
+gametest.o: gametest.c $M/game.h $M/grid.h $M/player.h $M/pile.h $M/point.h $S/tester.h $S/mem.h
 
 .PHONY: all test leaks clean
 
 # expects bash script `testing.sh` to exist.
 test: $(TESTS) testing.sh
 	sh testing.sh
-
 
 # expects bash script `testing.sh` to exist.
 leaks: $(TESTS) testing.sh

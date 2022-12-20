@@ -2,3 +2,4 @@
 ./piletest
 ./playertest
 ./gridtest
+./gametest

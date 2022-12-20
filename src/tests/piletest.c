@@ -35,9 +35,9 @@ main(const int argc, char* argv[]) {
   TRY { pile_B = pile_new(location_B, gold_B); } ENDTRY;
   TEST_ASSERT(pile_A && pile_B);
 
-  // get_location
-  TEST_ASSERT(get_location(pile_A) == location_A);
-  TEST_ASSERT(get_location(pile_B) == location_B);
+  // get_pile_location
+  TEST_ASSERT(get_pile_location(pile_A) == location_A);
+  TEST_ASSERT(get_pile_location(pile_B) == location_B);
 
   // get_gold
   TEST(get_gold(pile_A), gold_A);
