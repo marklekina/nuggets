@@ -1,4 +1,4 @@
-name: C/C++ CI
+name: C CI Workflow
 
 on:
   push:
@@ -13,15 +13,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    
+
     - name: Build dependencies
       run: make
-      
+
     - name: Unit testing
       run: make test
-      
+
     - name: Memory leaks testing
       run: make leaks
-      
-    - name: Clean repository
-      run: make clean
