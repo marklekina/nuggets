@@ -11,7 +11,7 @@ CFLAGS = -Wall -pedantic -std=c11 -ggdb -I$S -I$M
 MAKE = make
 
 LIBS = $M/modules.a $S/support.a
-TESTS = pointtest piletest playertest gridtest gametest
+TESTS = pointtest piletest playertest gridtest gametest messagetest
 
 # for memory-leak tests
 LEAKS = leaks --atExit --
@@ -33,11 +33,15 @@ gridtest: gridtest.o
 gametest: gametest.o
 	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
 
+messagetest: $S/message.c $S/message.h $S/log.h $S/log.o
+	$(CC) $(CFLAGS) -DUNIT_TEST $S/message.c $S/log.o -o messagetest
+
 pointtest.o: pointtest.c $M/point.h $S/tester.h $S/mem.h
 piletest.o: piletest.c $M/pile.h $M/point.h $S/tester.h $S/mem.h
 playertest.o: playertest.c $M/player.h $M/point.h $S/tester.h $S/file.h $S/mem.h
 gridtest.o: gridtest.c $M/grid.h $M/point.h $S/tester.h $S/file.h $S/mem.h
 gametest.o: gametest.c $M/game.h $M/grid.h $M/player.h $M/pile.h $M/point.h $S/tester.h $S/mem.h
+message.o: $S/message.h
 
 .PHONY: all test leaks clean
 
