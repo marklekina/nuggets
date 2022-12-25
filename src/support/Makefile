@@ -4,7 +4,7 @@
 
 
 LIB = support.a
-OBJS = tester.o file.o mem.o
+OBJS = tester.o file.o mem.o message.o log.o
 
 CFLAGS = -Wall -pedantic -std=c11 -ggdb
 CC = gcc
@@ -20,6 +20,8 @@ $(LIB): $(OBJS)
 tester.o: tester.c
 file.o: file.c
 mem.o: mem.c
+message.o: message.c
+log.o: log.c
 
 clean:
 	rm -f core

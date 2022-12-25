@@ -10,79 +10,19 @@
 
 /**************** functions ****************/
 
-/**************** distribute_gold ****************/
-/*
- * drops gold piles in random spots within the game's grid
- *
- * caller provides:
- *   valid game pointer
- *
- * we return:
- *   true if the gold piles are distributed successfully
- *   false otherwise
- */
-bool distribute_gold(game_t* game, int min_piles, int max_piles);
-
-/**************** add_player ****************/
-/*
- * - adds a new player to the game
- * - updates the number of players in the game
- *
- * caller provides:
- *   valid game pointer
- *   valid player pointer
- *   maximum number of players allowed in the game
- *
- * we return:
- *   true if the player is added successfully
- *   false otherwise
- */
-bool add_player(game_t* game, player_t* player, int max_players);
-
-/**************** move_player ****************/
-/*
- * moves player to different location in the game's grid and perform relevant action if necessary:
- *  - switches locations with another player
- *  - collects gold if a non-empty gold pile is encountered
- *
- * caller provides:
- *   valid game pointer
- *   valid player pointer
- *   valid location pointer
- *
- * we return:
- *   true if the player is moved successfully
- *   false otherwise
- */
-bool move_player(game_t* game, player_t* player, point_t* point);
-
-/**************** collect_gold ****************/
-/*
- * - adds gold from a gold pile to a player's wallet
- * - subtracts from the pile the gold collected (which, by default, is all the gold in the pile)
- * - updates gold remaining to be collected
- *
- * caller provides:
- *   valid game pointer
- *   valid player pointer
- *   valid pile pointer
- *
- * we return:
- *   the amount of gold collected by the player (if non-zero, we will broadcast a GOLD message)
- */
-int collect_gold(game_t* game, player_t* player, pile_t* pile);
-
-/**************** build_visible_mapstring ****************/
-/*
- * construct the string representation of the grid portion visible to a player
- *
- * caller provides:
- *   valid game pointer
- *   valid player pointer
- *
- * we return:
- *   the map string visible to the player
- */
-char* build_visible_mapstring(game_t* game, player_t* player);
+bool handleMessage(void* arg, const addr_t from, const char* message);
+bool handle_play(game_t* game, const addr_t from, const char* name);
+bool handle_key(game_t* game, const addr_t from, const char keystroke);
+bool handle_spectate(game_t* game, const addr_t from);
+void send_ok(const addr_t to, const char letter);
+void send_grid(const addr_t to, const int nrows, const int ncols);
+void send_gold(const addr_t to, const int n, const int p, const int r);
+void send_display(const addr_t to, const char* mapstring);
+void send_quit(const addr_t to, const char* explanation);
+void send_error(const addr_t to, const char* explanation);
+player_t* add_player(game_t* game, const addr_t address, const char* name_copy);
+player_t* get_spectator(game_t* game);
+addr_t get_address(player_t* spectator);
+bool update_spectator(game_t* game, const addr_t address);
 
 #endif //__SERVER_H
