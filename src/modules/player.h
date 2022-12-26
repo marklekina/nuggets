@@ -168,4 +168,18 @@ int get_wallet_balance(player_t* player);
  */
 bool update_wallet_balance(player_t* player, int gold);
 
+
+/**************** is_spectator ****************/
+/*
+ *
+ */
+bool is_spectator(player_t* player);
+
+
+/**************** update_spectator ****************/
+/*
+ *
+ */
+ bool update_spectator(player_t* spectator, const addr_t address);
+
 #endif // __PLAYER_H

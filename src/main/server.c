@@ -224,7 +224,7 @@ handle_spectate(game_t* game, const addr_t from) {
   }
 
   // assign new spectator to the game
-  bool new_spectator = update_spectator(game, from);
+  bool new_spectator = update_spectator(spectator, from);
   if (!new_spectator) {
     send_error(from, "server unable to add new spectator");
     return false;
@@ -434,8 +434,8 @@ run_move_sequence(player_t* player, point_t* target) {
   for (int i = 0; i < num_players; i++) {
     player_b = players[i];
 
-    // skip deleted players
-    if (player_b == NULL) {
+    // skip deleted players and spectator
+    if (player_b == NULL || is_spectator(player_b)) {
       continue;
     }
 
@@ -497,9 +497,115 @@ run_move_sequence(player_t* player, point_t* target) {
 }
 
 
-// TODO: implement these functions
+bool
+collect_gold(game_t* game, player_t* player, pile_t* pile) {
+  // 1. fetch gold from gold pile
+  int gold_collected = get_gold(pile);
+  if (gold_collected == -1) {
+    return false;
+  }
 
-// player_t*
-// add_player(game_t* game, const addr_t address, const char* name) {
-//   return NULL;
-// }
+  // 2. add gold to player's purse
+  bool updated_wallet = update_wallet_balance(player, gold_collected);
+  if (!updated_wallet) {
+    return false;
+  }
+
+  // 3. remove pile from game
+  pile_delete(pile);
+
+  // 4. subtract gold from gold_balance
+  update_gold_balance(game, gold_collected);
+
+  // 5. send gold message
+  addr_t to = get_address(player);
+
+  // i) send GOLD message to the player that just collected the gold
+  send_gold(to, gold_collected, get_wallet_balance(player), get_gold_balance(game));
+
+  // ii) send GOLD message to everyone else
+  int num_players = get_num_players(game);
+  player_t** players = get_players(game);
+  player_t* player_b;
+
+  // loop through list of players
+  for (int i = 0; i < num_players; i++) {
+    player_b = players[i];
+
+    // skip deleted players
+    if (player_b == NULL) {
+      continue;
+    }
+
+    // send GOLD message to each player
+    int wallet_balance = get_wallet_balance(player_b);
+    int gold_balance = get_gold_balance(game);
+
+    to = get_address(player_b);
+    send_gold(to, 0, wallet_balance, gold_balance);
+  }
+
+  // 6. send QUIT GAME OVER message if all the gold in the game has been collected
+  if (get_gold_balance(game) == 0) {
+    // prepare GAME OVER message
+    char* game_over_report = compile_game_over_report(game);
+
+    // loop through players list and send QUIT GAME OVER message
+    for (int i = 0; i < num_players; i++) {
+      player_b = players[i];
+
+      // skip deleted players
+      if (player_b == NULL) {
+        continue;
+      }
+
+      to = get_address(player_b);
+      send_quit(to, game_over_report);
+    }
+  }
+
+  // return successfully
+  return true;
+}
+
+
+char*
+compile_game_over_report(game_t* game) {
+  // define string to hold report
+  static char report[message_MaxBytes];
+
+  // get list of players in the game
+  int num_players = get_num_players(game);
+  player_t** players = get_players(game);
+
+  // variables to hold player info
+  player_t* player;
+  char player_letter;
+  int player_wallet;
+  char* player_name;
+
+  // loop through list of players
+  for (int i = 0; i < num_players; i++) {
+    player = players[i];
+
+    // skip deleted players
+    if (player == NULL || is_spectator(player)) {
+      continue;
+    }
+
+    // get player information
+    player_letter = get_letter(player);
+    player_wallet = get_wallet_balance(player);
+    player_name = get_name(player);
+
+    // construct string representation of player information
+    char player_info[MaxNameLength + 12];
+    sprintf(player_info, "%-3c %4d  %s\n", player_letter, player_wallet, player_name);
+
+    // concatenate player info to report
+    strcpy(report, player_info);
+  }
+
+  // return complete report
+  return report;
+}

@@ -29,15 +29,12 @@ point_t* move_player(player_t* player, const char keystroke);
 point_t* sprint_player(player_t* player, const char keystroke);
 point_t* get_target_location(player_t* player, const char keystroke);
 bool run_move_sequence(player_t* player, point_t* target);
+bool collect_gold(game_t* game, player_t* player, pile_t* pile);
+char* compile_game_over_report(game_t* game);
 
 // TODO: implement this
-// server.c
-bool collect_gold(game_t* game, player_t* player, pile_t* pile);
+bool distribute_gold(game_t* game, int min_piles, int max_piles);
 bool build_visible_mapstring(game_t* game, player_t* player);
-
-// game.c
 player_t* add_player(game_t* game, const addr_t address, const char* name);
-player_t* get_spectator(game_t* game);
-bool update_spectator(game_t* game, const addr_t address);
 
 #endif //__SERVER_H

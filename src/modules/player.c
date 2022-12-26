@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "mem.h"
 #include "message.h"
 #include "point.h"
@@ -196,5 +197,44 @@ update_wallet_balance(player_t* player, int gold) {
 
   // otherwise add gold collected to player's wallet
   player->wallet += gold;
+  return true;
+}
+
+
+/************ is_spectator() ************/
+/* see player.h for description */
+bool
+is_spectator(player_t* player) {
+  // validate parameters
+  if (player == NULL) {
+    return false;
+  }
+
+  // get player information
+  char* name = get_name(player);
+  point_t* location = get_location(player);
+  int wallet = get_wallet_balance(player);
+
+  // check that info matches spectator information and return successfully
+  if (wallet == 0 && location == NULL && strcmp(name, "_SPECTATOR_") == 0) {
+    return true;
+  }
+
+  // otherwise return unsuccessfully
+  return false;
+}
+
+
+/************ update_spectator() ************/
+/* see player.h for description */
+bool
+update_spectator(player_t* spectator, const addr_t address) {
+  // validate parameters
+  if (spectator == NULL || !message_isAddr(address)) {
+    return false;
+  }
+
+  // set spectator's address to new address
+  spectator->address = address;
   return true;
 }

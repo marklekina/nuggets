@@ -72,6 +72,12 @@ int get_num_piles(game_t* game);
  */
 int get_gold_balance(game_t* game);
 
+/************ update_gold_balance ************/
+/*
+ *
+ */
+bool update_gold_balance(game_t* game, int gold_collected);
+
 /************ get_grid ************/
 /*
  *
@@ -95,5 +101,11 @@ pile_t** get_piles(game_t* game);
  *
  */
 player_t* get_player_by_address(game_t* game, addr_t address);
+
+/************ get_spectator ************/
+/*
+ *
+ */
+player_t* get_spectator(game_t* game);
 
 #endif // __GAME_H

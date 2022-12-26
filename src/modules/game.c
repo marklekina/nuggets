@@ -131,6 +131,20 @@ get_gold_balance(game_t* game) {
   return game->gold_balance;
 }
 
+/************ update_gold_balance ************/
+/* see game.h for description */
+bool
+update_gold_balance(game_t* game, int gold_collected) {
+  // validate parameters
+  if (game == NULL || gold_collected <= 0) {
+    return false;
+  }
+
+  // subtract collected gold from the game's gold balance
+  game->gold_balance -= gold_collected;
+  return true;
+}
+
 /************ get_grid ************/
 /* see game.h for description */
 grid_t*
@@ -169,6 +183,30 @@ get_player_by_address(game_t* game, addr_t address) {
   // loop through list and return player if the address matches
   for (int i = 0; i < num_players; i++) {
     if (message_eqAddr(address, get_address(players[i]))) {
+      return players[i];
+    }
+  }
+
+  // otherwise return unsuccessfully
+  return NULL;
+}
+
+/************ get_spectator ************/
+/* see game.h for description */
+player_t*
+get_spectator(game_t* game) {
+  // validate parameters
+  if (game == NULL) {
+    return NULL;
+  }
+
+  // get list of players in the game
+  int num_players = get_num_players(game);
+  player_t** players = get_players(game);
+
+  // loop through list of players and find the spectator
+  for (int i = 0; i < num_players; i++) {
+    if (is_spectator(players[i])) {
       return players[i];
     }
   }
