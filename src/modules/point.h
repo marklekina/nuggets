@@ -97,20 +97,20 @@ char get_symbol(point_t* point);
  */
 bool is_same_location(point_t* pointA, point_t* pointB);
 
-/**************** is_transparent ****************/
+/**************** is_spot ****************/
 /*
- * checks whether a grid point is "see-through"
- * "see-through" spots are either room spots('.') or passage spots('#')
+ * checks whether a grid point is a spot
+ * spots are either room spots('.') or passage spots('#')
  *
  * caller provides:
  *   valid point_t pointer.
  *
  * function returns:
- *   true if the room spot is "see-through"
+ *   true if the grid point is a spot
  *   false otherwise
  *
  */
-bool is_transparent(point_t* point);
+bool is_spot(point_t* point);
 
 /**************** is_room_spot ****************/
 /*

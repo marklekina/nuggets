@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include "mem.h"
 #include "file.h"
+#include "message.h"
 #include "point.h"
 #include "pile.h"
 #include "grid.h"
@@ -149,4 +150,29 @@ get_players(game_t* game) {
 pile_t**
 get_piles(game_t* game) {
   return game->piles;
+}
+
+
+/************ get_player_by_address ************/
+/* see game.h for description */
+player_t*
+get_player_by_address(game_t* game, addr_t address) {
+  // validate parameters
+  if (game == NULL || !message_isAddr(address)) {
+    return NULL;
+  }
+
+  // get list of players in the game
+  int num_players = get_num_players(game);
+  player_t** players = get_players(game);
+
+  // loop through list and return player if the address matches
+  for (int i = 0; i < num_players; i++) {
+    if (message_eqAddr(address, get_address(players[i]))) {
+      return players[i];
+    }
+  }
+
+  // otherwise return unsuccessfully
+  return NULL;
 }

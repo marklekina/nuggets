@@ -20,11 +20,15 @@
 #include "game.h"
 #include "server.h"
 
+// global constants
 static const int MaxNameLength = 50;   // max number of chars in playerName
 static const int MaxPlayers = 26;      // maximum number of players
 static const int GoldTotal = 250;      // amount of gold in the game
 static const int GoldMinNumPiles = 10; // minimum number of gold piles
 static const int GoldMaxNumPiles = 30; // maximum number of gold piles
+
+// global variables
+game_t* game;
 
 int
 main(int argc, char const *argv[]) {
@@ -326,41 +330,48 @@ send_error(const addr_t to, const char* explanation) {
   message_send(to, message);
 }
 
-// other functions
-player_t*
-get_player_by_address(addr_t address) {
-  // validate parameters
-  if (!message_isAddr(address)) {
-    return NULL;
-  }
 
-  // get list of players in the game
-  int num_players = get_num_players(game);
-  player_t** players = get_players(game);
-
-  // loop through list and return player if the address matches
-  for (int i = 0; i < num_players; i++) {
-    if (message_eqAddr(from, get_address(players[i]))) {
-      return players[i];
-    }
-  }
-
-  // otherwise return unsuccessfully
-  return NULL;
-}
-
-
-bool
+point_t*
 sprint_player(player_t* player, const char keystroke) {
-  // CONTINUE here
+  // pointers to hold player's location
+  point_t *prev, *curr;
+
+  // move player in specified location until it is no longer possible
+  do {
+    prev = get_location(player);
+    curr = move_player(player, keystroke);
+  } while(!is_same_location(prev, curr));
+
+  // return the player's new location
+  return curr;
 }
 
 
-bool
+point_t*
 move_player(player_t* player, const char keystroke) {
-  // player's location
-  grid_t* grid = get_grid(game);
+  // get target location
+  point_t* target = get_target_location(player, keystroke);
+
+  // move player
+  bool moved_player = run_move_sequence(player, target);
+
+  // return new location
+  if (moved_player) {
+    return target;
+  }
+
+  // otherwise return old location
+  return get_location(player);
+}
+
+
+point_t*
+get_target_location(player_t* player, const char keystroke) {
+  // pointers to hold player's location
   point_t *target, *curr = get_location(player);
+
+  // get player's coordinates
+  grid_t* grid = get_grid(game);
   int row = get_row(curr);
   int col = get_col(curr);
 
@@ -368,59 +379,50 @@ move_player(player_t* player, const char keystroke) {
   switch (keystroke) {
     // move keystrokes
     case 'k':
-      target = get_gridpoint(grid, row - 1, col);
-      run_move_sequence(player, target);
-      break;  // north
+      target = get_gridpoint(grid, row - 1, col);  // north
 
     case 'j':
-      target = get_gridpoint(grid, row + 1, col);
-      run_move_sequence(player, target);
-      break;  // south
+      target = get_gridpoint(grid, row + 1, col);  // south
 
     case 'h':
-      target = get_gridpoint(grid, row, col - 1);
-      run_move_sequence(player, target);
-      break;  // west
+      target = get_gridpoint(grid, row, col - 1);  // west
 
     case 'l':
-      target = get_gridpoint(grid, row, col + 1);
-      run_move_sequence(player, target);
-      break;  // east
+      target = get_gridpoint(grid, row, col + 1);  // east
 
     case 'y':
-      target = get_gridpoint(grid, row - 1, col - 1);
-      run_move_sequence(player, target);
-      break;  // north-west
+      target = get_gridpoint(grid, row - 1, col - 1);  // north-west
 
     case 'u':
-      target = get_gridpoint(grid, row - 1, col + 1);
-      run_move_sequence(player, target);
-      break;  // north-east
+      target = get_gridpoint(grid, row - 1, col + 1);  // north-east
 
     case 'b':
-      target = get_gridpoint(grid, row + 1, col - 1);
-      run_move_sequence(player, target);
-      break;  // south-west
+      target = get_gridpoint(grid, row + 1, col - 1);  // south-west
 
     case 'n':
-      target = get_gridpoint(grid, row + 1, col + 1);
-      run_move_sequence(player, target);
-      break;  // south-east
+      target = get_gridpoint(grid, row + 1, col + 1);  // south-east
 
     default:
       // invalid keystroke
-      return false;
+      return NULL;
   }
 
-  // return successfully
-  return true;
+  // return target
+  return target;
 }
 
-void
+
+bool
 run_move_sequence(player_t* player, point_t* target) {
-  // 1. verify that the given location is valid
-  if (!is_within_bounds(target) || !is_spot(target)) {
-    return;
+  // indicators of successful execution of various steps in the sequence
+  bool switched_location = true;
+  bool moved_to_target = true;
+  bool collected_gold = true;
+  bool updated_mapstring = true;
+
+  // 1. verify that the target location is valid
+  if (target == NULL || !is_spot(target)) {
+    return false;
   }
 
   // 2. switch locations if target location is occupied
@@ -440,13 +442,13 @@ run_move_sequence(player_t* player, point_t* target) {
     // check if target location is occupied
     if (is_same_location(target, get_location(player_b))) {
       // switch the occupant player to the moving player's location
-      update_location(player_b, get_location(player));
+      switched_location = update_location(player_b, get_location(player));
       break;
     }
   }
 
   // 3. move player to target location
-  update_location(player, target);
+  moved_to_target = update_location(player, target);
 
   // 4. check for gold pile in target location and collect gold
   int num_piles = get_num_piles(game);
@@ -465,7 +467,7 @@ run_move_sequence(player_t* player, point_t* target) {
     // check there's a gold pile on the target location
     if (is_same_location(target, get_pile_location(pile))) {
       // collect gold and send GOLD message
-      collect_gold(game, player, pile);
+      collected_gold = collect_gold(game, player, pile);
       break;
     }
   }
@@ -483,11 +485,21 @@ run_move_sequence(player_t* player, point_t* target) {
     }
 
     // update display for each player
-    build_visible_mapstring(game, player_b);
+    updated_mapstring = build_visible_mapstring(game, player_b) && updated_mapstring;
 
     // send updated display to each player
     to = get_address(player_b);
     send_display(to, get_visible_map(player_b));
   }
 
+  // return true if all steps of the sequence were successful
+  return switched_location && moved_to_target && collected_gold && updated_mapstring;
 }
+
+
+// TODO: implement these functions
+
+// player_t*
+// add_player(game_t* game, const addr_t address, const char* name) {
+//   return NULL;
+// }

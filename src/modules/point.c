@@ -121,17 +121,17 @@ is_same_location(point_t* pointA, point_t* pointB)
   return false;
 }
 
-/**************** is_transparent() ****************/
+/**************** is_spot() ****************/
 /* see point.h for description */
 bool
-is_transparent(point_t* point) {
+is_spot(point_t* point) {
   // validate parameters
   if (point == NULL) {
     return false;
   }
 
-  // "see-through" spots are either room spots('.') or passage spots('#')
-  // return true if a room spot is either of those
+  // spots are either room spots('.') or passage spots('#')
+  // return true if a grid point is either of those
   if (get_symbol(point) == '.' || get_symbol(point) == '#') {
     return true;
   }

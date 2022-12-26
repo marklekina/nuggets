@@ -90,4 +90,10 @@ player_t** get_players(game_t* game);
  */
 pile_t** get_piles(game_t* game);
 
+/************ get_player_by_address ************/
+/*
+ *
+ */
+player_t* get_player_by_address(game_t* game, addr_t address);
+
 #endif // __GAME_H

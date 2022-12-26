@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "mem.h"
+#include "message.h"
 #include "point.h"
 #include "player.h"
 
