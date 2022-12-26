@@ -34,7 +34,8 @@ player_t* player_new(
   char* name,
   char letter,
   point_t* location,
-  char* visible_map
+  char* visible_map,
+  addr_t address
 );
 
 /**************** player_delete ****************/
@@ -88,6 +89,18 @@ char get_letter(player_t* player);
  *   a pointer to the player's location.
  */
 point_t* get_location(player_t* player);
+
+/**************** get_address ****************/
+/*
+ * returns the player client's Internet address.
+ *
+ * caller provides:
+ *   a valid player pointer.
+ *
+ * we return:
+ *   the player's address.
+ */
+addr_t get_address(player_t* player);
 
 /**************** update_location ****************/
 /*

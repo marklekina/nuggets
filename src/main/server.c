@@ -161,7 +161,51 @@ handle_play(game_t* game, const addr_t from, const char* name) {
 
 bool
 handle_key(game_t* game, const addr_t from, const char keystroke) {
-  // return false to keep message_loop running
+  // locate player in the game whose client sent the keystroke
+  player_t* player = get_player_by_address(game, from);
+
+  // error locating keystroke sender
+  if (player == NULL) {
+    send_error(from, "Server is unable to locate the player matching this client.");
+    return false;
+  }
+
+  // handle quit keystroke i.e, send QUIT message and forget player
+  if (keystroke == 'Q') {
+    send_quit(from, "Thanks for playing!");
+    player_delete(player);
+    return false;
+  }
+
+  // define valid move keystrokes
+  char valid_keys_lower[] = {'y', 'k', 'u', 'h', 'l', 'b', 'j', 'n'};
+
+  // handle move keystroke
+  for (int i = 0; i < sizeof(valid_keys_lower); i++) {
+    if (keystroke == valid_keys_lower[i]) {
+      // move player as specified by keystroke
+      move_player(player, keystroke);
+      return false;
+    }
+  }
+
+  // define valid sprint keystrokes
+  char valid_keys_upper[sizeof(valid_keys_lower)];
+  for (int i = 0; i < sizeof(valid_keys_lower); i++) {
+    valid_keys_upper[i] = toupper(valid_keys_lower[i]);
+  }
+
+  // handle sprint keystroke
+  for (int i = 0; i < sizeof(valid_keys_upper); i++) {
+    if (keystroke == valid_keys_upper[i]) {
+      // move player as specified by keystroke
+      sprint_player(player, keystroke);
+      return false;
+    }
+  }
+
+  // handle erroneous keystroke
+  send_error(from, "Invalid keystroke detected.");
   return false;
 }
 
@@ -280,4 +324,170 @@ send_error(const addr_t to, const char* explanation) {
 
   // send message
   message_send(to, message);
+}
+
+// other functions
+player_t*
+get_player_by_address(addr_t address) {
+  // validate parameters
+  if (!message_isAddr(address)) {
+    return NULL;
+  }
+
+  // get list of players in the game
+  int num_players = get_num_players(game);
+  player_t** players = get_players(game);
+
+  // loop through list and return player if the address matches
+  for (int i = 0; i < num_players; i++) {
+    if (message_eqAddr(from, get_address(players[i]))) {
+      return players[i];
+    }
+  }
+
+  // otherwise return unsuccessfully
+  return NULL;
+}
+
+
+bool
+sprint_player(player_t* player, const char keystroke) {
+  // CONTINUE here
+}
+
+
+bool
+move_player(player_t* player, const char keystroke) {
+  // player's location
+  grid_t* grid = get_grid(game);
+  point_t *target, *curr = get_location(player);
+  int row = get_row(curr);
+  int col = get_col(curr);
+
+  // handle each direction of movement
+  switch (keystroke) {
+    // move keystrokes
+    case 'k':
+      target = get_gridpoint(grid, row - 1, col);
+      run_move_sequence(player, target);
+      break;  // north
+
+    case 'j':
+      target = get_gridpoint(grid, row + 1, col);
+      run_move_sequence(player, target);
+      break;  // south
+
+    case 'h':
+      target = get_gridpoint(grid, row, col - 1);
+      run_move_sequence(player, target);
+      break;  // west
+
+    case 'l':
+      target = get_gridpoint(grid, row, col + 1);
+      run_move_sequence(player, target);
+      break;  // east
+
+    case 'y':
+      target = get_gridpoint(grid, row - 1, col - 1);
+      run_move_sequence(player, target);
+      break;  // north-west
+
+    case 'u':
+      target = get_gridpoint(grid, row - 1, col + 1);
+      run_move_sequence(player, target);
+      break;  // north-east
+
+    case 'b':
+      target = get_gridpoint(grid, row + 1, col - 1);
+      run_move_sequence(player, target);
+      break;  // south-west
+
+    case 'n':
+      target = get_gridpoint(grid, row + 1, col + 1);
+      run_move_sequence(player, target);
+      break;  // south-east
+
+    default:
+      // invalid keystroke
+      return false;
+  }
+
+  // return successfully
+  return true;
+}
+
+void
+run_move_sequence(player_t* player, point_t* target) {
+  // 1. verify that the given location is valid
+  if (!is_within_bounds(target) || !is_spot(target)) {
+    return;
+  }
+
+  // 2. switch locations if target location is occupied
+  int num_players = get_num_players(game);
+  player_t** players = get_players(game);
+  player_t* player_b;
+
+  // loop through list of players
+  for (int i = 0; i < num_players; i++) {
+    player_b = players[i];
+
+    // skip deleted players
+    if (player_b == NULL) {
+      continue;
+    }
+
+    // check if target location is occupied
+    if (is_same_location(target, get_location(player_b))) {
+      // switch the occupant player to the moving player's location
+      update_location(player_b, get_location(player));
+      break;
+    }
+  }
+
+  // 3. move player to target location
+  update_location(player, target);
+
+  // 4. check for gold pile in target location and collect gold
+  int num_piles = get_num_piles(game);
+  pile_t** piles = get_piles(game);
+  pile_t* pile;
+
+  // loop through list of gold piles
+  for (int i = 0; i < num_piles; i++) {
+    pile = piles[i];
+
+    // skip deleted piles
+    if (pile == NULL) {
+      continue;
+    }
+
+    // check there's a gold pile on the target location
+    if (is_same_location(target, get_pile_location(pile))) {
+      // collect gold and send GOLD message
+      collect_gold(game, player, pile);
+      break;
+    }
+  }
+
+  // 5. send display message
+  addr_t to;
+
+  // loop through list of players
+  for (int i = 0; i < num_players; i++) {
+    player_b = players[i];
+
+    // skip deleted players
+    if (player_b == NULL) {
+      continue;
+    }
+
+    // update display for each player
+    build_visible_mapstring(game, player_b);
+
+    // send updated display to each player
+    to = get_address(player_b);
+    send_display(to, get_visible_map(player_b));
+  }
+
 }

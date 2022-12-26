@@ -20,6 +20,7 @@ typedef struct player {
   point_t* location;    // player location
   char* visible_map;    // section of the map that's visible to the player
   int wallet;           // holds gold collected by player
+  addr_t address;       // player client's Internet address
 } player_t;
 
 /**************** functions ****************/
@@ -27,7 +28,7 @@ typedef struct player {
 /**************** player_new() ****************/
 /* see player.h for description */
 player_t*
-player_new(char* name, char letter, point_t* location, char* visible_map)
+player_new(char* name, char letter, point_t* location, char* visible_map, addr_t address)
 {
   // validate parameters
   if (name == NULL || location == NULL || visible_map == NULL) {
@@ -35,6 +36,10 @@ player_new(char* name, char letter, point_t* location, char* visible_map)
   }
 
   if (letter == '\0') {
+    return NULL;
+  }
+
+  if (!message_isAddr(address)) {
     return NULL;
   }
 
@@ -52,6 +57,7 @@ player_new(char* name, char letter, point_t* location, char* visible_map)
   player->location = location;
   player->visible_map = visible_map;
   player->wallet = 0;
+  player->address = address;
 
   // return struct
   return player;
@@ -98,6 +104,18 @@ get_letter(player_t* player)
     return (char) 0;
   }
   return player->letter;
+}
+
+
+/**************** get_address() ****************/
+/* see player.h for description */
+addr_t
+get_address(player_t* player)
+{
+  if (player == NULL) {
+    return message_noAddr();
+  }
+  return player->address;
 }
 
 
