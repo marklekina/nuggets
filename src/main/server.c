@@ -603,7 +603,7 @@ compile_game_over_report(game_t* game) {
     sprintf(player_info, "%-3c %4d  %s\n", player_letter, player_wallet, player_name);
 
     // concatenate player info to report
-    strcpy(report, player_info);
+    strcat(report, player_info);
   }
 
   // return complete report

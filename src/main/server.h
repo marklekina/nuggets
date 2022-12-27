@@ -34,7 +34,5 @@ char* compile_game_over_report(game_t* game);
 
 // TODO: implement this
 bool distribute_gold(game_t* game, int min_piles, int max_piles);
-bool build_visible_mapstring(game_t* game, player_t* player);
-player_t* add_player(game_t* game, const addr_t address, const char* name);
 
 #endif //__SERVER_H

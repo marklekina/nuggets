@@ -60,6 +60,12 @@ void game_delete(game_t* game);
  */
 int get_num_players(game_t* game);
 
+/************ update_num_players ************/
+/*
+ *
+ */
+void update_num_players(game_t* game);
+
 /************ get_num_piles ************/
 /*
  *
@@ -107,5 +113,29 @@ player_t* get_player_by_address(game_t* game, addr_t address);
  *
  */
 player_t* get_spectator(game_t* game);
+
+/************ add_player ************/
+/*
+ *
+ */
+player_t* add_player(game_t* game, const addr_t address, char* name);
+
+/************ get_empty_room_spot ************/
+/*
+ *
+ */
+point_t* get_empty_room_spot(game_t* game);
+
+/************ is_empty_room_spot ************/
+/*
+ *
+ */
+bool is_empty_room_spot(game_t* game, point_t* point);
+
+/************ build_visible_mapstring ************/
+/*
+ *
+ */
+bool build_visible_mapstring(game_t* game, player_t* player);
 
 #endif // __GAME_H
