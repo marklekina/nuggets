@@ -237,8 +237,16 @@ add_player(game_t* game, const addr_t address, char* name) {
   int idx = get_num_players(game);
 
   // populate player's information
+  // letter
   char letter = (char) 'A' + idx;
+
+  // location
   point_t* location = get_empty_room_spot(game);
+  int row = get_row(location);
+  int col = get_col(location);
+  location  = point_new(row, col, letter);
+
+  // map string
   int mapstring_len = strlen(get_map_string(get_grid(game)));
   char* visible_map = mem_malloc(sizeof(char) * mapstring_len + 1);
 
@@ -422,5 +430,66 @@ build_visible_mapstring(game_t* game, player_t* player) {
   }
 
   // return complete map string
+  return true;
+}
+
+
+/**************** distribute_gold() ****************/
+/* see server.h for description */
+bool
+distribute_gold(game_t* game, int min_piles, int max_piles) {
+  // validate parameters
+  if (game == NULL) {
+    return false;
+  }
+
+  // generate random number of piles between specified range
+  int num_piles = rand() % (max_piles - min_piles + 1) + min_piles;
+
+  // 1. distribute the gold among the piles randomly
+
+  // variables to hold gold amounts
+  int gold_to_distribute = get_gold_balance(game);
+  int gold_amounts[num_piles];
+  int gold_avg = gold_to_distribute / num_piles;
+
+  // distribute gold among piles in random amounts (minimum 1 nugget per pile)
+  for (int i = 0; i < num_piles; i++) {
+    gold_amounts[i] = rand() % gold_avg + 1;
+    gold_to_distribute -= gold_amounts[i];
+  }
+
+  // distribute the remaining gold sequentially
+  int i = 0;
+  while (gold_to_distribute > 0) {
+    gold_amounts[i] += 1;
+    gold_to_distribute -= 1;
+    i = (i + 1) % num_piles;
+  }
+
+  // 2. select random room spots to place the gold piles
+  point_t* pile_locations[num_piles], *pile_location;
+  int row, col;
+
+  // compute random location to drop each gold pile
+  for (int i = 0; i < num_piles; i++) {
+    pile_location = get_empty_room_spot(game);
+    row = get_row(pile_location);
+    col = get_col(pile_location);
+    pile_locations[i] = point_new(row, col, '*');
+  }
+
+  // 3. combine gold amount and location data and create gold piles
+
+  // add new piles to the games pile list
+  for (int i = 0; i < num_piles; i++) {
+    pile_t* pile = pile_new(pile_locations[i], gold_amounts[i]);
+    game->piles[i] = pile;
+  }
+
+  // 4. update number of gold piles in the game
+  game->num_piles = num_piles;
+
+  // return successfully
   return true;
 }

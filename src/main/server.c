@@ -49,7 +49,8 @@ main(int argc, char const *argv[]) {
  // read map string into the game
  const char* mapfile_path = argv[1];
  FILE* fp = fopen(mapfile_path, "r");
- // TODO: read mapfile into game
+ // TODO: create game instance and read mapfile into game
+ 
  fclose(fp);
 
  // initialize the message module
