@@ -49,15 +49,27 @@ main(int argc, char const *argv[]) {
  // read map string into the game
  const char* mapfile_path = argv[1];
  FILE* fp = fopen(mapfile_path, "r");
- // TODO: create game instance and read mapfile into game
- 
+
+ // create game instance
+ game = game_new(fp, MaxPlayers + 1, GoldMaxNumPiles, GoldTotal);
+ if (game == NULL) {
+   return 2;
+ }
+
+ // close map file
  fclose(fp);
+
+ // distribute gold
+ bool game_init = distribute_gold(game, GoldMinNumPiles, GoldMaxNumPiles);
+ if (!game_init) {
+   return 2;
+ }
 
  // initialize the message module
  int myPort = message_init(stderr);
  if (myPort == 0) {
    printf("%s: failed to initialize the message module\n", program);
-   return 2;
+   return 3;
  }
 
  // announce port number
