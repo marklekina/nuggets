@@ -50,9 +50,9 @@ main(const int argc, char* argv[])
   TEST_ASSERT(is_same_location(point_A, point_C));
   TEST_ASSERT(!is_same_location(point_A, point_B));
 
-  // is_transparent
-  TEST_ASSERT(is_transparent(point_B) && is_transparent(point_D));
-  TEST_ASSERT(!is_transparent(point_A) && !is_transparent(point_C));
+  // is_spot
+  TEST_ASSERT(is_spot(point_B) && is_spot(point_D));
+  TEST_ASSERT(!is_spot(point_A) && !is_spot(point_C));
 
   // is_room_spot
   TEST_ASSERT(!is_room_spot(point_A));

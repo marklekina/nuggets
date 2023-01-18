@@ -138,8 +138,7 @@ handle_play(game_t* game, const addr_t from, const char* name) {
 
   // truncate player's name to MaxNameLength
   int len = strlen(name) > MaxNameLength? MaxNameLength : strlen(name);
-  char name_copy[len + 1];
-  strncpy(name_copy, name, len);
+  char* name_copy = strndup(name, len);
 
   // replace non_printing characters with _
   for (int i = 0; i < strlen(name_copy); i++) {
@@ -231,9 +230,17 @@ bool
 handle_spectate(game_t* game, const addr_t from) {
   // send QUIT message to current spectator (if present)
   player_t* spectator = get_spectator(game);
-  addr_t spectator_addr = get_address(spectator);
-  if (message_isAddr(spectator_addr)) {
-    send_quit(spectator_addr, "You have been replaced by a new spectator.");
+
+  // add new spectator if absent from the game
+  if (spectator == NULL) {
+    char* name = strdup("_SPECTATOR_");
+    spectator = add_player(game, from, name);
+  }
+  else {
+    addr_t spectator_addr = get_address(spectator);
+    if (message_isAddr(spectator_addr)) {
+      send_quit(spectator_addr, "You have been replaced by a new spectator.");
+    }
   }
 
   // assign new spectator to the game

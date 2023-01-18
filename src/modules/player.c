@@ -33,7 +33,12 @@ player_t*
 player_new(char* name, char letter, point_t* location, char* visible_map, addr_t address)
 {
   // validate parameters
-  if (name == NULL || location == NULL || visible_map == NULL) {
+  if (name == NULL || visible_map == NULL) {
+    return NULL;
+  }
+
+  // allow NULL location only if spectator
+  if (strcmp(name, "_SPECTATOR_") != 0 && location == NULL) {
     return NULL;
   }
 
@@ -212,11 +217,12 @@ is_spectator(player_t* player) {
 
   // get player information
   char* name = get_name(player);
+  char letter = get_letter(player);
   point_t* location = get_location(player);
   int wallet = get_wallet_balance(player);
 
   // check that info matches spectator information and return successfully
-  if (wallet == 0 && location == NULL && strcmp(name, "_SPECTATOR_") == 0) {
+  if (wallet == 0 && letter == '_' && location == NULL && strcmp(name, "_SPECTATOR_") == 0) {
     return true;
   }
 

@@ -27,8 +27,9 @@ typedef struct game {
   int num_piles;       // number of gold piles in the game
   int gold_balance;    // amount of gold remaining in the game
   grid_t* grid;        // representation of the game's map
-  player_t** players;  // array of players in the game
   pile_t** piles;      // array of gold piles in the game
+  player_t** players;  // array of players in the game
+  player_t* spectator; // special "player"; does not participate, only watches
 } game_t;
 
 /**************** global functions ****************/
@@ -73,6 +74,7 @@ game_new(FILE* fp, int max_players, int max_piles, int gold_balance) {
   game->grid = grid;
   game->players = players;
   game->piles = piles;
+  game->spectator = NULL;
 
   // return game struct
   return game;
@@ -185,6 +187,12 @@ get_player_by_address(game_t* game, addr_t address) {
     return NULL;
   }
 
+  // check spectator
+  player_t* spectator = get_spectator(game);
+  if (message_eqAddr(address, get_address(spectator))) {
+    return spectator;
+  }
+
   // get list of players in the game
   int num_players = get_num_players(game);
   player_t** players = get_players(game);
@@ -209,19 +217,8 @@ get_spectator(game_t* game) {
     return NULL;
   }
 
-  // get list of players in the game
-  int num_players = get_num_players(game);
-  player_t** players = get_players(game);
-
-  // loop through list of players and find the spectator
-  for (int i = 0; i < num_players; i++) {
-    if (is_spectator(players[i])) {
-      return players[i];
-    }
-  }
-
   // otherwise return unsuccessfully
-  return NULL;
+  return game->spectator;
 }
 
 /************ add_player ************/
@@ -233,22 +230,45 @@ add_player(game_t* game, const addr_t address, char* name) {
     return false;
   }
 
+  char letter;
+  point_t* location;
+
+  // map string
+  int mapstring_len = strlen(get_map_string(get_grid(game)));
+  char* visible_map = mem_malloc(sizeof(char) * mapstring_len + 1);
+
+  // handle spectators
+  if (strcmp(name, "_SPECTATOR_") == 0) {
+    // create new spectator
+    letter = '_';
+    location = NULL;
+    player_t* spectator = player_new(name, letter, location, visible_map, address);
+    if (spectator == NULL) {
+      return NULL;
+    }
+
+    // construct the spectator's visible map (AKA the entire grid; to be handled in-function)
+    build_visible_mapstring(game, spectator);
+
+    // add spectator to game
+    game->spectator = spectator;
+
+    // return successfully
+    return spectator;
+  }
+
   // get new player's index in the list of players in the game
   int idx = get_num_players(game);
 
   // populate player's information
   // letter
-  char letter = (char) 'A' + idx;
+  letter = (char) 'A' + idx;
 
   // location
-  point_t* location = get_empty_room_spot(game);
-  int row = get_row(location);
-  int col = get_col(location);
+  point_t* player_spot = get_empty_room_spot(game);
+  int row = get_row(player_spot);
+  int col = get_col(player_spot);
   location  = point_new(row, col, letter);
-
-  // map string
-  int mapstring_len = strlen(get_map_string(get_grid(game)));
-  char* visible_map = mem_malloc(sizeof(char) * mapstring_len + 1);
 
   // create new player
   player_t* player = player_new(name, letter, location, visible_map, address);
@@ -334,6 +354,11 @@ is_empty_room_spot(game_t* game, point_t* point) {
 
 /**************** build_visible_mapstring() ****************/
 /* see game.h for description */
+
+// TODO: rewrite this function to:
+//  * handle spectator
+//  * handle "known" grid points
+
 bool
 build_visible_mapstring(game_t* game, player_t* player) {
   // validate parameters

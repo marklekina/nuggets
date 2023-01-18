@@ -9,6 +9,9 @@
 #ifndef __PLAYER_H
 #define __PLAYER_H
 
+#include "point.h"
+#include "message.h"
+
 /**************** global types ****************/
 typedef struct player player_t;
 
