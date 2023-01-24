@@ -175,6 +175,7 @@ update_visible_map(player_t* player, char* visible_map) {
   }
 
   // assign visible map string to player
+  mem_free(player->visible_map);
   player->visible_map = visible_map;
   return true;
 }

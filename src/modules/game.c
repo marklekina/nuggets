@@ -233,9 +233,13 @@ add_player(game_t* game, const addr_t address, char* name) {
   char letter;
   point_t* location;
 
-  // map string
+  // initially set the map string to a string of empty spaces
   int mapstring_len = strlen(get_map_string(get_grid(game)));
   char* visible_map = mem_malloc(sizeof(char) * mapstring_len + 1);
+  for (int i = 0; i < mapstring_len; i++) {
+    visible_map[i] = ' ';
+  }
+  visible_map[mapstring_len] = '\0';
 
   // handle spectators
   if (strcmp(name, "_SPECTATOR_") == 0) {
@@ -378,9 +382,8 @@ build_visible_mapstring(game_t* game, player_t* player) {
   }
 
   // make a copy of the grid's map string
-  char* grid_mapstring = get_map_string(grid);
-  char* mapString = get_visible_map(player);
-  strcpy(mapString, grid_mapstring);
+  char* known_mapstring = get_visible_map(player);
+  char* mapString = strdup(get_map_string(grid));
 
   // location variables
   point_t* location;
@@ -438,6 +441,11 @@ build_visible_mapstring(game_t* game, player_t* player) {
     }
   }
 
+  // the spectator sees all and knows all, their mapstring is complete at this point
+  if (is_spectator(player)) {
+    return update_visible_map(player, mapString);
+  }
+
   // 3. mark visible grid spots
   location = get_location(player);
 
@@ -445,17 +453,22 @@ build_visible_mapstring(game_t* game, player_t* player) {
   for (int i = 0; i < grid_size; i++) {
     bool is_visible = compute_visibility(grid, location, gridPoints[i]);
 
-    // replace grid point symbol with ' ' if grid point not visible to the player
+    // if gridpoint is unknown by player, retain blank space in the player's known mapstring
+    // recall that the default known mapstring for each player is all blank spaces; and that we do
+    // not display occupants of known gridpoints, thus we do not need to check said gridpoints
     if (!is_visible) {
       row = get_row(gridPoints[i]);
       col = get_col(gridPoints[i]);
       idx = (col - 1) + (row - 1) * (ncols + 1);
-      mapString[idx] = ' ';
+
+      if (known_mapstring[idx] == ' ') {
+        mapString[idx] = known_mapstring[idx];
+      }
     }
   }
 
-  // return complete map string
-  return true;
+  // map string is complete; return successfully
+  return update_visible_map(player, mapString);
 }
 
 

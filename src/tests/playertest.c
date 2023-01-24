@@ -130,7 +130,7 @@ main(const int argc, char* argv[]) {
   // generate spectator information
   player_t *spectator;
   char* spec_name = strdup("_SPECTATOR_");
-  char* visible_map_C = strdup(visible_map_A);
+  char* visible_map_C = strdup(visible_map_B);
 
   // generate random address for spectator
   set_random_address(&spec_address);
@@ -157,7 +157,6 @@ main(const int argc, char* argv[]) {
   ENDTRY;
 
   // clean-up
-  mem_free(visible_map_A);
   point_delete(location_A);
 
   // complete testing
