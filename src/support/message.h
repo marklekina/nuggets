@@ -20,7 +20,7 @@
  *  handleInput may be NULL if no input expected.
  *  arg may be NULL if not needed by handlers.
  *
- * David Kotz - May 2019
+ * David Kotz - May 2019, Mark Lekina Rorat - Jan 2023
  */
 
 #ifndef _MESSAGE_H_
@@ -177,5 +177,11 @@ bool message_loop(void* arg, const float timeout,
  */
 void message_done(void);
 
+/*****************************************/
+/* message_random_address: assign the local hostname and a random port number to an addr_t
+ * Caller provides: a pointer to an address
+ * Function returns: true if successful; false otherwise
+ */
+bool message_random_address(addr_t* address);
 
 #endif // _MESSAGE_H_

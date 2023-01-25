@@ -138,4 +138,10 @@ bool is_empty_room_spot(game_t* game, point_t* point);
  */
 bool build_visible_mapstring(game_t* game, player_t* player);
 
+/**************** distribute_gold ****************/
+/*
+ *
+ */
+bool distribute_gold(game_t* game, int min_piles, int max_piles);
+
 #endif // __GAME_H

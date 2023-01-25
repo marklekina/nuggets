@@ -10,35 +10,7 @@
 #include "file.h"
 #include "point.h"
 #include "player.h"
-
-// helper function 
-// assigns the local hostname and a random port number to an addr_t
-bool set_random_address(addr_t *address)
-{
-  // variables
-  char hostname[256];
-  char port[6];
-
-  int MinPort = 1024;
-  int MaxPort = 65535;
-  int got_hostname;
-
-  // get local hostname
-  got_hostname = gethostname(hostname, sizeof(hostname));
-  if (got_hostname == -1)
-  {
-    return false;
-  }
-
-  // find unused port number and set hostname and port number to address
-  do
-  {
-    sprintf(port, "%d", rand() % (MaxPort - MinPort + 1) + MinPort);
-  } while (!message_setAddr(hostname, port, address));
-
-  // return successfully
-  return true;
-}
+#include "message.h"
 
 int
 main(const int argc, char* argv[]) {
@@ -65,7 +37,7 @@ main(const int argc, char* argv[]) {
 
   // generate random address for player
   addr_t address, spec_address;
-  set_random_address(&address);
+  message_random_address(&address);
 
   // player_new
   TRY { player = player_new(name, letter, location_A, visible_map_A, address); }
@@ -133,7 +105,7 @@ main(const int argc, char* argv[]) {
   char* visible_map_C = strdup(visible_map_B);
 
   // generate random address for spectator
-  set_random_address(&spec_address);
+  message_random_address(&spec_address);
 
   // create spectator
   TRY { spectator = player_new(spec_name, '_', NULL, visible_map_C, spec_address); }

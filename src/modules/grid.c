@@ -245,6 +245,11 @@ compute_visibility(grid_t* grid, point_t* pointA, point_t* pointB) {
     return false;
   }
 
+  // if same point return true
+  if (is_same_location(pointA, pointB)) {
+    return true;
+  }
+
   // fetch coordinates from grid points
   int row_a = get_row(pointA);
   int row_b = get_row(pointB);

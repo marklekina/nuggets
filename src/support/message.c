@@ -410,6 +410,35 @@ message_done(void)
   log_v("message_done: message module closing down.");
 }
 
+/**************** message_random_address ****************/
+/*
+ * Assign the local hostname and a random port number to an addr_t
+ */
+bool
+message_random_address(addr_t *address)
+{
+  // variables
+  char hostname[256];
+  char port[6];
+  int got_hostname;
+
+  // get local hostname
+  got_hostname = gethostname(hostname, sizeof(hostname));
+  if (got_hostname == -1)
+  {
+    log_v("message_random_address: error getting local hostname.");
+    return false;
+  }
+
+  // find unused port number and set hostname and port number to address
+  do
+  {
+    sprintf(port, "%d", rand() % (MaxPort - MinPort + 1) + MinPort);
+  } while (!message_setAddr(hostname, port, address));
+
+  // return successfully
+  return true;
+}
 
 /* ****************************************************************** */
 /* ************************* UNIT_TEST ****************************** */

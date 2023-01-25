@@ -49,6 +49,9 @@ game_new(FILE* fp, int max_players, int max_piles, int gold_balance) {
     return NULL;
   }
 
+  // build grid points array
+  build_grid(grid);
+
   // allocate memory for players array
   player_t** players = mem_malloc(sizeof(player_t*) * max_players);
   if (players == NULL) {
@@ -96,6 +99,8 @@ game_delete(game_t* game) {
   for (int i = 0; i < game->num_players; i++) {
     player_delete(game->players[i]);
   }
+
+  player_delete(game->spectator);
 
   // free array memory
   mem_free(game->players);
@@ -280,15 +285,15 @@ add_player(game_t* game, const addr_t address, char* name) {
     return NULL;
   }
 
-  // update player's visible map string
-  build_visible_mapstring(game, player);
-
   // add player to list of players in the game
   player_t** players = get_players(game);
   players[idx] = player;
 
   // increment number of players in the game
   update_num_players(game);
+
+  // update player's visible map string
+  build_visible_mapstring(game, player);
 
   // return successfully
   return player;
@@ -358,11 +363,6 @@ is_empty_room_spot(game_t* game, point_t* point) {
 
 /**************** build_visible_mapstring() ****************/
 /* see game.h for description */
-
-// TODO: rewrite this function to:
-//  * handle spectator
-//  * handle "known" grid points
-
 bool
 build_visible_mapstring(game_t* game, player_t* player) {
   // validate parameters
@@ -433,7 +433,7 @@ build_visible_mapstring(game_t* game, player_t* player) {
     idx = (col - 1) + (row - 1) * (ncols + 1);
 
     // replace grid point symbol with player letters
-    if (players[i] == player) {
+    if (is_same_location(location, get_location(player))) {
       mapString[idx] = '@';
     }
     else {
@@ -450,8 +450,9 @@ build_visible_mapstring(game_t* game, player_t* player) {
   location = get_location(player);
 
   // loop through each gridpoint
+  bool is_visible;
   for (int i = 0; i < grid_size; i++) {
-    bool is_visible = compute_visibility(grid, location, gridPoints[i]);
+    is_visible = compute_visibility(grid, location, gridPoints[i]);
 
     // if gridpoint is unknown by player, retain blank space in the player's known mapstring
     // recall that the default known mapstring for each player is all blank spaces; and that we do

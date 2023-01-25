@@ -31,6 +31,5 @@ point_t* get_target_location(player_t* player, const char keystroke);
 bool run_move_sequence(player_t* player, point_t* target);
 bool collect_gold(game_t* game, player_t* player, pile_t* pile);
 char* compile_game_over_report(game_t* game);
-bool distribute_gold(game_t* game, int min_piles, int max_piles);
 
 #endif //__SERVER_H
