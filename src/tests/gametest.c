@@ -136,10 +136,6 @@ main(const int argc, char* argv[]) {
     TEST_ASSERT(get_symbol(empty_room_spot) == '.');
   }
 
-  puts(get_visible_map(spectator));
-  puts(get_visible_map(player_one));
-  puts(get_visible_map(player_two));
-
   // game_delete
   TRY { game_delete(game); } ENDTRY;
 

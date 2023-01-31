@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include "mem.h"
 #include "file.h"
 #include "message.h"
@@ -373,6 +374,7 @@ build_visible_mapstring(game_t* game, player_t* player) {
   // get grid information
   grid_t* grid = get_grid(game);
   int grid_size = get_size(grid);
+  int ncols = get_ncols(grid);
 
   // load grid points array from grid
   point_t** gridPoints = get_gridpoints(grid);
@@ -382,13 +384,13 @@ build_visible_mapstring(game_t* game, player_t* player) {
   }
 
   // make a copy of the grid's map string
-  char* known_mapstring = get_visible_map(player);
-  char* mapString = strdup(get_map_string(grid));
+  char* known_mapstring = get_visible_map(player);    // player's old visible string
+  char* default_mapstring = get_map_string(grid);     // complete mapstring (without occupants)
+  char* mapString = strdup(default_mapstring);        // copy that will be modified and assigned to player
 
   // location variables
   point_t* location;
   int idx, row, col;
-  int ncols = get_ncols(grid);
 
   // 1. mark gold piles
 
@@ -446,7 +448,7 @@ build_visible_mapstring(game_t* game, player_t* player) {
     return update_visible_map(player, mapString);
   }
 
-  // 3. mark visible grid spots
+  // 3. unmark invisible grid points
   location = get_location(player);
 
   // loop through each gridpoint
@@ -454,17 +456,21 @@ build_visible_mapstring(game_t* game, player_t* player) {
   for (int i = 0; i < grid_size; i++) {
     is_visible = compute_visibility(grid, location, gridPoints[i]);
 
-    // if gridpoint is unknown by player, retain blank space in the player's known mapstring
-    // recall that the default known mapstring for each player is all blank spaces; and that we do
-    // not display occupants of known gridpoints, thus we do not need to check said gridpoints
+    // replace invisible gridpoints with a blank space
     if (!is_visible) {
       row = get_row(gridPoints[i]);
       col = get_col(gridPoints[i]);
       idx = (col - 1) + (row - 1) * (ncols + 1);
+      mapString[idx] = ' ';
+    }
+  }
 
-      if (known_mapstring[idx] == ' ') {
-        mapString[idx] = known_mapstring[idx];
-      }
+  // 4. mark known grid points
+  for (int i = 0; i < strlen(known_mapstring); i++) {
+    // if gridpoint is known by player but invisible from the player's location,
+    // replace blank space in the player's mapstring with default gridpoint symbol
+    if (!isspace(known_mapstring[i]) && isspace(mapString[i])) {
+      mapString[i] = default_mapstring[i];
     }
   }
 

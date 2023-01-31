@@ -67,6 +67,7 @@ pile_delete(pile_t* pile)
 
   // free pile memory
   mem_free(pile);
+  pile = NULL;
 }
 
 /**************** get_pile_location() ****************/
