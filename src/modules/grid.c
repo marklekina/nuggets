@@ -134,6 +134,7 @@ grid_delete(grid_t* grid)
 
   // free grid memory
   mem_free(grid);
+  grid = NULL;
 }
 
 

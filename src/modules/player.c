@@ -87,6 +87,7 @@ player_delete(player_t* player)
 
   // free player memory
   mem_free(player);
+  player = NULL;
 }
 
 

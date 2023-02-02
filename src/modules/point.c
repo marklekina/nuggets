@@ -58,6 +58,7 @@ point_delete(point_t* point)
 
   // free point memory
   mem_free(point);
+  point = NULL;
 }
 
 /**************** get_row() ****************/

@@ -51,7 +51,7 @@ main(int argc, char const *argv[]) {
  FILE* fp = fopen(mapfile_path, "r");
 
  // create game instance
- game = game_new(fp, MaxPlayers + 1, GoldMaxNumPiles, GoldTotal);
+ game = game_new(fp, MaxPlayers, GoldMaxNumPiles, GoldTotal);
  if (game == NULL) {
    return 2;
  }
@@ -75,17 +75,19 @@ main(int argc, char const *argv[]) {
  // announce port number
  printf("waiting on port %d for contact....\n", myPort);
 
- // no correspondent yet
- addr_t other = message_noAddr();
-
  // loop and wait for input or messages
- bool ok = message_loop(&other, 0, NULL, NULL, handleMessage);
+ bool ok = message_loop(game, 0, NULL, NULL, handleMessage);
+
+ // free game memory and shut down the messaging module
+ message_done();
+ game_delete(game);
 
  // return successfully
- message_done();
  return ok? 0 : 1;
 }
 
+
+// handler functions
 bool
 handleMessage(void* arg, const addr_t from, const char* message) {
   // cast arg to game pointer
@@ -111,8 +113,7 @@ handleMessage(void* arg, const addr_t from, const char* message) {
   }
   else {
     // send error message to correspondent
-    char* error_message = "ERROR malformatted message";
-    message_send(from, error_message);
+    send_error(from, "malformatted message");
     handler_return = false;
   }
 
@@ -120,7 +121,6 @@ handleMessage(void* arg, const addr_t from, const char* message) {
   return handler_return;
 }
 
-// handler functions
 
 bool
 handle_play(game_t* game, const addr_t from, const char* name) {
@@ -141,7 +141,7 @@ handle_play(game_t* game, const addr_t from, const char* name) {
   char* name_copy = strndup(name, len);
 
   // replace non_printing characters with _
-  for (int i = 0; i < strlen(name_copy); i++) {
+  for (int i = 0; i < len; i++) {
     if (!isgraph(name_copy[i] && !isblank(name_copy[i]))) {
       name_copy[i] = '_';
     }
@@ -200,7 +200,13 @@ handle_key(game_t* game, const addr_t from, const char keystroke) {
   for (int i = 0; i < sizeof(valid_keys_lower); i++) {
     if (keystroke == valid_keys_lower[i]) {
       // move player as specified by keystroke
-      move_player(player, keystroke);
+      move_player(game, player, keystroke);
+
+      // terminate message loop if all gold nuggets have been collected
+      if (get_gold_balance(game) == 0) {
+        return true;
+      }
+      // otherwise keep looping
       return false;
     }
   }
@@ -215,7 +221,13 @@ handle_key(game_t* game, const addr_t from, const char keystroke) {
   for (int i = 0; i < sizeof(valid_keys_upper); i++) {
     if (keystroke == valid_keys_upper[i]) {
       // move player as specified by keystroke
-      sprint_player(player, keystroke);
+      sprint_player(game, player, keystroke);
+
+      // terminate message loop if all gold nuggets have been collected
+      if (get_gold_balance(game) == 0) {
+        return true;
+      }
+      // otherwise keep looping
       return false;
     }
   }
@@ -232,7 +244,7 @@ handle_spectate(game_t* game, const addr_t from) {
   player_t* spectator = get_spectator(game);
 
   // add new spectator if absent from the game
-  if (spectator == NULL) {
+  if (!spectator) {
     char* name = strdup("_SPECTATOR_");
     spectator = add_player(game, from, name);
   }
@@ -351,29 +363,101 @@ send_error(const addr_t to, const char* explanation) {
 }
 
 
-point_t*
-sprint_player(player_t* player, const char keystroke) {
-  // pointers to hold player's location
-  point_t *prev, *curr;
+bool
+collect_gold(game_t* game, player_t* player, pile_t* pile) {
+  // 1. fetch gold from gold pile
+  int gold_collected = get_gold(pile);
+  if (gold_collected == -1) {
+    return false;
+  }
 
-  // move player in specified location until it is no longer possible
-  do {
-    prev = get_location(player);
-    curr = move_player(player, keystroke);
-  } while(!is_same_location(prev, curr));
+  // 2. add gold to player's purse
+  bool updated_wallet = update_wallet_balance(player, gold_collected);
+  if (!updated_wallet) {
+    return false;
+  }
 
-  // return the player's new location
-  return curr;
+  // 3. remove pile from game
+  pile_delete(pile);
+
+  // 4. subtract gold from gold_balance
+  update_gold_balance(game, gold_collected);
+
+  // 5. send gold messages
+  addr_t to = get_address(player);
+  int wallet_balance = get_wallet_balance(player);
+  int gold_balance = get_gold_balance(game);
+
+  // i) send GOLD message to the player that just collected the gold
+  send_gold(to, gold_collected, wallet_balance, gold_balance);
+
+  // ii) send GOLD message to everyone else
+  // spectator (if present)
+  player_t* player_b = get_spectator(game);
+  if (player_b) {
+    to = get_address(player_b);
+    wallet_balance = get_wallet_balance(player_b);  // should always be zero for spectator
+    send_gold(to, 0, wallet_balance, gold_balance);
+  }
+
+  // players
+  // loop through list of players
+  int num_players = get_num_players(game);
+  player_t** players = get_players(game);
+
+  for (int i = 0; i < num_players; i++) {
+    player_b = players[i];
+
+    // skip deleted players
+    if (!player_b) {
+      continue;
+    }
+
+    // send GOLD message to each player
+    to = get_address(player_b);
+    wallet_balance = get_wallet_balance(player_b);
+    send_gold(to, 0, wallet_balance, gold_balance);
+  }
+
+  // 6. send QUIT GAME OVER message if all the gold in the game has been collected
+  if (get_gold_balance(game) == 0) {
+    // prepare GAME OVER message
+    char* game_over_report = compile_game_over_report(game);
+
+    // spectator (if present)
+    player_b = get_spectator(game);
+    if (player_b) {
+      to = get_address(player_b);
+      send_quit(to, game_over_report);
+    }
+
+    // players
+    // loop through players list and send QUIT GAME OVER message
+    for (int i = 0; i < num_players; i++) {
+      player_b = players[i];
+
+      // skip deleted players
+      if (!player_b) {
+        continue;
+      }
+
+      to = get_address(player_b);
+      send_quit(to, game_over_report);
+    }
+  }
+
+  // return successfully
+  return true;
 }
 
 
 point_t*
-move_player(player_t* player, const char keystroke) {
+move_player(game_t* game, player_t* player, const char keystroke) {
   // get target location
-  point_t* target = get_target_location(player, keystroke);
+  point_t* target = get_target_location(game, player, keystroke);
 
   // move player
-  bool moved_player = run_move_sequence(player, target);
+  bool moved_player = run_move_sequence(game, player, target);
 
   // return new location
   if (moved_player) {
@@ -386,54 +470,23 @@ move_player(player_t* player, const char keystroke) {
 
 
 point_t*
-get_target_location(player_t* player, const char keystroke) {
+sprint_player(game_t* game, player_t* player, const char keystroke) {
   // pointers to hold player's location
-  point_t *target, *curr = get_location(player);
+  point_t *prev, *curr;
 
-  // get player's coordinates
-  grid_t* grid = get_grid(game);
-  int row = get_row(curr);
-  int col = get_col(curr);
+  // move player in specified location until it is no longer possible
+  do {
+    prev = get_location(player);
+    curr = move_player(game, player, keystroke);
+  } while(!is_same_location(prev, curr));
 
-  // handle each direction of movement
-  switch (keystroke) {
-    // move keystrokes
-    case 'k':
-      target = get_gridpoint(grid, row - 1, col);  // north
-
-    case 'j':
-      target = get_gridpoint(grid, row + 1, col);  // south
-
-    case 'h':
-      target = get_gridpoint(grid, row, col - 1);  // west
-
-    case 'l':
-      target = get_gridpoint(grid, row, col + 1);  // east
-
-    case 'y':
-      target = get_gridpoint(grid, row - 1, col - 1);  // north-west
-
-    case 'u':
-      target = get_gridpoint(grid, row - 1, col + 1);  // north-east
-
-    case 'b':
-      target = get_gridpoint(grid, row + 1, col - 1);  // south-west
-
-    case 'n':
-      target = get_gridpoint(grid, row + 1, col + 1);  // south-east
-
-    default:
-      // invalid keystroke
-      return NULL;
-  }
-
-  // return target
-  return target;
+  // return the player's new location
+  return curr;
 }
 
 
 bool
-run_move_sequence(player_t* player, point_t* target) {
+run_move_sequence(game_t* game, player_t* player, point_t* target) {
   // indicators of successful execution of various steps in the sequence
   bool switched_location = true;
   bool moved_to_target = true;
@@ -470,7 +523,7 @@ run_move_sequence(player_t* player, point_t* target) {
   // 3. move player to target location
   moved_to_target = update_location(player, target);
 
-  // 4. check for gold pile in target location and collect gold
+  // 4. check for gold in target location and collect gold (and broadcast GOLD messages)
   int num_piles = get_num_piles(game);
   pile_t** piles = get_piles(game);
   pile_t* pile;
@@ -486,15 +539,27 @@ run_move_sequence(player_t* player, point_t* target) {
 
     // check there's a gold pile on the target location
     if (is_same_location(target, get_pile_location(pile))) {
-      // collect gold and send GOLD message
+      // collect gold and send GOLD messages
       collected_gold = collect_gold(game, player, pile);
       break;
     }
   }
 
-  // 5. send display message
+  // 5. update visible maps and send DISPLAY messages
   addr_t to;
 
+  // spectator (if present)
+  player_b = get_spectator(game);
+  if (player_b) {
+    // update visible map for the spectator
+    updated_mapstring = build_visible_mapstring(game, player_b);
+
+    // send updated display
+    to = get_address(player_b);
+    send_display(to, get_visible_map(player_b));
+  }
+
+  // players
   // loop through list of players
   for (int i = 0; i < num_players; i++) {
     player_b = players[i];
@@ -517,86 +582,17 @@ run_move_sequence(player_t* player, point_t* target) {
 }
 
 
-bool
-collect_gold(game_t* game, player_t* player, pile_t* pile) {
-  // 1. fetch gold from gold pile
-  int gold_collected = get_gold(pile);
-  if (gold_collected == -1) {
-    return false;
-  }
-
-  // 2. add gold to player's purse
-  bool updated_wallet = update_wallet_balance(player, gold_collected);
-  if (!updated_wallet) {
-    return false;
-  }
-
-  // 3. remove pile from game
-  pile_delete(pile);
-
-  // 4. subtract gold from gold_balance
-  update_gold_balance(game, gold_collected);
-
-  // 5. send gold message
-  addr_t to = get_address(player);
-
-  // i) send GOLD message to the player that just collected the gold
-  send_gold(to, gold_collected, get_wallet_balance(player), get_gold_balance(game));
-
-  // ii) send GOLD message to everyone else
-  int num_players = get_num_players(game);
-  player_t** players = get_players(game);
-  player_t* player_b;
-
-  // loop through list of players
-  for (int i = 0; i < num_players; i++) {
-    player_b = players[i];
-
-    // skip deleted players
-    if (player_b == NULL) {
-      continue;
-    }
-
-    // send GOLD message to each player
-    int wallet_balance = get_wallet_balance(player_b);
-    int gold_balance = get_gold_balance(game);
-
-    to = get_address(player_b);
-    send_gold(to, 0, wallet_balance, gold_balance);
-  }
-
-  // 6. send QUIT GAME OVER message if all the gold in the game has been collected
-  if (get_gold_balance(game) == 0) {
-    // prepare GAME OVER message
-    char* game_over_report = compile_game_over_report(game);
-
-    // loop through players list and send QUIT GAME OVER message
-    for (int i = 0; i < num_players; i++) {
-      player_b = players[i];
-
-      // skip deleted players
-      if (player_b == NULL) {
-        continue;
-      }
-
-      to = get_address(player_b);
-      send_quit(to, game_over_report);
-    }
-  }
-
-  // return successfully
-  return true;
-}
-
-
 char*
 compile_game_over_report(game_t* game) {
-  // define string to hold report
+  // define string to hold report (test: why is this static?)
   static char report[message_MaxBytes];
 
   // get list of players in the game
   int num_players = get_num_players(game);
   player_t** players = get_players(game);
+
+  // sort players by wallet balance
+  qsort((void*) players, num_players, sizeof(players[0]), compare_player_wallets);
 
   // variables to hold player info
   player_t* player;
@@ -609,7 +605,7 @@ compile_game_over_report(game_t* game) {
     player = players[i];
 
     // skip deleted players
-    if (player == NULL || is_spectator(player)) {
+    if (!player || is_spectator(player)) {
       continue;
     }
 
@@ -623,7 +619,7 @@ compile_game_over_report(game_t* game) {
     sprintf(player_info, "%-3c %4d  %s\n", player_letter, player_wallet, player_name);
 
     // concatenate player info to report
-    strcat(report, player_info);
+    strncat(report, player_info, strlen(player_info));
   }
 
   // return complete report

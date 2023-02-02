@@ -101,6 +101,7 @@ game_delete(game_t* game) {
     player_delete(game->players[i]);
   }
 
+  // free spectator memory
   player_delete(game->spectator);
 
   // free array memory
@@ -116,6 +117,7 @@ game_delete(game_t* game) {
 
   // free game memory
   mem_free(game);
+  game = NULL;
 }
 
 
@@ -537,4 +539,66 @@ distribute_gold(game_t* game, int min_piles, int max_piles) {
 
   // return successfully
   return true;
+}
+
+
+point_t*
+get_target_location(game_t* game, player_t* player, const char keystroke) {
+  // pointers to hold player's location
+  point_t *target, *curr = get_location(player);
+
+  // get player's coordinates
+  grid_t* grid = get_grid(game);
+  int row = get_row(curr);
+  int col = get_col(curr);
+
+  // handle each direction of movement
+  switch (keystroke) {
+    // move keystrokes
+    case 'k':
+      target = get_gridpoint(grid, row - 1, col);  // north
+
+    case 'j':
+      target = get_gridpoint(grid, row + 1, col);  // south
+
+    case 'h':
+      target = get_gridpoint(grid, row, col - 1);  // west
+
+    case 'l':
+      target = get_gridpoint(grid, row, col + 1);  // east
+
+    case 'y':
+      target = get_gridpoint(grid, row - 1, col - 1);  // north-west
+
+    case 'u':
+      target = get_gridpoint(grid, row - 1, col + 1);  // north-east
+
+    case 'b':
+      target = get_gridpoint(grid, row + 1, col - 1);  // south-west
+
+    case 'n':
+      target = get_gridpoint(grid, row + 1, col + 1);  // south-east
+
+    default:
+      // invalid keystroke
+      return NULL;
+  }
+
+  // return target
+  return target;
+}
+
+
+int
+compare_player_wallets(const void* a, const void* b) {
+  // cast arguments to player_t*
+  player_t* player_a = (player_t*) a;
+  player_t* player_b = (player_t*) b;
+
+  // get wallet balance for both players
+  int wallet_a = get_wallet_balance(player_a);
+  int wallet_b = get_wallet_balance(player_b);
+
+  // compute and return the difference
+  return wallet_a - wallet_b;
 }
