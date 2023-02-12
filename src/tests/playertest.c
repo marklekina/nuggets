@@ -121,6 +121,9 @@ main(const int argc, char* argv[]) {
   TEST_ASSERT(update_spectator(spectator, address));
   TEST_ASSERT(message_eqAddr(address, get_address(spectator)));
 
+  // compare_player_wallets
+  TEST(compare_player_wallets(player, spectator), get_wallet_balance(player));
+
   // player_delete
   TRY { 
     player_delete(player);

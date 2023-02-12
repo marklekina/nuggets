@@ -183,6 +183,13 @@ bool is_spectator(player_t* player);
 /*
  *
  */
- bool update_spectator(player_t* spectator, const addr_t address);
+bool update_spectator(player_t* spectator, const addr_t address);
+
+
+/**************** compare_player_wallet ****************/
+/*
+ *
+ */
+int compare_player_wallets(const void* player_a, const void* player_b);
 
 #endif // __PLAYER_H

@@ -545,7 +545,8 @@ distribute_gold(game_t* game, int min_piles, int max_piles) {
 point_t*
 get_target_location(game_t* game, player_t* player, const char keystroke) {
   // pointers to hold player's location
-  point_t *target, *curr = get_location(player);
+  point_t* target = NULL;
+  point_t* curr = get_location(player);
 
   // get player's coordinates
   grid_t* grid = get_grid(game);
@@ -557,48 +558,37 @@ get_target_location(game_t* game, player_t* player, const char keystroke) {
     // move keystrokes
     case 'k':
       target = get_gridpoint(grid, row - 1, col);  // north
+      break;
 
     case 'j':
       target = get_gridpoint(grid, row + 1, col);  // south
+      break;
 
     case 'h':
       target = get_gridpoint(grid, row, col - 1);  // west
+      break;
 
     case 'l':
       target = get_gridpoint(grid, row, col + 1);  // east
+      break;
 
     case 'y':
       target = get_gridpoint(grid, row - 1, col - 1);  // north-west
+      break;
 
     case 'u':
       target = get_gridpoint(grid, row - 1, col + 1);  // north-east
+      break;
 
     case 'b':
       target = get_gridpoint(grid, row + 1, col - 1);  // south-west
+      break;
 
     case 'n':
-      target = get_gridpoint(grid, row + 1, col + 1);  // south-east
-
-    default:
-      // invalid keystroke
-      return NULL;
+      target = get_gridpoint(grid, row + 1, col + 1); // south-east
+      break;
   }
 
   // return target
   return target;
-}
-
-
-int
-compare_player_wallets(const void* a, const void* b) {
-  // cast arguments to player_t*
-  player_t* player_a = (player_t*) a;
-  player_t* player_b = (player_t*) b;
-
-  // get wallet balance for both players
-  int wallet_a = get_wallet_balance(player_a);
-  int wallet_b = get_wallet_balance(player_b);
-
-  // compute and return the difference
-  return wallet_a - wallet_b;
 }

@@ -136,6 +136,23 @@ main(const int argc, char* argv[]) {
     TEST_ASSERT(get_symbol(empty_room_spot) == '.');
   }
 
+  // get_target_location
+  int row = get_row(get_location(player_one));
+  int col = get_col(get_location(player_one));
+
+  TEST(get_row(get_target_location(game, player_one, 'k')), row - 1); // north
+  TEST(get_row(get_target_location(game, player_one, 'j')), row + 1); // south
+  TEST(get_col(get_target_location(game, player_one, 'h')), col - 1); // west
+  TEST(get_col(get_target_location(game, player_one, 'l')), col + 1); // east
+  TEST(get_row(get_target_location(game, player_one, 'y')), row - 1);
+  TEST(get_col(get_target_location(game, player_one, 'y')), col - 1); // north-west
+  TEST(get_row(get_target_location(game, player_one, 'u')), row - 1);
+  TEST(get_col(get_target_location(game, player_one, 'u')), col + 1); // north-east
+  TEST(get_row(get_target_location(game, player_one, 'b')), row + 1);
+  TEST(get_col(get_target_location(game, player_one, 'b')), col - 1); // south-west
+  TEST(get_row(get_target_location(game, player_one, 'n')), row + 1);
+  TEST(get_col(get_target_location(game, player_one, 'n')), col + 1); // south-east
+
   // game_delete
   TRY { game_delete(game); } ENDTRY;
 

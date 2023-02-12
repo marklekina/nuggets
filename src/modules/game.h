@@ -144,7 +144,10 @@ bool build_visible_mapstring(game_t* game, player_t* player);
  */
 bool distribute_gold(game_t* game, int min_piles, int max_piles);
 
+/**************** get_target_location ****************/
+/*
+ *
+ */
 point_t* get_target_location(game_t* game, player_t* player, const char keystroke);
-int compare_player_wallets(const void* player_a, const void* player_b);
 
 #endif // __GAME_H
