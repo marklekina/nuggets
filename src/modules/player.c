@@ -253,13 +253,13 @@ update_spectator(player_t* spectator, const addr_t address) {
 int
 compare_player_wallets(const void* a, const void* b) {
   // cast arguments to player_t*
-  player_t* player_a = (player_t*) a;
-  player_t* player_b = (player_t*) b;
+  player_t* player_a = *(player_t**) a;
+  player_t* player_b = *(player_t**) b;
 
   // get wallet balance for both players
   int wallet_a = get_wallet_balance(player_a);
   int wallet_b = get_wallet_balance(player_b);
 
-  // compute and return the difference
-  return wallet_a - wallet_b;
+  // compute and return the "reverse" difference (reverse for descending order)
+  return wallet_b - wallet_a;
 }

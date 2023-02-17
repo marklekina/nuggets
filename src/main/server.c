@@ -27,8 +27,6 @@ static const int GoldTotal = 250;      // amount of gold in the game
 static const int GoldMinNumPiles = 10; // minimum number of gold piles
 static const int GoldMaxNumPiles = 30; // maximum number of gold piles
 
-// global variables
-game_t* game;
 
 int
 main(int argc, char const *argv[]) {
@@ -51,7 +49,7 @@ main(int argc, char const *argv[]) {
  FILE* fp = fopen(mapfile_path, "r");
 
  // create game instance
- game = game_new(fp, MaxPlayers, GoldMaxNumPiles, GoldTotal);
+ game_t* game = game_new(fp, MaxPlayers, GoldMaxNumPiles, GoldTotal);
  if (game == NULL) {
    return 2;
  }
@@ -73,7 +71,7 @@ main(int argc, char const *argv[]) {
  }
 
  // announce port number
- printf("waiting on port %d for contact....\n", myPort);
+ printf("%s: ready for contact at port %d\n", program, myPort);
 
  // loop and wait for input or messages
  bool ok = message_loop(game, 0, NULL, NULL, handleMessage);
@@ -81,6 +79,10 @@ main(int argc, char const *argv[]) {
  // free game memory and shut down the messaging module
  message_done();
  game_delete(game);
+
+ // announce end of game session
+ printf("%s: game over; terminating session\n", program);
+ sleep(1);
 
  // return successfully
  return ok? 0 : 1;
@@ -142,7 +144,7 @@ handle_play(game_t* game, const addr_t from, const char* name) {
 
   // replace non_printing characters with _
   for (int i = 0; i < len; i++) {
-    if (!isgraph(name_copy[i] && !isblank(name_copy[i]))) {
+    if (!isgraph(name_copy[i]) && !isblank(name_copy[i])) {
       name_copy[i] = '_';
     }
   }
@@ -169,6 +171,9 @@ handle_play(game_t* game, const addr_t from, const char* name) {
   // DISPLAY message
   char* visible_map = get_visible_map(player);
   send_display(from, visible_map);
+
+  // announce new player
+  printf("new player (%c) at address: %s\n", player_letter, message_stringAddr(from));
 
   // return false to keep message_loop running
   return false;
@@ -278,6 +283,9 @@ handle_spectate(game_t* game, const addr_t from) {
   char* visible_map = get_visible_map(spectator);
   send_display(from, visible_map);
 
+  // announce new spectator
+  printf("new spectator at address: %s\n", message_stringAddr(from));
+
   // return false to keep message_loop running
   return false;
 }
@@ -377,11 +385,14 @@ collect_gold(game_t* game, player_t* player, pile_t* pile) {
     return false;
   }
 
-  // 3. remove pile from game
-  pile_delete(pile);
+  // 3. remove pile from game (i.e., set gold balance to zero)
+  update_pile_balance(pile);
 
   // 4. subtract gold from gold_balance
   update_gold_balance(game, gold_collected);
+
+  // announce gold pile collected
+  printf("%d nuggets collected by player %c\n", gold_collected, get_letter(player));
 
   // 5. send gold messages
   addr_t to = get_address(player);
@@ -533,7 +544,7 @@ run_move_sequence(game_t* game, player_t* player, point_t* target) {
     pile = piles[i];
 
     // skip deleted piles
-    if (pile == NULL) {
+    if (pile == NULL || get_gold(pile) == 0) {
       continue;
     }
 
@@ -586,6 +597,7 @@ char*
 compile_game_over_report(game_t* game) {
   // define string to hold report (test: why is this static?)
   static char report[message_MaxBytes];
+  strncat(report, "GAME OVER:\n", strlen("GAME OVER:\n"));
 
   // get list of players in the game
   int num_players = get_num_players(game);

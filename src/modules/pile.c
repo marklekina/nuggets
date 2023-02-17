@@ -87,7 +87,18 @@ int
 get_gold(pile_t* pile)
 {
   if (pile == NULL) {
-    return -1;
+    return 0;
   }
   return pile->gold;
+}
+
+/**************** update_pile_balance() ****************/
+/* see pile.h for description */
+bool
+update_pile_balance(pile_t* pile) {
+  if (pile == NULL) {
+    return false;
+  }
+  pile->gold = 0;
+  return true;
 }

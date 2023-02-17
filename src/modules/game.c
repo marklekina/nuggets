@@ -277,10 +277,7 @@ add_player(game_t* game, const addr_t address, char* name) {
   letter = (char) 'A' + idx;
 
   // location
-  point_t* player_spot = get_empty_room_spot(game);
-  int row = get_row(player_spot);
-  int col = get_col(player_spot);
-  location  = point_new(row, col, letter);
+  location = get_empty_room_spot(game);
 
   // create new player
   player_t* player = player_new(name, letter, location, visible_map, address);
@@ -403,7 +400,7 @@ build_visible_mapstring(game_t* game, player_t* player) {
   // loop through all gold piles
   for (int i = 0; i < num_piles; i++) {
     // skip deleted piles
-    if (piles[i] == NULL) {
+    if (piles[i] == NULL || get_gold(piles[i]) == 0) {
       continue;
     }
 
