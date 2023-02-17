@@ -83,7 +83,6 @@ player_delete(player_t* player)
   // free player variables memory
   mem_free(player->name);
   mem_free(player->visible_map);
-  point_delete(player->location);
 
   // free player memory
   mem_free(player);

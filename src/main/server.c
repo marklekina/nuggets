@@ -173,7 +173,7 @@ handle_play(game_t* game, const addr_t from, const char* name) {
   send_display(from, visible_map);
 
   // announce new player
-  printf("new player (%c) at address: %s\n", player_letter, message_stringAddr(from));
+  printf("player %-3c: new client at address %s\n", player_letter, message_stringAddr(from));
 
   // return false to keep message_loop running
   return false;
@@ -284,7 +284,7 @@ handle_spectate(game_t* game, const addr_t from) {
   send_display(from, visible_map);
 
   // announce new spectator
-  printf("new spectator at address: %s\n", message_stringAddr(from));
+  printf("spectator : new client at address %s\n", message_stringAddr(from));
 
   // return false to keep message_loop running
   return false;
@@ -392,7 +392,7 @@ collect_gold(game_t* game, player_t* player, pile_t* pile) {
   update_gold_balance(game, gold_collected);
 
   // announce gold pile collected
-  printf("%d nuggets collected by player %c\n", gold_collected, get_letter(player));
+  printf("player %-3c: collected %2d nuggets\n", get_letter(player), gold_collected);
 
   // 5. send gold messages
   addr_t to = get_address(player);
