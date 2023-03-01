@@ -263,7 +263,7 @@ handle_spectate(game_t* game, const addr_t from) {
   // assign new spectator to the game
   bool new_spectator = update_spectator(spectator, from);
   if (!new_spectator) {
-    send_error(from, "server unable to add new spectator");
+    send_quit(from, "server unable to add new spectator");
     return false;
   }
 
@@ -351,7 +351,8 @@ send_quit(const addr_t to, const char* explanation) {
   char message[message_MaxBytes];
 
   // format message
-  sprintf(message, "QUIT %s", explanation);
+  int len = strlen("QUIT ") + strlen(explanation);
+  snprintf(message, len, "QUIT %s", explanation);
 
   // send message
   message_send(to, message);
@@ -364,7 +365,8 @@ send_error(const addr_t to, const char* explanation) {
   char message[message_MaxBytes];
 
   // format message
-  sprintf(message, "ERROR %s", explanation);
+  int len = strlen("ERROR ") + strlen(explanation);
+  snprintf(message, len, "ERROR %s", explanation);
 
   // send message
   message_send(to, message);

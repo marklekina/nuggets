@@ -15,12 +15,13 @@
 #include "../support/mem.h"
 #include "client.h"
 
-#define MAX_STATUS_LINE_LENGTH 50
+#define MAX_STATUS_LINE_LENGTH 50 // maximum length of the status line displayed at the top
+#define CTRL(c) ((c)-0100)        // control character
 
-int main(int argc, char const *argv[])
+int main(int argc, char *argv[])
 {
     // validate command-line parameters
-    const char *program = argv[0];
+    char *program = argv[0];
     if (argc < 3 || argc > 4)
     {
         printf("usage: %s hostname port [player_name]\n", program);
@@ -47,16 +48,17 @@ int main(int argc, char const *argv[])
 
     // set address for the server
     addr_t server_address = message_noAddr();
-    if (!message_setAddr(hostname, port, server_address))
+    if (!message_setAddr(hostname, port, &server_address))
     {
         printf("%s: error initializing server address\n", program);
         return 3;
     }
 
     // initialize display
-    display_t *display = init_display();
-    if (!display) {
-        printf("%s: error allocating memory for the client's display\n", program);
+    display_t *display = init_display(server_address);
+    if (!display)
+    {
+        printf("%s: error initializing the client's display\n", program);
         return 4;
     }
 
@@ -72,16 +74,44 @@ int main(int argc, char const *argv[])
 
     // loop and wait for input or messages
     // TODO: write the handleInput function
-    bool exit_status = message_loop(display, 0, NULL, NULL, handleMessage);
+    bool exit_status = message_loop(display, 0, NULL, handleInput, handleMessage);
 
     // shut down the messaging module
     message_done();
+
+    // free display memory
+    mem_free(display);
 
     // return successfully
     return exit_status ? 0 : 1;
 }
 
-void send_play(const addr_t to, const char *name)
+bool handleInput(void *arg)
+{
+    // recast void * arg to display struct
+    display_t *display = (display_t *)arg;
+
+    // get server address
+    addr_t to = display->server_address;
+
+    // read one character at a time
+    char keystroke = getch();
+
+    // terminate game and message_loop if Ctrl + C is entered (or we reach EOF)
+    if (keystroke == CTRL('c') || keystroke == EOF)
+    {
+        return handle_quit("Goodbye!");
+    }
+
+    // otherwise send keystroke to server
+    else
+    {
+        send_key(to, keystroke);
+        return false;
+    }
+}
+
+void send_play(addr_t to, char *name)
 {
     // define string to carry information to server
     char message[message_MaxBytes];
@@ -93,16 +123,13 @@ void send_play(const addr_t to, const char *name)
     message_send(to, message);
 }
 
-void send_spectate(const addr_t to)
+void send_spectate(addr_t to)
 {
-    // define string to carry information to server
-    char *message = "SPECTATE";
-
     // send message
-    message_send(to, message);
+    message_send(to, "SPECTATE");
 }
 
-void send_key(const addr_t to, const char keystroke)
+void send_key(addr_t to, char keystroke)
 {
     // define string to carry information to server
     char message[message_MaxBytes];
@@ -116,8 +143,14 @@ void send_key(const addr_t to, const char keystroke)
 
 bool handleMessage(void *arg, const addr_t from, const char *message)
 {
-    // recast void * arg to display object
+    // recast void * arg to display struct
     display_t *display = (display_t *)arg;
+
+    // only accept messages from the server
+    if (!message_eqAddr(from, display->server_address))
+    {
+        return false;
+    }
 
     // return value for helper handler functions
     bool handler_return;
@@ -129,24 +162,24 @@ bool handleMessage(void *arg, const addr_t from, const char *message)
 
     if (strncmp(message, "OK ", strlen("OK ")) == 0)
     {
-        const char letter = message + strlen("OK ");
+        char letter = message[strlen("OK ")];
         handler_return = handle_ok(display, letter);
     }
     else if (strncmp(message, "GRID ", strlen("GRID ")) == 0)
     {
         int nrows, ncols;
-        sscanf(message, "GRID %d  %d", &nrows, &ncols);
+        sscanf(message, "GRID %d %d", &nrows, &ncols);
         handler_return = handle_grid(nrows, ncols);
     }
     else if (strncmp(message, "GOLD ", strlen("GOLD ")) == 0)
     {
         int n, p, r;
-        sscanf(message, "GOLD %d %d  %d", &n, &p & r);
+        sscanf(message, "GOLD %d %d %d", &n, &p, &r);
         handler_return = handle_gold(display, n, p, r);
     }
     else if (strncmp(message, "DISPLAY\n", strlen("DISPLAY\n")) == 0)
     {
-        const char *mapstring = message + strlen("DISPLAY");
+        char *mapstring = (char *)message + strlen("DISPLAY");
         handler_return = handle_display(display, mapstring);
     }
     else if (strncmp(message, "QUIT ", strlen("QUIT ")) == 0)
@@ -156,8 +189,8 @@ bool handleMessage(void *arg, const addr_t from, const char *message)
     }
     else if (strncmp(message, "ERROR ", strlen("ERROR ")) == 0)
     {
-        const char *explanation = message + strlen("ERROR");
-        handler_return = handle_error(explanation);
+        char *explanation = (char *)message + strlen("ERROR ");
+        handler_return = handle_error(display, explanation);
     }
     else
     {
@@ -165,19 +198,11 @@ bool handleMessage(void *arg, const addr_t from, const char *message)
         handler_return = false;
     }
 
-    // after handling each command, reprint the screen if:
-    //     a mapstring is present in the game and,
-    //     the game is still running (if handler return is false)
-    if (display->mapstring && !handler_return)
-    {
-        refresh();
-    }
-
-    // return false to continue message loop, false to terminate
+    // return false to continue message loop, true to terminate
     return handler_return;
 }
 
-bool handle_ok(const char letter)
+bool handle_ok(display_t *display, char letter)
 {
     // assign player letter
     display->player_letter = letter;
@@ -186,21 +211,21 @@ bool handle_ok(const char letter)
     return false;
 }
 
-bool handle_grid(const display_t *display, const int nrows, const int ncols)
+bool handle_grid(int nrows, int ncols)
 {
     // initialize ncurses display
     initscr(); // CURSES
 
     // accept input one keystroke at a time
-    cbreak();
+    cbreak(); // CURSES
 
     // do not display keystrokes on the screen
-    noecho();
+    noecho(); // CURSES
 
     // initialize a color pair for the display
-    start_color();
-    init_pair(1, COLOR_GREEN, COLOR_BLACK);
-    attron(COLOR_PAIR(1));
+    start_color();                          // CURSES
+    init_pair(1, COLOR_GREEN, COLOR_BLACK); // CURSES
+    attron(COLOR_PAIR(1));                  // CURSES
 
     // ensure window size is large enough to fit the display
     int x, y;
@@ -208,29 +233,24 @@ bool handle_grid(const display_t *display, const int nrows, const int ncols)
     {
         // prompt user to expand the window and wait for one second
         getmaxyx(stdscr, y, x);
-        printw("Please ensure the display window is atleast %d by %d.", nrows, ncols);
+        printw("Please ensure the display window is atleast %d by %d.", nrows, ncols); // CURSES
         sleep(1);
 
         // clear output from the window before starting the game
-        move(0, 0);
-        clrtoeol();
+        move(0, 0); // CURSES
+        clear(); // CURSES
     } while (y < (nrows + 1) || x < (ncols + 1));
+
+    // continue message loop
+    return false;
 }
 
-bool handle_gold(const display_t *display, const int n, const int p, const int r)
+bool handle_gold(display_t *display, int n, int p, int r)
 {
     // update gold stats
     display->n = n;
     display->p = p;
     display->r = r;
-
-    // announce that gold has been collected (if any has)
-    if (n > 0)
-    {
-        char gold_info[MAX_STATUS_LINE_LENGTH];
-        sprintf(gold_info, "GOLD received: %d", n);
-        display->supp_info = gold_info;
-    }
 
     // update the display
     update_display(display);
@@ -239,7 +259,7 @@ bool handle_gold(const display_t *display, const int n, const int p, const int r
     return false;
 }
 
-bool handle_display(const display_t *display, const char *mapstring)
+bool handle_display(display_t *display, char *mapstring)
 {
     // update the mapstring and update the display
     display->mapstring = mapstring;
@@ -255,33 +275,31 @@ bool handle_quit(const char *explanation)
     endwin(); // CURSES
 
     // print explanation
-    printf("%s\n", explanation);
+    printf("%s", explanation);
 
     // terminate message_loop
     return true;
 }
 
-bool handle_error(const display_t *display, const char *explanation)
+bool handle_error(display_t *display, char *explanation)
 {
-    // update the error explanation and update the display
-    display->supp_info = explanation;
-    update_display(display);
+    // display error next to the status line
+    mvprintw(0, MAX_STATUS_LINE_LENGTH, explanation);
 
     // return false to keep message_loop running
     return false;
 }
 
-void update_display(const display_t *display)
+void update_display(display_t *display)
 {
-    // construct the display only if a mapstring has been received from the server
-    char *mapstring = display->mapstring;
-    if (!mapstring)
+    // ensure at least the first mapstring has been received from the server
+    if (!display->mapstring)
     {
         return;
     }
 
-    // initialize status line
-    char status_line[MAX_STATUS_LINE_LENGTH];
+    // clear previous display
+    erase();
 
     // fetch player information
     int n = display->n;
@@ -289,40 +307,40 @@ void update_display(const display_t *display)
     int r = display->r;
     char letter = display->player_letter;
 
-    // construct status line from gold info and player letter
+    // display the status line
     // spectator
     if (letter == '_' && p == 0)
     {
-        sprintf(status_line, "Spectator: %d nuggets unclaimed. ", r);
+        mvprintw(0, 0, "Spectator: %d nuggets unclaimed. ", r);
     }
     // player
     else
     {
-        sprintf(status_line, "Player %c has %d nuggets (%d nuggets unclaimed). ", letter, p, r);
+        mvprintw(0, 0, "Player %c has %d nuggets (%d nuggets unclaimed). ", letter, p, r);
     }
 
-    // initialize display string
-    char *full_display[message_MaxBytes];
-
-    // concatenate the status line to the display string
-    strncat(full_display, status_line, strlen(status_line));
-
-    // if we have additional info, display it next to the status line
-    char *info = display->supp_info;
-    if (info)
+    // announce that gold has been collected (if any has)
+    if (n > 0)
     {
-        strncat(full_display, info, strlen(info));
+        // display error next to the status line
+        mvprintw(0, MAX_STATUS_LINE_LENGTH, "GOLD received: %d", n);
     }
 
-    // concatenate the mapstring to complete the display
-    strncat(full_display, mapstring, strlen(mapstring));
+    // finally display the mapstring
+    mvprintw(getcury(stdscr) + 1, 0, display->mapstring);  // CURSES
 
-    // print out the full display
-    mvprintw(0, 0, full_display); // CURSES
+    // render the full display
+    refresh();              // CURSES
 }
 
-display_t init_display()
+display_t *init_display(addr_t address)
 {
+    // ensure we have a valid server address
+    if (!message_isAddr(address))
+    {
+        return NULL;
+    }
+
     // allocate memory for the display, return NULL if memory cannot be allocated
     display_t *display = mem_malloc(sizeof(display_t));
     if (!display)
@@ -337,6 +355,7 @@ display_t init_display()
     display->player_letter = '_';
     display->mapstring = NULL;
     display->supp_info = NULL;
+    display->server_address = address;
 
     // return struct
     return display;

@@ -14,12 +14,13 @@
  */
 typedef struct display
 {
-    char player_letter; // player's letter (as displayed on the map)
-    int n;              // gold last collected by player
-    int p;              // gold in player's wallet
-    int r;              // gold remaining in the game
-    char *mapstring;    // string representation of the game's map
-    char *supp_info;    // holds additional info to be displayed 
+    char player_letter;     // player's letter (as displayed on the map)
+    int n;                  // gold last collected by player
+    int p;                  // gold in player's wallet
+    int r;                  // gold remaining in the game
+    char *mapstring;        // string representation of the game's map
+    char *supp_info;        // additional info to be displayed
+    addr_t server_address;  // server address for correspondence
 } display_t;
 
 /**************** functions ****************/
@@ -27,20 +28,20 @@ typedef struct display
 // handlers
 bool handleInput(void *arg);
 bool handleMessage(void *arg, const addr_t from, const char *message);
-bool handle_ok(const char letter);
-bool handle_grid(const display_t *display, const int nrows, const int ncols);
-bool handle_gold(const display_t *display, const int n, const int p, const int r);
-bool handle_display(const display_t *display, const char *mapstring);
+bool handle_ok(display_t *display, char letter);
+bool handle_grid(int nrows, int ncols);
+bool handle_gold(display_t *display, int n, int p, int r);
+bool handle_display(display_t *display, char *mapstring);
 bool handle_quit(const char *explanation);
-bool handle_error(const display_t *display, const char *explanation);
+bool handle_error(display_t *display, char *explanation);
 
 // senders
-void send_play(const addr_t to, const char *name);
-void send_key(const addr_t to, const char keystroke);
-void send_spectate(const addr_t to);
+void send_play(addr_t to, char *name);
+void send_key(addr_t to, char keystroke);
+void send_spectate(addr_t to);
 
 // other functions
-void update_display(const display_t *display);
-display_t* init_display();
+void update_display(display_t *display);
+display_t *init_display(addr_t address);
 
 #endif //__CLIENT_H
