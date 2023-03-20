@@ -19,7 +19,6 @@ typedef struct display
     int p;                  // gold in player's wallet
     int r;                  // gold remaining in the game
     char *mapstring;        // string representation of the game's map
-    char *supp_info;        // additional info to be displayed
     addr_t server_address;  // server address for correspondence
 } display_t;
 
@@ -33,7 +32,6 @@ bool handle_grid(int nrows, int ncols);
 bool handle_gold(display_t *display, int n, int p, int r);
 bool handle_display(display_t *display, char *mapstring);
 bool handle_quit(const char *explanation);
-bool handle_error(display_t *display, char *explanation);
 
 // senders
 void send_play(addr_t to, char *name);

@@ -191,10 +191,15 @@ handle_key(game_t* game, const addr_t from, const char keystroke) {
     return false;
   }
 
-  // handle quit keystroke i.e, send QUIT message and forget player
-  if (keystroke == 'Q') {
-    send_quit(from, "Thanks for playing!");
-    player_delete(player);
+  // handle quit keystroke i.e, send QUIT message
+  if (keystroke == 'q') {
+    if (is_spectator(player))
+    {
+      send_quit(from, "Thanks for spectating.");
+    }
+    else {
+      send_quit(from, "Thanks for playing.");
+    }
     return false;
   }
 
@@ -226,7 +231,7 @@ handle_key(game_t* game, const addr_t from, const char keystroke) {
   for (int i = 0; i < sizeof(valid_keys_upper); i++) {
     if (keystroke == valid_keys_upper[i]) {
       // move player as specified by keystroke
-      sprint_player(game, player, keystroke);
+      sprint_player(game, player, valid_keys_lower[i]);
 
       // terminate message loop if all gold nuggets have been collected
       if (get_gold_balance(game) == 0) {
