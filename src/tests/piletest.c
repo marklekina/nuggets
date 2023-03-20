@@ -47,10 +47,6 @@ main(const int argc, char* argv[]) {
   TRY { pile_delete(pile_A); } ENDTRY;
   TRY { pile_delete(pile_B); } ENDTRY;
 
-  // clean-up
-  point_delete(location_A);
-  point_delete(location_B);
-
   // complete testing
   testerReport(stdout, argv[0]);
 

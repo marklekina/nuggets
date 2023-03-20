@@ -62,8 +62,12 @@ pile_delete(pile_t* pile)
     return;
   }
 
+  // free pile location
+  point_delete(pile->location);
+
   // free pile memory
   mem_free(pile);
+  pile = NULL;
 }
 
 /**************** get_pile_location() ****************/
@@ -83,7 +87,18 @@ int
 get_gold(pile_t* pile)
 {
   if (pile == NULL) {
-    return -1;
+    return 0;
   }
   return pile->gold;
+}
+
+/**************** update_pile_balance() ****************/
+/* see pile.h for description */
+bool
+update_pile_balance(pile_t* pile) {
+  if (pile == NULL) {
+    return false;
+  }
+  pile->gold = 0;
+  return true;
 }

@@ -8,11 +8,13 @@ all:
 	make --directory=support
 	make --directory=modules
 	make --directory=tests
+	make --directory=main
 
 clean:
 	make clean --directory=support
 	make clean --directory=modules
 	make clean --directory=tests
+	make clean --directory=main
 
 test:
 	make test --directory=tests

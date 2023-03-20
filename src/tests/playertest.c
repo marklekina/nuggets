@@ -10,6 +10,7 @@
 #include "file.h"
 #include "point.h"
 #include "player.h"
+#include "message.h"
 
 int
 main(const int argc, char* argv[]) {
@@ -34,8 +35,13 @@ main(const int argc, char* argv[]) {
 
   player_t* player;
 
+  // generate random address for player
+  addr_t address, spec_address;
+  message_random_address(&address);
+
   // player_new
-  TRY { player = player_new(name, letter, location_A, visible_map_A); } ENDTRY;
+  TRY { player = player_new(name, letter, location_A, visible_map_A, address); }
+  ENDTRY;
   TEST_ASSERT(player);
 
   // get_name
@@ -57,6 +63,9 @@ main(const int argc, char* argv[]) {
   // get_wallet_balance
   TEST(get_wallet_balance(player), 0);
   TEST(get_wallet_balance(NULL), -1);
+
+  // get_address
+  TEST_ASSERT(message_eqAddr(address, get_address(player)));
 
   // update player information
   int row_B = rand() % 100;
@@ -90,12 +99,38 @@ main(const int argc, char* argv[]) {
   TEST_ASSERT(update_wallet_balance(player, gold_collected));
   TEST(get_wallet_balance(player), gold_collected);
 
+  // generate spectator information
+  player_t *spectator;
+  char* spec_name = strdup("_SPECTATOR_");
+  char* visible_map_C = strdup(visible_map_B);
+
+  // generate random address for spectator
+  message_random_address(&spec_address);
+
+  // create spectator
+  TRY { spectator = player_new(spec_name, '_', NULL, visible_map_C, spec_address); }
+  ENDTRY;
+  TEST_ASSERT(spectator);
+
+  // is_spectator
+  TEST_ASSERT(is_spectator(spectator));
+  TEST_ASSERT(!is_spectator(player));
+
+  // update_spectator
+  TEST_ASSERT(message_eqAddr(spec_address, get_address(spectator)));
+  TEST_ASSERT(update_spectator(spectator, address));
+  TEST_ASSERT(message_eqAddr(address, get_address(spectator)));
+
   // player_delete
-  TRY { player_delete(player); } ENDTRY;
+  TRY { 
+    player_delete(player);
+    player_delete(spectator);
+  }
+  ENDTRY;
 
   // clean-up
-  mem_free(visible_map_A);
   point_delete(location_A);
+  point_delete(location_B);
 
   // complete testing
   testerReport(stdout, argv[0]);

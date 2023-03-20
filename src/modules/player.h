@@ -9,6 +9,9 @@
 #ifndef __PLAYER_H
 #define __PLAYER_H
 
+#include "point.h"
+#include "message.h"
+
 /**************** global types ****************/
 typedef struct player player_t;
 
@@ -34,7 +37,8 @@ player_t* player_new(
   char* name,
   char letter,
   point_t* location,
-  char* visible_map
+  char* visible_map,
+  addr_t address
 );
 
 /**************** player_delete ****************/
@@ -88,6 +92,18 @@ char get_letter(player_t* player);
  *   a pointer to the player's location.
  */
 point_t* get_location(player_t* player);
+
+/**************** get_address ****************/
+/*
+ * returns the player client's Internet address.
+ *
+ * caller provides:
+ *   a valid player pointer.
+ *
+ * we return:
+ *   the player's address.
+ */
+addr_t get_address(player_t* player);
 
 /**************** update_location ****************/
 /*
@@ -154,5 +170,26 @@ int get_wallet_balance(player_t* player);
  *    false otherwise
  */
 bool update_wallet_balance(player_t* player, int gold);
+
+
+/**************** is_spectator ****************/
+/*
+ *
+ */
+bool is_spectator(player_t* player);
+
+
+/**************** update_spectator ****************/
+/*
+ *
+ */
+bool update_spectator(player_t* spectator, const addr_t address);
+
+
+/**************** compare_player_wallet ****************/
+/*
+ *
+ */
+int compare_player_wallets(const void* player_a, const void* player_b);
 
 #endif // __PLAYER_H

@@ -134,6 +134,7 @@ grid_delete(grid_t* grid)
 
   // free grid memory
   mem_free(grid);
+  grid = NULL;
 }
 
 
@@ -243,6 +244,11 @@ compute_visibility(grid_t* grid, point_t* pointA, point_t* pointB) {
   // validate points
   if (pointA == NULL || pointB == NULL) {
     return false;
+  }
+
+  // if same point return true
+  if (is_same_location(pointA, pointB)) {
+    return true;
   }
 
   // fetch coordinates from grid points

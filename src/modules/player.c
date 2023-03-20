@@ -8,7 +8,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "mem.h"
+#include "message.h"
 #include "point.h"
 #include "player.h"
 
@@ -20,6 +22,7 @@ typedef struct player {
   point_t* location;    // player location
   char* visible_map;    // section of the map that's visible to the player
   int wallet;           // holds gold collected by player
+  addr_t address;       // player client's Internet address
 } player_t;
 
 /**************** functions ****************/
@@ -27,14 +30,23 @@ typedef struct player {
 /**************** player_new() ****************/
 /* see player.h for description */
 player_t*
-player_new(char* name, char letter, point_t* location, char* visible_map)
+player_new(char* name, char letter, point_t* location, char* visible_map, addr_t address)
 {
   // validate parameters
-  if (name == NULL || location == NULL || visible_map == NULL) {
+  if (name == NULL || visible_map == NULL) {
+    return NULL;
+  }
+
+  // allow NULL location only if spectator
+  if (strcmp(name, "_SPECTATOR_") != 0 && location == NULL) {
     return NULL;
   }
 
   if (letter == '\0') {
+    return NULL;
+  }
+
+  if (!message_isAddr(address)) {
     return NULL;
   }
 
@@ -52,6 +64,7 @@ player_new(char* name, char letter, point_t* location, char* visible_map)
   player->location = location;
   player->visible_map = visible_map;
   player->wallet = 0;
+  player->address = address;
 
   // return struct
   return player;
@@ -70,10 +83,10 @@ player_delete(player_t* player)
   // free player variables memory
   mem_free(player->name);
   mem_free(player->visible_map);
-  point_delete(player->location);
 
   // free player memory
   mem_free(player);
+  player = NULL;
 }
 
 
@@ -98,6 +111,18 @@ get_letter(player_t* player)
     return (char) 0;
   }
   return player->letter;
+}
+
+
+/**************** get_address() ****************/
+/* see player.h for description */
+addr_t
+get_address(player_t* player)
+{
+  if (player == NULL) {
+    return message_noAddr();
+  }
+  return player->address;
 }
 
 
@@ -150,6 +175,7 @@ update_visible_map(player_t* player, char* visible_map) {
   }
 
   // assign visible map string to player
+  mem_free(player->visible_map);
   player->visible_map = visible_map;
   return true;
 }
@@ -178,4 +204,61 @@ update_wallet_balance(player_t* player, int gold) {
   // otherwise add gold collected to player's wallet
   player->wallet += gold;
   return true;
+}
+
+
+/************ is_spectator() ************/
+/* see player.h for description */
+bool
+is_spectator(player_t* player) {
+  // validate parameters
+  if (player == NULL) {
+    return false;
+  }
+
+  // get player information
+  char* name = get_name(player);
+  char letter = get_letter(player);
+  point_t* location = get_location(player);
+  int wallet = get_wallet_balance(player);
+
+  // check that info matches spectator information and return successfully
+  if (wallet == 0 && letter == '_' && location == NULL && strcmp(name, "_SPECTATOR_") == 0) {
+    return true;
+  }
+
+  // otherwise return unsuccessfully
+  return false;
+}
+
+
+/************ update_spectator() ************/
+/* see player.h for description */
+bool
+update_spectator(player_t* spectator, const addr_t address) {
+  // validate parameters
+  if (spectator == NULL || !message_isAddr(address)) {
+    return false;
+  }
+
+  // set spectator's address to new address
+  spectator->address = address;
+  return true;
+}
+
+
+/************ compare_player_wallets() ************/
+/* see player.h for description */
+int
+compare_player_wallets(const void* a, const void* b) {
+  // cast arguments to player_t*
+  player_t* player_a = *(player_t**) a;
+  player_t* player_b = *(player_t**) b;
+
+  // get wallet balance for both players
+  int wallet_a = get_wallet_balance(player_a);
+  int wallet_b = get_wallet_balance(player_b);
+
+  // compute and return the "reverse" difference (reverse for descending order)
+  return wallet_b - wallet_a;
 }

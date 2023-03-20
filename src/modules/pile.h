@@ -72,4 +72,6 @@ point_t* get_pile_location(pile_t* pile);
  */
 int get_gold(pile_t* pile);
 
+bool update_pile_balance(pile_t* pile);
+
 #endif // __PILE_H

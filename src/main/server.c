@@ -1,296 +1,646 @@
 /*
- * game.c - 'game' module
+ * server.c - server program for the Nuggets game
  *
- * see game.h for more information.
+ * see server.h for more information.
  *
- * Mark Lekina Rorat, December 2021; November 2022
+ * Mark Lekina Rorat, December 2022
  */
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "mem.h"
+#include <unistd.h>
+#include <ctype.h>
+#include <string.h>
 #include "file.h"
-#include "log.h"
+#include "message.h"
 #include "point.h"
 #include "pile.h"
 #include "grid.h"
 #include "player.h"
 #include "game.h"
-##include "server.h"
+#include "server.h"
 
-/**************** file-local global variables ****************/
-game_t* game;
-
-/**************** functions ****************/
-
-/**************** distribute_gold() ****************/
-/* see server.h for description */
-bool
-distribute_gold(game_t* game, int min_piles, int max_piles) {
-  // validate parameters
-  if (game == NULL) {
-    log_v("distribute_gold: NULL game pointer passed to function");
-    return false;
-  }
-
-  // generate random number of piles between specified range
-  int num_piles = rand() % (max_piles - min_piles + 1)) + min_piles;
-  game->num_piles = num_piles;
-
-  // 1. distribute the gold among the piles randomly
-
-  // variables to hold gold amounts
-  int gold_to_distribute = game->gold_balance;
-  int gold_amounts[num_piles];
-  int gold_avg = gold_to_distribute / num_piles;
-
-  // distribute gold among piles in random amounts
-  for (int i = 0; i < num_piles; i++) {
-    gold_amounts[i] = rand() % gold_avg;
-    gold_to_distribute -= gold_amounts[i];
-  }
-
-  // distribute the remaining gold sequentially
-  int i = 0;
-  while (gold_to_distribute > 0) {
-    gold_amounts[i] += 1;
-    gold_to_distribute -= 1;
-    i = (i + 1) % num_piles;
-  }
-
-  // 2. select random room spots to place the gold piles
-
-  // variables to hold location data
-  int row, column;
-  grid_t* grid = game->grid;
-  point_t* pile_location;
-  point_t* pile_locations[num_piles];
-
-  // compute random location to drop each gold pile i.e., ensure that locations picked
-  //  - are room spots
-  //  - the locations have not been picked already for a different pile
-  for (int i = 0; i < num_piles; i++) {
-    do {
-      row = rand() % get_nrows(grid);
-      col = rand() % get_ncols(grid);
-      pile_location = get_gridpoint(grid, row, col);
-    }
-    while(!is_room_spot(pile_location) || is_point_in_list(pile_location, pile_locations));
-
-    // add location to list of pile locations
-    pile_locations[i] = pile_location;
-  }
-
-  // 3. combine gold amount and location data and create gold piles
-
-  // add new piles to the games pile list
-  for (int i = 0; i < num_piles; i++) {
-    pile_t* pile = pile_new(pile_locations[i], gold_amounts[i]);
-    game->piles[i] = pile;
-  }
-
-  // return successfully
-  return true;
-}
+// global constants
+static const int MaxNameLength = 50;   // max number of chars in playerName
+static const int MaxPlayers = 26;      // maximum number of players
+static const int GoldTotal = 250;      // amount of gold in the game
+static const int GoldMinNumPiles = 10; // minimum number of gold piles
+static const int GoldMaxNumPiles = 30; // maximum number of gold piles
 
 
-/**************** add_player() ****************/
-/* see server.h for description */
-bool
-add_player(game_t* game, player_t* player, int max_players) {
-  // validate parameters
-  if (game == NULL || player == NULL) {
-    log_v("add_player: NULL pointer(s) passed to function");
-    return false;
-  }
-
-  // check to ensure that the number of players does not exceed the maximum allowed
-  if (game->num_players >= max_players) {
-    log_v("add_player: maximum number of players reached");
-    return false;
-  }
-
-  // add player to player array
-  game->players[game->num_players] = player;
-
-  // increment number of players in game
-  game->num_players = game->num_players + 1;
-
-  // return true
-  return true;
-}
-
-
-/**************** move_player() ****************/
-/* see server.h for description */
-bool
-move_player(game_t* game, player_t* player, point_t* point) {
-  // validate parameters
-  if (game == NULL || player == NULL || point == NULL) {
-    log_v("move_player: NULL pointer(s) passed to function");
-    return false;
-  }
-
-  // 1. Switch locations with an occupant player (if target location is occupied)
-
-  // loop through list of players
-  for (int i = 0; i < game->num_players; i++) {
-    player_t* player_occupant = game->players[i];
-
-    // check if destination spot is occupied by any of the players
-    if (is_same_location(point, get_location(player_occupant))) {
-
-      // switch the occupant player to the moving player's location
-      bool switched_location = update_location(player_occupant, get_location(player));
-
-      // log unsuccessful location switch
-      if (!switched_location) {
-        log_v("move_player: error switching player locations");
-        return false;
-      }
-      break;
-    }
-  }
-
-  // 2. Move the player to the desired location
-
-  // move the player onto the desired location
-  bool moved_player = update_location(player, point);
-
-  // log unsuccessful player movement
-  if (!moved_player) {
-    log_v("move_player: error moving player");
-    return false;
-  }
-
-  // 3. Collect gold if necessary
-
-  // loop through list of gold piles
-  for (int i = 0; i < game->num_piles; i++) {
-    pile_t* pile = game->piles[i];
-
-    // check if destination spot is occupied by any of the gold piles
-    if (is_same_location(point, get_location(pile))) {
-
-      // add the gold into the player's wallet
-      int gold_collected = collect_gold(game, player, pile);
-
-      // log unsuccessful gold collection
-      if (gold_collected < 0) {
-        log_v("move_player: error collecting gold from pile");
-        return false;
-      }
-      break;
-    }
-  }
-
-  // return successfully
-  return true;
-}
-
-
-/**************** collect_gold() ****************/
-/* see server.h for description */
 int
-collect_gold(game_t* game, player_t* player, pile_t* pile) {
-  // validate parameters
-  if (game == NULL || player == NULL || pile == NULL) {
-    log_v("collect_gold: NULL pointer(s) passed to function");
-    return -1;
-  }
+main(int argc, char const *argv[]) {
+ // validate parameters
+ const char* program = argv[0];
+ if (argc < 2 || argc > 3) {
+   printf("usage: %s mapfile [seed]\n", program);
+   return(0);
+ }
 
-  // 1. Add gold from pile to a player's wallet
-  int gold_collected = get_gold(pile);
-  bool added_gold = update_wallet_balance(player, gold_collected);
+ // set seed for random behavior
+ int seed = getpid();
+ if (argc == 3) {
+   seed = atoi(argv[2]);
+ }
+ srand(seed);
 
-  // log unsuccessful addition of gold to player's wallet
-  if (!added_gold) {
-    log_v("collect_gold: error adding gold to player's wallet");
-    return -1;
-  }
+ // read map string into the game
+ const char* mapfile_path = argv[1];
+ FILE* fp = fopen(mapfile_path, "r");
 
-  // 2. Delete the gold pile
-  pile_delete(pile);
+ // create game instance
+ game_t* game = game_new(fp, MaxPlayers, GoldMaxNumPiles, GoldTotal);
+ if (game == NULL) {
+   return 2;
+ }
 
-  // 3. Update the amount of gold remaining in the game
-  game->gold_balance -= gold_collected;
+ // close map file
+ fclose(fp);
 
-  // return successfully
-  return gold_collected;
+ // distribute gold
+ bool game_init = distribute_gold(game, GoldMinNumPiles, GoldMaxNumPiles);
+ if (!game_init) {
+   return 2;
+ }
+
+ // initialize the message module
+ int myPort = message_init(stderr);
+ if (myPort == 0) {
+   printf("%s: failed to initialize the message module\n", program);
+   return 3;
+ }
+
+ // announce port number
+ printf("%s: ready for contact at port %d\n", program, myPort);
+
+ // loop and wait for input or messages
+ bool ok = message_loop(game, 0, NULL, NULL, handleMessage);
+
+ // free game memory and shut down the messaging module
+ message_done();
+ game_delete(game);
+
+ // announce end of game session
+ printf("%s: game over; terminating session\n", program);
+ sleep(1);
+
+ // return successfully
+ return ok? 0 : 1;
 }
 
-// check player location to see if they're on a gold pile - server level
-// add gold in pile to player's purse - player level
-// update gold remaining in game - game level
-// delete gold pile - game level
 
+// handler functions
+bool
+handleMessage(void* arg, const addr_t from, const char* message) {
+  // cast arg to game pointer
+  game_t* game  = (game_t*) arg;
 
-/**************** build_visible_mapstring() ****************/
-/* see server.h for description */
-char*
-build_visible_mapstring(game_t* game, player_t* player) {
-  // validate parameters
-  if (game == NULL || player == NULL) {
-    log_v("build_visible_mapstring: NULL pointer(s) passed to function");
-    return NULL;
+  // return value for helper handler functions
+  bool handler_return;
+
+  // check type of message and handle appropriately
+  if (strncmp(message, "PLAY ", strlen("PLAY ")) == 0) {
+    // send to PLAY handler
+    const char* name = message + strlen("PLAY ");
+    handler_return = handle_play(game, from, name);
+  }
+  else if (strncmp(message, "SPECTATE", strlen("SPECTATE")) == 0) {
+    // send to SPECTATE handler
+    handler_return = handle_spectate(game, from);
+  }
+  else if (strncmp(message, "KEY ", strlen("KEY ")) == 0  && strlen(message) > strlen("KEY ")) {
+    // send to KEY handler
+    const char keystroke = message[strlen("KEY ")];
+    handler_return = handle_key(game, from, keystroke);
+  }
+  else {
+    // send error message to correspondent
+    send_error(from, "malformatted message");
+    handler_return = false;
   }
 
-  grid_t* grid = game->grid;
-  player_t** players = game->players;
-  pile_t** goldPiles = game->piles;
+  // return false to continue message loop, false to terminate
+  return handler_return;
+}
 
-  // validate the game's grid, gold piles and players array
-  if (grid == NULL || players == NULL || goldPiles == NULL) {
-    log_v("build_visible_mapstring: NULL values for grid, piles or players");
-    return NULL;
-  }
-  // fetch grid size
-  int grid_size = get_size(grid);
 
-  // load grid points array from grid, ensure it is valid and contains grid points
-  point_t** gridPoints = grid->gridPoints;
-  if (gridPoints == NULL || gridPoints[i] == NULL) {
-    log_v("build_visible_mapstring: error fetching gridpoints array from grid");
-    return NULL;
+bool
+handle_play(game_t* game, const addr_t from, const char* name) {
+  // send QUIT message if no player name is provided
+  if (name == NULL || strlen(name) == 0) {
+    send_quit(from, "Sorry - you must provide player's name.");
+    return false;
   }
 
-  // loop through the grid points and lay them out in a map string
-  char* mapString = (char) mem_malloc(sizeof(char) * (grid->size + 1));
-  for (int i = 0; i < grid_size; i++) {
-    mapString[i] = get_symbol(gridPoints[i]);
-  }
-  mapString[grid_size] = "\0";
-
-  // loop through all gold piles and replace grid point symbol with asterisk
-  for (int i = 0; i < strlen(goldPiles); i++) {
-    point_t* pile_location = get_location(goldPiles[i]);
-    int idx = get_row(pile_location) * grid->ncols + get_col(pile_location);
-    mapString[idx] = "*";
+  // send QUIT message if the maximum number of players in the game has been reached
+  if (get_num_players(game) == MaxPlayers) {
+    send_quit(from, "Game is full: no more players can join.");
+    return false;
   }
 
-  // loop through all players and replace grid point symbol with player letters
-  for (int i = 0; i < strlen(players); i++) {
-    point_t* player_location = get_location(players[i]);
-    int idx = get_row(player_location) * grid->ncols + get_col(player_location);
-    if (players[i] == player) {
-      mapString[idx] = "@";
+  // truncate player's name to MaxNameLength
+  int len = strlen(name) > MaxNameLength? MaxNameLength : strlen(name);
+  char* name_copy = strndup(name, len);
+
+  // replace non_printing characters with _
+  for (int i = 0; i < len; i++) {
+    if (!isgraph(name_copy[i]) && !isblank(name_copy[i])) {
+      name_copy[i] = '_';
+    }
+  }
+
+  // add player to game
+  player_t* player = add_player(game, from, name_copy);
+
+  // send player information to the client
+  // OK message
+  char player_letter = get_letter(player);
+  send_ok(from, player_letter);
+
+  // GRID message
+  int nrows = get_nrows(get_grid(game));
+  int ncols = get_ncols(get_grid(game));
+  send_grid(from, nrows, ncols);
+
+  // GOLD message
+  int n = 0;                            // gold amount collected
+  int p = get_wallet_balance(player);   // gold amount in player's wallet
+  int r = get_gold_balance(game);       // gold amount remaining in the game
+  send_gold(from, n, p, r);
+
+  // DISPLAY message
+  char* visible_map = get_visible_map(player);
+  send_display(from, visible_map);
+
+  // announce new player
+  printf("player %-3c: new client at address %s\n", player_letter, message_stringAddr(from));
+
+  // return false to keep message_loop running
+  return false;
+}
+
+
+bool
+handle_key(game_t* game, const addr_t from, const char keystroke) {
+  // locate player in the game whose client sent the keystroke
+  player_t* player = get_player_by_address(game, from);
+
+  // error locating keystroke sender
+  if (player == NULL) {
+    send_error(from, "Server is unable to locate the player matching this client.");
+    return false;
+  }
+
+  // handle quit keystroke i.e, send QUIT message
+  if (keystroke == 'q') {
+    if (is_spectator(player))
+    {
+      send_quit(from, "Thanks for spectating.");
     }
     else {
-      mapString[idx] = get_letter(players[i]);
+      send_quit(from, "Thanks for playing.");
+    }
+    return false;
+  }
+
+  // define valid move keystrokes
+  char valid_keys_lower[] = {'y', 'k', 'u', 'h', 'l', 'b', 'j', 'n'};
+
+  // handle move keystroke
+  for (int i = 0; i < sizeof(valid_keys_lower); i++) {
+    if (keystroke == valid_keys_lower[i]) {
+      // move player as specified by keystroke
+      move_player(game, player, keystroke);
+
+      // terminate message loop if all gold nuggets have been collected
+      if (get_gold_balance(game) == 0) {
+        return true;
+      }
+      // otherwise keep looping
+      return false;
     }
   }
 
-  // loop through each gridpoint
-  player_location = get_location(player);
-  for (int i = 0; i < grid_size; i++) {
-    bool is_visible = compute_visibility(grid, player_location, gridPoints[i]);
+  // define valid sprint keystrokes
+  char valid_keys_upper[sizeof(valid_keys_lower)];
+  for (int i = 0; i < sizeof(valid_keys_lower); i++) {
+    valid_keys_upper[i] = toupper(valid_keys_lower[i]);
+  }
 
-    // replace grid point symbol with ' ' if grid point not visible to the player
-    if (!is_visible) {
-      mapString[i] = ' ';
+  // handle sprint keystroke
+  for (int i = 0; i < sizeof(valid_keys_upper); i++) {
+    if (keystroke == valid_keys_upper[i]) {
+      // move player as specified by keystroke
+      sprint_player(game, player, valid_keys_lower[i]);
+
+      // terminate message loop if all gold nuggets have been collected
+      if (get_gold_balance(game) == 0) {
+        return true;
+      }
+      // otherwise keep looping
+      return false;
     }
   }
 
-  // return map string
-  return mapString;
+  // handle erroneous keystroke
+  send_error(from, "Invalid keystroke detected.");
+  return false;
+}
+
+
+bool
+handle_spectate(game_t* game, const addr_t from) {
+  // send QUIT message to current spectator (if present)
+  player_t* spectator = get_spectator(game);
+
+  // add new spectator if absent from the game
+  if (!spectator) {
+    char* name = strdup("_SPECTATOR_");
+    spectator = add_player(game, from, name);
+  }
+  else {
+    addr_t spectator_addr = get_address(spectator);
+    if (message_isAddr(spectator_addr)) {
+      send_quit(spectator_addr, "You have been replaced by a new spectator.");
+    }
+  }
+
+  // assign new spectator to the game
+  bool new_spectator = update_spectator(spectator, from);
+  if (!new_spectator) {
+    send_quit(from, "server unable to add new spectator");
+    return false;
+  }
+
+  // send game information to new spectator
+  // GRID message
+  int nrows = get_nrows(get_grid(game));
+  int ncols = get_ncols(get_grid(game));
+  send_grid(from, nrows, ncols);
+
+  // GOLD message
+  int n = 0;                            // gold amount collected
+  int p = 0;                            // gold amount in spectator's wallet
+  int r = get_gold_balance(game);       // gold amount remaining in the game
+  send_gold(from, n, p, r);
+
+  // DISPLAY message
+  char* visible_map = get_visible_map(spectator);
+  send_display(from, visible_map);
+
+  // announce new spectator
+  printf("spectator : new client at address %s\n", message_stringAddr(from));
+
+  // return false to keep message_loop running
+  return false;
+}
+
+
+// sender functions
+
+void
+send_ok(const addr_t to, const char letter) {
+  // define string to carry information to client
+  char message[message_MaxBytes];
+
+  // format message
+  sprintf(message, "OK %c", letter);
+
+  // send message
+  message_send(to, message);
+}
+
+
+void
+send_grid(const addr_t to, const int nrows, const int ncols) {
+  // define string to carry information to client
+  char message[message_MaxBytes];
+
+  // format message
+  sprintf(message, "GRID %d %d", nrows, ncols);
+
+  // send message
+  message_send(to, message);
+}
+
+
+void
+send_gold(const addr_t to, const int n, const int p, const int r) {
+  // define string to carry information to client
+  char message[message_MaxBytes];
+
+  // format message
+  sprintf(message, "GOLD %d %d %d", n, p, r);
+
+  // send message
+  message_send(to, message);
+}
+
+
+void
+send_display(const addr_t to, const char* mapstring) {
+  // define string to carry information to client
+  char message[message_MaxBytes];
+
+  // format message
+  sprintf(message, "DISPLAY\n%s", mapstring);
+
+  // send message
+  message_send(to, message);
+}
+
+
+void
+send_quit(const addr_t to, const char* explanation) {
+  // define string to carry information to client
+  char message[message_MaxBytes];
+
+  // format message
+  int len = strlen("QUIT ") + strlen(explanation);
+  snprintf(message, len, "QUIT %s", explanation);
+
+  // send message
+  message_send(to, message);
+}
+
+
+void
+send_error(const addr_t to, const char* explanation) {
+  // define string to carry information to client
+  char message[message_MaxBytes];
+
+  // format message
+  int len = strlen("ERROR ") + strlen(explanation);
+  snprintf(message, len, "ERROR %s", explanation);
+
+  // send message
+  message_send(to, message);
+}
+
+
+bool
+collect_gold(game_t* game, player_t* player, pile_t* pile) {
+  // 1. fetch gold from gold pile
+  int gold_collected = get_gold(pile);
+  if (gold_collected == -1) {
+    return false;
+  }
+
+  // 2. add gold to player's purse
+  bool updated_wallet = update_wallet_balance(player, gold_collected);
+  if (!updated_wallet) {
+    return false;
+  }
+
+  // 3. remove pile from game (i.e., set gold balance to zero)
+  update_pile_balance(pile);
+
+  // 4. subtract gold from gold_balance
+  update_gold_balance(game, gold_collected);
+
+  // announce gold pile collected
+  printf("player %-3c: collected %2d nuggets\n", get_letter(player), gold_collected);
+
+  // 5. send gold messages
+  addr_t to = get_address(player);
+  int wallet_balance = get_wallet_balance(player);
+  int gold_balance = get_gold_balance(game);
+
+  // i) send GOLD message to the player that just collected the gold
+  send_gold(to, gold_collected, wallet_balance, gold_balance);
+
+  // ii) send GOLD message to everyone else
+  // spectator (if present)
+  player_t* player_b = get_spectator(game);
+  if (player_b) {
+    to = get_address(player_b);
+    wallet_balance = get_wallet_balance(player_b);  // should always be zero for spectator
+    send_gold(to, 0, wallet_balance, gold_balance);
+  }
+
+  // players
+  // loop through list of players
+  int num_players = get_num_players(game);
+  player_t** players = get_players(game);
+
+  for (int i = 0; i < num_players; i++) {
+    player_b = players[i];
+
+    // skip deleted players
+    if (!player_b) {
+      continue;
+    }
+
+    // send GOLD message to each player
+    to = get_address(player_b);
+    wallet_balance = get_wallet_balance(player_b);
+    send_gold(to, 0, wallet_balance, gold_balance);
+  }
+
+  // 6. send QUIT GAME OVER message if all the gold in the game has been collected
+  if (get_gold_balance(game) == 0) {
+    // prepare GAME OVER message
+    char* game_over_report = compile_game_over_report(game);
+
+    // spectator (if present)
+    player_b = get_spectator(game);
+    if (player_b) {
+      to = get_address(player_b);
+      send_quit(to, game_over_report);
+    }
+
+    // players
+    // loop through players list and send QUIT GAME OVER message
+    for (int i = 0; i < num_players; i++) {
+      player_b = players[i];
+
+      // skip deleted players
+      if (!player_b) {
+        continue;
+      }
+
+      to = get_address(player_b);
+      send_quit(to, game_over_report);
+    }
+  }
+
+  // return successfully
+  return true;
+}
+
+
+point_t*
+move_player(game_t* game, player_t* player, const char keystroke) {
+  // get target location
+  point_t* target = get_target_location(game, player, keystroke);
+
+  // move player
+  bool moved_player = run_move_sequence(game, player, target);
+
+  // return new location
+  if (moved_player) {
+    return target;
+  }
+
+  // otherwise return old location
+  return get_location(player);
+}
+
+
+point_t*
+sprint_player(game_t* game, player_t* player, const char keystroke) {
+  // pointers to hold player's location
+  point_t *prev, *curr;
+
+  // move player in specified location until it is no longer possible
+  do {
+    prev = get_location(player);
+    curr = move_player(game, player, keystroke);
+  } while(!is_same_location(prev, curr));
+
+  // return the player's new location
+  return curr;
+}
+
+
+bool
+run_move_sequence(game_t* game, player_t* player, point_t* target) {
+  // indicators of successful execution of various steps in the sequence
+  bool switched_location = true;
+  bool moved_to_target = true;
+  bool collected_gold = true;
+  bool updated_mapstring = true;
+
+  // 1. verify that the target location is valid
+  if (target == NULL || !is_spot(target)) {
+    return false;
+  }
+
+  // 2. switch locations if target location is occupied
+  int num_players = get_num_players(game);
+  player_t** players = get_players(game);
+  player_t* player_b;
+
+  // loop through list of players
+  for (int i = 0; i < num_players; i++) {
+    player_b = players[i];
+
+    // skip deleted players and spectator
+    if (player_b == NULL || is_spectator(player_b)) {
+      continue;
+    }
+
+    // check if target location is occupied
+    if (is_same_location(target, get_location(player_b))) {
+      // switch the occupant player to the moving player's location
+      switched_location = update_location(player_b, get_location(player));
+      break;
+    }
+  }
+
+  // 3. move player to target location
+  moved_to_target = update_location(player, target);
+
+  // 4. check for gold in target location and collect gold (and broadcast GOLD messages)
+  int num_piles = get_num_piles(game);
+  pile_t** piles = get_piles(game);
+  pile_t* pile;
+
+  // loop through list of gold piles
+  for (int i = 0; i < num_piles; i++) {
+    pile = piles[i];
+
+    // skip deleted piles
+    if (pile == NULL || get_gold(pile) == 0) {
+      continue;
+    }
+
+    // check there's a gold pile on the target location
+    if (is_same_location(target, get_pile_location(pile))) {
+      // collect gold and send GOLD messages
+      collected_gold = collect_gold(game, player, pile);
+      break;
+    }
+  }
+
+  // 5. update visible maps and send DISPLAY messages
+  addr_t to;
+
+  // spectator (if present)
+  player_b = get_spectator(game);
+  if (player_b) {
+    // update visible map for the spectator
+    updated_mapstring = build_visible_mapstring(game, player_b);
+
+    // send updated display
+    to = get_address(player_b);
+    send_display(to, get_visible_map(player_b));
+  }
+
+  // players
+  // loop through list of players
+  for (int i = 0; i < num_players; i++) {
+    player_b = players[i];
+
+    // skip deleted players
+    if (player_b == NULL) {
+      continue;
+    }
+
+    // update display for each player
+    updated_mapstring = build_visible_mapstring(game, player_b) && updated_mapstring;
+
+    // send updated display to each player
+    to = get_address(player_b);
+    send_display(to, get_visible_map(player_b));
+  }
+
+  // return true if all steps of the sequence were successful
+  return switched_location && moved_to_target && collected_gold && updated_mapstring;
+}
+
+
+char*
+compile_game_over_report(game_t* game) {
+  // define string to hold report (test: why is this static?)
+  static char report[message_MaxBytes];
+  strncat(report, "GAME OVER:\n", strlen("GAME OVER:\n"));
+
+  // get list of players in the game
+  int num_players = get_num_players(game);
+  player_t** players = get_players(game);
+
+  // sort players by wallet balance
+  qsort((void*) players, num_players, sizeof(players[0]), compare_player_wallets);
+
+  // variables to hold player info
+  player_t* player;
+  char player_letter;
+  int player_wallet;
+  char* player_name;
+
+  // loop through list of players
+  for (int i = 0; i < num_players; i++) {
+    player = players[i];
+
+    // skip deleted players
+    if (!player || is_spectator(player)) {
+      continue;
+    }
+
+    // get player information
+    player_letter = get_letter(player);
+    player_wallet = get_wallet_balance(player);
+    player_name = get_name(player);
+
+    // construct string representation of player information
+    char player_info[MaxNameLength + 12];
+    sprintf(player_info, "%-3c %4d  %s\n", player_letter, player_wallet, player_name);
+
+    // concatenate player info to report
+    strncat(report, player_info, strlen(player_info));
+  }
+
+  // return complete report
+  return report;
 }
