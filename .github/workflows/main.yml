@@ -1,18 +1,16 @@
 name: C CI Workflow
 
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+on: [push, pull_request]
 
 jobs:
   build:
-
     runs-on: macos-latest
 
     steps:
     - uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: brew install make
 
     - name: Build dependencies
       run: make
@@ -22,3 +20,7 @@ jobs:
 
     - name: Memory leaks testing
       run: make leaks
+
+    - name: Clean-up
+      run: make clean
+
