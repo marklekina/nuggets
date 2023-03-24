@@ -37,7 +37,7 @@ fi
 
 # launch client
 if [[ -n "$player" ]]; then
-    $dir/client 2>$player.log $serverHost $serverPort $player
+    $dir/client 2>"$player".log $serverHost $serverPort "$player"
 else
     $dir/client 2>spectator.log $serverHost $serverPort
 fi
