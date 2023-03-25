@@ -41,13 +41,13 @@ playertest.o: playertest.c $M/player.h $M/point.h $S/tester.h $S/file.h $S/mem.h
 gridtest.o: gridtest.c $M/grid.h $M/point.h $S/tester.h $S/file.h $S/mem.h
 gametest.o: gametest.c $M/game.h $M/grid.h $M/player.h $M/pile.h $M/point.h $S/tester.h $S/mem.h
 
-# expects bash script `testing.sh` to exist.
-test: $(TESTS) testing.sh
-	sh testing.sh
+# expects bash script `runtests.sh` to exist.
+test: $(TESTS) runtests.sh
+	sh runtests.sh
 
-# expects bash script `testing.sh` to exist.
-leaks: $(TESTS) testing.sh
-	cat testing.sh | xargs -n1 $(LEAKS)
+# expects bash script `runtests.sh` to exist.
+leaks: $(TESTS) runtests.sh
+	cat runtests.sh | xargs -n1 $(LEAKS)
 
 clean:
 	rm -rf *.dSYM
