@@ -30,7 +30,7 @@ main(const int argc, char* argv[]) {
   int gold_balance = 250;
 
   // game map file
-  FILE* fp = fopen("../../data/maps/big.txt", "r");
+  FILE* fp = fopen("../../maps/big.txt", "r");
   assert(fp);
 
   // game_new
