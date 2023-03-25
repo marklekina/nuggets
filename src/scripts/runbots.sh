@@ -3,18 +3,23 @@
 # runbots: run the nuggets game with a bunch of bots                                                                                                                              
 #                                                                                                                                                                                 
 # usage:                                                                                                                                                                          
-#   runbots dir hostname port                                                                                                                                                       
+#   ./runbots dir                                                                                                                                                    
 #                                                                                                                                                                                 
 # David Kotz, May 2019; Mark Lekina Rorat, March 2023
- 
-if [[ $# != 3 ]]; then
-    echo usage: $0 dir hostname port
+
+# validate command line parameters
+if [[ $# != 1 ]]; then
+    echo usage: $0 dir
     exit 1
 fi
 
 workingDir=$1
-serverHost=$2
-serverPort=$3
+
+# fetch host
+serverHost=$(ipconfig getifaddr en0)
+
+# fetch port number
+serverPort=$(grep -o "ready at port '.*'" $workingDir/server.log | cut -d"'" -f2)
  
 function cleanup {
     # kill any wayward child processes

@@ -21,7 +21,7 @@ player=$2
 serverHost=$(ipconfig getifaddr en0)
 
 # fetch port number
-serverPort=$(grep -o "ready at port '.*'" server.log | cut -d"'" -f2)
+serverPort=$(grep -o "ready at port '.*'" $dir/server.log | cut -d"'" -f2)
 
 # validate host
 if [[ -z $serverHost ]]; then
