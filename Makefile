@@ -1,11 +1,14 @@
 # Makefile for the nuggets repository
 #
-# Mark Lekina Rorat, December 2022
+# Mark Lekina Rorat, March 2023
 
-.PHONY: all clean test valgrind
+.PHONY: build all clean test leaks
+
+build:
+	make build --directory=src
 
 all:
-	make --directory=src
+	make all --directory=src
 
 clean:
 	make clean --directory=src

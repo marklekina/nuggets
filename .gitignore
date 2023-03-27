@@ -41,3 +41,6 @@ cs50
 
 # log files
 *.log
+
+# binaries
+bin

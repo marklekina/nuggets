@@ -1,8 +1,10 @@
 # Makefile for the src directory
 #
-# Mark Lekina Rorat, December 2022
+# Mark Lekina Rorat, March 2023
 
-.PHONY: all clean test valgrind
+.PHONY: build all clean test leaks
+
+build: all clean
 
 all:
 	make --directory=support
