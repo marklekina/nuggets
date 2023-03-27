@@ -11,8 +11,10 @@
 #include <string.h>
 #include <unistd.h>
 #include <ncurses.h>
-#include "../support/message.h"
-#include "../support/mem.h"
+#include <pthread.h>
+#include <ctype.h>
+#include "message.h"
+#include "mem.h"
 #include "client.h"
 
 #define MAX_STATUS_LINE_LENGTH 50 // maximum length of the status line displayed at the top
@@ -72,8 +74,31 @@ int main(int argc, char *argv[])
         send_spectate(server_address);
     }
 
+    // set seed for random behavior
+    srand(getpid());
+
+    // check whether a player is a bot
+    bool bot_mode = true;
+    if (!player_name || strncmp(player_name, "bot", strlen("bot")))
+    {
+        bot_mode = false;
+    }
+
+    // start bot thread if player is a bot
+    pthread_t bot_thread;
+    if (bot_mode)
+    {
+        pthread_create(&bot_thread, NULL, run_bot, display);
+    }
+
     // loop and wait for input or messages; exit when message_loop returns true
     bool exit_status = message_loop(display, 0, NULL, handleInput, handleMessage);
+
+    // terminate bot thread (if running)
+    if (bot_mode)
+    {
+        pthread_cancel(bot_thread);
+    }
 
     // free display memory
     mem_free(display);
@@ -93,10 +118,10 @@ bool handleInput(void *arg)
     // get server address
     addr_t to = display->server_address;
 
-    // read one character at a time
+    // read keystroke from stdin
     char keystroke = getch();
 
-    // terminate game and message_loop if Ctrl + C is entered (or we reach EOF)
+    // terminate game and message_loop if Ctrl + X is entered (or we reach EOF)
     if (keystroke == CTRL('X') || keystroke == EOF)
     {
         return handle_quit("Goodbye!");
@@ -342,4 +367,41 @@ display_t *init_display(addr_t address)
 
     // return struct
     return display;
+}
+
+char get_random_keystroke()
+{
+    // define an array of valid move keystrokes
+    char move_keystrokes[] = {'y', 'k', 'u', 'h', 'l', 'b', 'j', 'n'};
+
+    // expand this list to include sprint keystrokes
+    int num_move_keystrokes = sizeof(move_keystrokes) / sizeof(move_keystrokes[0]);
+    char all_keystrokes[2 * num_move_keystrokes];
+    for (int i = 0; i < num_move_keystrokes; i++)
+    {
+        all_keystrokes[i] = move_keystrokes[i];
+        all_keystrokes[i + num_move_keystrokes] = toupper(move_keystrokes[i]);
+    }
+
+    // randomly generate keystroke from valid list
+    int idx = rand() % (2 * num_move_keystrokes);
+    return all_keystrokes[idx];
+}
+
+void *run_bot(void *arg)
+{
+    display_t *display = (display_t *)arg;
+    while (true)
+    {
+        // generate random keystroke
+        char keystroke = get_random_keystroke();
+
+        // send keystroke to server
+        addr_t to = display->server_address;
+        send_key(to, keystroke);
+
+        // wait before sending next keystroke
+        usleep(100000); 
+    }
+    return NULL;
 }

@@ -28,7 +28,7 @@ $(BIN)/client: client.o | bin
 	$(CC) $(CFLAGS) $^ $(LIBS) -lcurses -o $@
 
 server.o: server.c $M/game.h $M/grid.h $M/player.h $M/pile.h $M/point.h $S/message.h $S/mem.h $S/file.h
-client.o: client.c
+client.o: client.c $S/message.h $S/mem.h
 
 bin:
 	mkdir -p $(BIN)

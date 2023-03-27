@@ -41,5 +41,7 @@ void send_spectate(addr_t to);
 // other functions
 void update_display(display_t *display);
 display_t *init_display(addr_t address);
+char get_random_keystroke();
+void *run_bot(void *arg);
 
 #endif //__CLIENT_H
