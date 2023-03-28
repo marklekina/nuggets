@@ -22,14 +22,14 @@ This will download the source code and build the client and server binaries. The
 To launch the server, run the following command in a Terminal window:
 
 ```bash
-./server ../maps/{PATH_TO_MAPFILE} [seed]
+./server 2> server.log ../maps/{PATH_TO_MAPFILE} [seed]
 ```
 
 - Replace `{PATH_TO_MAPFILE}` with the path to a map file located in the `maps` directory.
 - The `seed` parameter is optional and can be used to replicate a given game's behavior.
 - The server will output a message announcing that it is listening for contact at a specific port.
 
-```bash
+```
 ./server: ready for contact at port 43210
 ```
 
@@ -37,7 +37,7 @@ To launch the server, run the following command in a Terminal window:
 To start the client, run the following command in a Terminal window:
 
 ```bash
-bin\client host port [player]
+./client 2> client.log host port [player]
 ```
 
 - Replace `host` with the hostname or IP address of the server.
@@ -47,13 +47,13 @@ bin\client host port [player]
 This command allows you to run the client and server on the *same* host or *different* machines. The two options listed below allow you to launch the client *only* if both the server and client are on the *same* machine. See [scripts](src/scripts/README.md) for more details.
 
 ```bash
-src/scripts/runclient.sh bin [player]
+../src/scripts/runclient.sh . [player]
 ```
 
 - This script automatically detects the host name and port number, and starts the client with the optional `player` parameter as a player or spectator. 
 
 ```bash
-src/scripts/runbots.sh bin
+../src/scripts/runbots.sh .
 ```
 
 - This other script launches the client in `bot-mode`, with 26 bot player clients running in the background and a spectator client on the foreground displaying the game.
