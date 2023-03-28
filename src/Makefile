@@ -17,6 +17,7 @@ clean:
 	make clean --directory=modules
 	make clean --directory=tests
 	make clean --directory=main
+	find ../ -name "*.log" -type f -delete
 
 test:
 	make test --directory=tests

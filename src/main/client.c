@@ -11,7 +11,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <ncurses.h>
-#include <pthread.h>
 #include <ctype.h>
 #include "message.h"
 #include "mem.h"
@@ -56,8 +55,18 @@ int main(int argc, char *argv[])
         return 3;
     }
 
+    // check whether a player is a bot
+    bool bot_mode = true;
+    if (!player_name || strncmp(player_name, "bot", strlen("bot")))
+    {
+        bot_mode = false;
+    }
+
+    // set seed for random behavior
+    srand(getpid());
+
     // initialize display
-    display_t *display = init_display(server_address);
+    display_t *display = init_display(server_address, bot_mode);
     if (!display)
     {
         printf("%s: error initializing the client's display\n", program);
@@ -74,30 +83,17 @@ int main(int argc, char *argv[])
         send_spectate(server_address);
     }
 
-    // set seed for random behavior
-    srand(getpid());
-
-    // check whether a player is a bot
-    bool bot_mode = true;
-    if (!player_name || strncmp(player_name, "bot", strlen("bot")))
-    {
-        bot_mode = false;
-    }
-
-    // start bot thread if player is a bot
-    pthread_t bot_thread;
-    if (bot_mode)
-    {
-        pthread_create(&bot_thread, NULL, run_bot, display);
-    }
-
     // loop and wait for input or messages; exit when message_loop returns true
-    bool exit_status = message_loop(display, 0, NULL, handleInput, handleMessage);
+    bool exit_status;
 
-    // terminate bot thread (if running)
-    if (bot_mode)
-    {
-        pthread_cancel(bot_thread);
+    // no need to handle input keystrokes if running in bot mode
+    if (bot_mode) {
+        exit_status = message_loop(display, 0, NULL, NULL, handleMessage);
+    }
+
+    // otherwise specify a function to handle input from stdin
+    else {
+        exit_status = message_loop(display, 0, NULL, handleInput, handleMessage);
     }
 
     // free display memory
@@ -215,6 +211,16 @@ bool handleMessage(void *arg, const addr_t from, const char *message)
     {
         // ignore malformatted and error messages
         handler_return = false;
+    }
+
+    // send a random keystroke to the server if running on bot-mode
+    if (display->bot_mode && !handler_return) {
+        // generate random keystroke
+        char keystroke = get_random_keystroke();
+
+        // wait before sending keystroke to server
+        usleep(50000);
+        send_key(from, keystroke);
     }
 
     // return false to continue message loop, true to terminate
@@ -342,7 +348,7 @@ void update_display(display_t *display)
     refresh();
 }
 
-display_t *init_display(addr_t address)
+display_t *init_display(addr_t address, bool bot_mode)
 {
     // ensure we have a valid server address
     if (!message_isAddr(address))
@@ -364,6 +370,7 @@ display_t *init_display(addr_t address)
     display->player_letter = '_';
     display->mapstring = NULL;
     display->server_address = address;
+    display->bot_mode = bot_mode;
 
     // return struct
     return display;
@@ -386,22 +393,4 @@ char get_random_keystroke()
     // randomly generate keystroke from valid list
     int idx = rand() % (2 * num_move_keystrokes);
     return all_keystrokes[idx];
-}
-
-void *run_bot(void *arg)
-{
-    display_t *display = (display_t *)arg;
-    while (true)
-    {
-        // generate random keystroke
-        char keystroke = get_random_keystroke();
-
-        // send keystroke to server
-        addr_t to = display->server_address;
-        send_key(to, keystroke);
-
-        // wait before sending next keystroke
-        usleep(100000); 
-    }
-    return NULL;
 }
