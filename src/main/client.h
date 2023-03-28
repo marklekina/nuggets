@@ -20,6 +20,7 @@ typedef struct display
     int r;                  // gold remaining in the game
     char *mapstring;        // string representation of the game's map
     addr_t server_address;  // server address for correspondence
+    bool bot_mode;          // indicates whether a player is a bot
 } display_t;
 
 /**************** functions ****************/
@@ -40,6 +41,7 @@ void send_spectate(addr_t to);
 
 // other functions
 void update_display(display_t *display);
-display_t *init_display(addr_t address);
+display_t *init_display(addr_t address, bool bot_mode);
+char get_random_keystroke();
 
 #endif //__CLIENT_H

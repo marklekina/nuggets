@@ -19,7 +19,7 @@ main(const int argc, char* argv[]) {
   testerInit();
 
   // specify map file
-  FILE* fp = fopen("../../data/maps/big.txt", "r");
+  FILE* fp = fopen("../../maps/big.txt", "r");
   assert(fp);
 
   // get map information

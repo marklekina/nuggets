@@ -1,8 +1,10 @@
 # Makefile for the src directory
 #
-# Mark Lekina Rorat, December 2022
+# Mark Lekina Rorat, March 2023
 
-.PHONY: all clean test valgrind
+.PHONY: build all clean test leaks
+
+build: all clean
 
 all:
 	make --directory=support
@@ -15,6 +17,7 @@ clean:
 	make clean --directory=modules
 	make clean --directory=tests
 	make clean --directory=main
+	find ../ -name "*.log" -type f -delete
 
 test:
 	make test --directory=tests

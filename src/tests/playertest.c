@@ -28,7 +28,7 @@ main(const int argc, char* argv[]) {
   char symbol_A = 'A';
   point_t* location_A = point_new(row_A, col_A, symbol_A);
 
-  FILE* fp_A = fopen("../../data/maps/big.txt", "r");
+  FILE* fp_A = fopen("../../maps/big.txt", "r");
   assert(fp_A);
   char* visible_map_A = file_readFile(fp_A);
   fclose(fp_A);
@@ -73,7 +73,7 @@ main(const int argc, char* argv[]) {
   char symbol_B = 'B';
   point_t* location_B = point_new(row_B, col_B, symbol_B);
 
-  FILE* fp_B = fopen("../../data/maps/challenge.txt", "r");
+  FILE* fp_B = fopen("../../maps/challenge.txt", "r");
   assert(fp_B);
   char* visible_map_B = file_readFile(fp_B);
   fclose(fp_B);

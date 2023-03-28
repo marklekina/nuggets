@@ -11,8 +11,9 @@
 #include <string.h>
 #include <unistd.h>
 #include <ncurses.h>
-#include "../support/message.h"
-#include "../support/mem.h"
+#include <ctype.h>
+#include "message.h"
+#include "mem.h"
 #include "client.h"
 
 #define MAX_STATUS_LINE_LENGTH 50 // maximum length of the status line displayed at the top
@@ -54,8 +55,18 @@ int main(int argc, char *argv[])
         return 3;
     }
 
+    // check whether a player is a bot
+    bool bot_mode = true;
+    if (!player_name || strncmp(player_name, "bot", strlen("bot")))
+    {
+        bot_mode = false;
+    }
+
+    // set seed for random behavior
+    srand(getpid());
+
     // initialize display
-    display_t *display = init_display(server_address);
+    display_t *display = init_display(server_address, bot_mode);
     if (!display)
     {
         printf("%s: error initializing the client's display\n", program);
@@ -73,7 +84,17 @@ int main(int argc, char *argv[])
     }
 
     // loop and wait for input or messages; exit when message_loop returns true
-    bool exit_status = message_loop(display, 0, NULL, handleInput, handleMessage);
+    bool exit_status;
+
+    // no need to handle input keystrokes if running in bot mode
+    if (bot_mode) {
+        exit_status = message_loop(display, 0, NULL, NULL, handleMessage);
+    }
+
+    // otherwise specify a function to handle input from stdin
+    else {
+        exit_status = message_loop(display, 0, NULL, handleInput, handleMessage);
+    }
 
     // free display memory
     mem_free(display);
@@ -93,10 +114,10 @@ bool handleInput(void *arg)
     // get server address
     addr_t to = display->server_address;
 
-    // read one character at a time
+    // read keystroke from stdin
     char keystroke = getch();
 
-    // terminate game and message_loop if Ctrl + C is entered (or we reach EOF)
+    // terminate game and message_loop if Ctrl + X is entered (or we reach EOF)
     if (keystroke == CTRL('X') || keystroke == EOF)
     {
         return handle_quit("Goodbye!");
@@ -190,6 +211,16 @@ bool handleMessage(void *arg, const addr_t from, const char *message)
     {
         // ignore malformatted and error messages
         handler_return = false;
+    }
+
+    // send a random keystroke to the server if running on bot-mode
+    if (display->bot_mode && !handler_return) {
+        // generate random keystroke
+        char keystroke = get_random_keystroke();
+
+        // wait before sending keystroke to server
+        usleep(50000);
+        send_key(from, keystroke);
     }
 
     // return false to continue message loop, true to terminate
@@ -317,7 +348,7 @@ void update_display(display_t *display)
     refresh();
 }
 
-display_t *init_display(addr_t address)
+display_t *init_display(addr_t address, bool bot_mode)
 {
     // ensure we have a valid server address
     if (!message_isAddr(address))
@@ -339,7 +370,27 @@ display_t *init_display(addr_t address)
     display->player_letter = '_';
     display->mapstring = NULL;
     display->server_address = address;
+    display->bot_mode = bot_mode;
 
     // return struct
     return display;
+}
+
+char get_random_keystroke()
+{
+    // define an array of valid move keystrokes
+    char move_keystrokes[] = {'y', 'k', 'u', 'h', 'l', 'b', 'j', 'n'};
+
+    // expand this list to include sprint keystrokes
+    int num_move_keystrokes = sizeof(move_keystrokes) / sizeof(move_keystrokes[0]);
+    char all_keystrokes[2 * num_move_keystrokes];
+    for (int i = 0; i < num_move_keystrokes; i++)
+    {
+        all_keystrokes[i] = move_keystrokes[i];
+        all_keystrokes[i + num_move_keystrokes] = toupper(move_keystrokes[i]);
+    }
+
+    // randomly generate keystroke from valid list
+    int idx = rand() % (2 * num_move_keystrokes);
+    return all_keystrokes[idx];
 }
