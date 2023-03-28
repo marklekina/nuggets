@@ -18,11 +18,3 @@ make support.a
 ```
 
 See header files `./*.h` for detailed interfaces and the [main](../main/Makefile) & [modules](../modules/Makefile) Makefiles for use cases.
-
-### Bot mode
-
-We also have a `runbots.sh` script that launches the client in **bot** mode. To launch bot mode,
-```bash
-./runbots.sh bin_dir
-```
-where `bin_dir` is the location of the `client` binary after compilation.
