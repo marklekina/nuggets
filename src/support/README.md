@@ -10,9 +10,10 @@
 | `mem`  | provides memory management utilities, *i.e.*, wrappers for `malloc` and `free`.   |
 | `tester`  | provides testing macros for unit testing server modules.  |
 
-### Compilation and usage
+## Compilation and usage
 
 To compile the support library,
+
 ```bash
 make support.a
 ```

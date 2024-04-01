@@ -2,17 +2,17 @@
 
 This sub-directory contains helper shell scripts.
 
-### runbots.sh
+## runbots.sh
 
 This script launches 26 bot player clients as background processes, and a single spectator client in the foreground. The bot clients send random movement keystrokes to the server, which in most cases results in the collection of all gold in the game.
 
 ```bash
 ./runbots.sh $BIN
 ```
+
 - `$BIN` is the location of the *client* binary after compilation.
 
-
-### runclient.sh
+## runclient.sh
 
 This script launches a spectator or player clients depending on whether you pass the optional player parameter. The main utility of the script is that, like runbots.sh above, it automates the process of launching the client by parsing the server's log for the port number and running a command to fetch the hostname.
 

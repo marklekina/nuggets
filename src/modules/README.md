@@ -10,5 +10,4 @@
 | `grid`  | represents the game's map, *i.e.,* a map string and a matching array of each grid point in the map.  |
 | `game`  | keeps track of all game state, *i.e.,* players, gold piles, and the grid. |
 
-
 See header files `./*.h` for detailed interfaces and the [main](../main/Makefile) & [modules](Makefile) Makefiles for use cases.
