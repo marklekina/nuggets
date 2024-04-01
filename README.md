@@ -60,8 +60,6 @@ This command allows you to run the client and server on the *same* host or *diff
 
 - This other script launches the client in `bot-mode`, with 26 bot player clients running in the background and a spectator client on the foreground displaying the game.
 
-#### Spectator
-
 ```markdown
 Spectator: 250 nuggets unclaimed.
   +----------+
@@ -86,8 +84,6 @@ Spectator: 250 nuggets unclaimed.
      |......|               |..........|
      +------+               +----------+
 ```
-
-#### Player
 
 ```markdown
 Player A has 0 nuggets (250 nuggets unclaimed).
